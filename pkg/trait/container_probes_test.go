@@ -126,7 +126,7 @@ func TestProbesOnDeploymentWithCustomScheme(t *testing.T) {
 					},
 					LivenessProbeEnabled:  pointer.Bool(true),
 					ReadinessProbeEnabled: pointer.Bool(true),
-					LivenessScheme:        "HTTPS",
+					LivenessScheme:        "HTTP",
 					ReadinessScheme:       "HTTPS",
 					LivenessTimeout:       1234,
 				},
@@ -147,9 +147,9 @@ func TestProbesOnDeploymentWithCustomScheme(t *testing.T) {
 	assert.Equal(t, defaultLivenessProbePath, container.LivenessProbe.HTTPGet.Path)
 	assert.Equal(t, corev1.URISchemeHTTPS, container.ReadinessProbe.HTTPGet.Scheme)
 	assert.Equal(t, "", container.ReadinessProbe.HTTPGet.Host)
-	assert.Equal(t, int32(defaultContainerPort), container.ReadinessProbe.HTTPGet.Port.IntVal)
+	assert.Equal(t, int32(8443), container.ReadinessProbe.HTTPGet.Port.IntVal)
 	assert.Equal(t, defaultReadinessProbePath, container.ReadinessProbe.HTTPGet.Path)
-	assert.Equal(t, corev1.URISchemeHTTPS, container.LivenessProbe.HTTPGet.Scheme)
+	assert.Equal(t, corev1.URISchemeHTTP, container.LivenessProbe.HTTPGet.Scheme)
 	assert.Equal(t, int32(1234), container.LivenessProbe.TimeoutSeconds)
 }
 
