@@ -65,15 +65,22 @@ const (
 var (
 	tracingProperties = map[v1.RuntimeProvider]map[string]string{
 		v1.RuntimeProviderQuarkus: {
-			propEndpoint:     "quarkus.jaeger.endpoint",
-			propServiceName:  "quarkus.jaeger.service-name",
-			propSamplerType:  "quarkus.jaeger.sampler-type",
-			propSamplerParam: "quarkus.jaeger.sampler-param",
+			propEndpoint:     "quarkus.opentelemetry.tracer.exporter.otlp.endpoint",
+			propServiceName:  "quarkus.opentelemetry.tracer.resource-attributes",
+			propSamplerType:  "quarkus.opentelemetry.tracer.sampler",
+			propSamplerParam: "quarkus.opentelemetry.tracer.sampler.ratio",
 		},
 	}
 
+	// Translate in opentelemetry
 	defaultSamplerType  = "const"
 	defaultSamplerParam = "1"
+	// future deprecation sampler param
+	offSamplerParam = "0"
+	// future deprecation samplet type
+	probabilisticSamplerType = "probabilistic"
+	ratelimitingSamplerType  = "ratelimiting"
+	remoteSamplerType        = "remote"
 )
 
 // NewTracingTrait --.
@@ -135,16 +142,35 @@ func (t *tracingTrait) Apply(e *trait.Environment) error {
 		}
 
 		if appPropServiceName := properties[propServiceName]; appPropServiceName != "" && t.ServiceName != "" {
-			e.ApplicationProperties[appPropServiceName] = t.ServiceName
+			e.ApplicationProperties[appPropServiceName] = "service.name=" + t.ServiceName
 		}
 
-		if appPropSamplerType := properties[propSamplerType]; appPropSamplerType != "" && t.SamplerType != nil {
-			e.ApplicationProperties[appPropSamplerType] = *t.SamplerType
+		if appPropSamplerType := properties[propSamplerType]; appPropSamplerType != "" {
+			if t.SamplerType != nil && t.SamplerParam != nil {
+				if t.SamplerType == &defaultSamplerType && t.SamplerParam == &defaultSamplerParam {
+					e.ApplicationProperties[appPropSamplerType] = "on"
+				}
+				if t.SamplerType == &defaultSamplerType && t.SamplerParam == &offSamplerParam {
+					e.ApplicationProperties[appPropSamplerType] = "off"
+				}
+				if t.SamplerType == a
+			}
 		}
 
 		if appPropSamplerParam := properties[propSamplerParam]; appPropSamplerParam != "" && t.SamplerParam != nil {
-			e.ApplicationProperties[appPropSamplerParam] = *t.SamplerParam
 		}
+
+		/*if appPropSampler := properties[propSampler]; appPropSampler != "" && t.SamplerType != nil {
+			if t.SamplerType == &defaultSamplerType && t.SamplerParam == &defaultSamplerParam {
+				e.ApplicationProperties[appPropSampler] = "on"
+			} else if t.SamplerType == &defaultSamplerType && t.SamplerParam == &offSamplerParam {
+				e.ApplicationProperties[appPropSampler] = "off"
+			} else {
+				e.ApplicationProperties[appPropSampler] = "ratio"
+				e.ApplicationProperties[appPropSampler]
+			}
+			e.ApplicationProperties[appPropSampler] = *t.SamplerType
+		}*/
 
 	}
 

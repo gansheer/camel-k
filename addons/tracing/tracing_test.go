@@ -43,9 +43,9 @@ func TestTracingTraitOnQuarkus(t *testing.T) {
 	err = tracing.Apply(e)
 	assert.Nil(t, err)
 
-	assert.Empty(t, e.ApplicationProperties["quarkus.jaeger.enabled"])
-	assert.Equal(t, "http://endpoint3", e.ApplicationProperties["quarkus.jaeger.endpoint"])
-	assert.Equal(t, "test", e.ApplicationProperties["quarkus.jaeger.service-name"])
+	assert.Empty(t, e.ApplicationProperties["quarkus.opentelemetry.enabled"])
+	assert.Equal(t, "http://endpoint3", e.ApplicationProperties["quarkus.opentelemetry.tracer.exporter.otlp.endpoint"])
+	assert.Equal(t, "service.name=test", e.ApplicationProperties["quarkus.opentelemetry.tracer.resource-attributes"])
 	assert.Equal(t, "const", e.ApplicationProperties["quarkus.jaeger.sampler-type"])
 	assert.Equal(t, "1", e.ApplicationProperties["quarkus.jaeger.sampler-param"])
 }
