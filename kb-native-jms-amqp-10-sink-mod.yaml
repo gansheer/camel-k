@@ -1,0 +1,31 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: test-jms-amqp-10-sink-native
+  annotations:
+    trait.camel.apache.org/quarkus.package-type: native
+    trait.camel.apache.org/builder.properties: quarkus.native.native-image-xmx=3g
+spec:
+  integration:
+    configuration:
+      - type: property
+        value: "quarkus.artemis.url=amqp://ex-aao-hdls-svc.activemq-artemis-operator.svc.cluster.local:61616"
+      - type: property
+        value: "quarkus.artemis.enabled=true"
+  sink:
+    properties:
+      destinationName: kameletNativeBindingUriTest
+      destinationType: queue
+      remoteURI: amqp://ex-aao-hdls-svc.activemq-artemis-operator.svc.cluster.local:61616
+    ref:
+      apiVersion: camel.apache.org/v1alpha1
+      kind: Kamelet
+      name: jms-amqp-10-sink-mod
+  source:
+    properties: {}
+    uri: knative:channel/chf42?kind=InMemoryChannel
+  steps:
+  - ref:
+      apiVersion: camel.apache.org/v1alpha1
+      kind: Kamelet
+      name: log-sink 

@@ -1,0 +1,21 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: testinput
+  annotations:
+    trait.camel.apache.org/quarkus.package-type: native
+    trait.camel.apache.org/builder.properties: quarkus.native.native-image-xmx=3g
+spec:
+  source:
+    ref:
+      kind: Kamelet
+      apiVersion: camel.apache.org/v1alpha1
+      name: timer-source
+    properties:
+      message: toto
+
+  sink:
+    ref:
+      kind: InMemoryChannel
+      apiVersion: messaging.knative.dev/v1
+      name: chf42

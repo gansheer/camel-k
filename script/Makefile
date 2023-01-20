@@ -406,7 +406,7 @@ else
 	GOOS=linux go build $(GOFLAGS) -o build/_output/bin/kamel ./cmd/kamel/*.go
 endif
 
-images: build kamel-overlay maven-overlay bundle-kamelets
+images: build kamel-overlay maven-overlay
 	@echo "####### Building Camel K operator container image..."
 	mkdir -p build/_maven_output
 	docker build -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION) -f build/Dockerfile .

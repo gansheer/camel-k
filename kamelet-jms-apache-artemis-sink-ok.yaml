@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ---------------------------------------------------------------------------
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: jms-apache-artemis-sink-mod
+  annotations:
+    camel.apache.org/kamelet.support.level: "Stable"
+    camel.apache.org/kamelet.group: "JMS"
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+    camel.apache.org/requires.runtime: camel-k
+spec:
+  definition:
+    title: "JMS - Apache Artemis Sink"
+    description: "Send data to an Apache Artemis message broker by using JMS."
+    required:
+      - destinationName
+      - brokerURL
+    type: object
+    properties:
+      destinationType:
+        title: "Destination Type"
+        description: "The JMS destination type (queue or topic)."
+        type: string
+        default: queue
+      destinationName:
+        title: "Destination Name"
+        description: "The JMS destination name."
+        type: string
+        example: person
+      brokerURL:
+        title: "Broker URL"
+        description: "The JMS URL."
+        type: string
+        example: "tcp://my-host:61616"
+  dependencies:
+  - "camel:jms"
+  - "camel:kamelet"
+  - "mvn:io.quarkiverse.messaginghub:quarkus-pooled-jms:1.0.6"
+  - "mvn:io.quarkiverse.artemis:quarkus-artemis-jms:2.0.1"
+  template:
+    beans:
+      - name: connectionFactoryBean
+        type: "#class:org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory"
+        property:
+          - key: brokerURL
+            value: '{{brokerURL}}'
+    from:
+      uri: "kamelet:source"
+      steps:
+      - to:
+          uri: "jms:{{destinationType}}:{{destinationName}}"
+          parameters:
+            connectionFactory: "#bean:{{connectionFactoryBean}}"

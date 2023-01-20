@@ -1,0 +1,21 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: test-jms-apache-artemis-source
+  annotations:
+    trait.camel.apache.org/quarkus.package-type: fast-jar
+spec:
+  source:
+    ref:
+      kind: Kamelet
+      apiVersion: camel.apache.org/v1alpha1
+      name: jms-apache-artemis-source
+    properties:
+      brokerURL: "tcp://ex-aao-hdls-svc.activemq-artemis-operator.svc.cluster.local:61616"
+      destinationName: "bidule"
+  sink:
+    ref:
+      kind: Kamelet
+      apiVersion: camel.apache.org/v1alpha1
+      name: log-sink
+
