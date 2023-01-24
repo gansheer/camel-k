@@ -52,8 +52,9 @@ spec:
   dependencies:
   - "camel:jms"
   - "camel:kamelet"
-  - "mvn:org.amqphub.quarkus:quarkus-qpid-jms:0.38.0"
-  - "mvn:jakarta.jms:jakarta.jms-api:2.0.3"
+  - "mvn:org.amqphub.quarkus:quarkus-qpid-jms:0.39.0"
+  - "mvn:io.quarkus.platform:quarkus-qpid-jms-bom:2.13.4.Final"
+
   template:
     beans:
       - name: connectionFactoryBean

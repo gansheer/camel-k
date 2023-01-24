@@ -12,7 +12,7 @@ spec:
       apiVersion: camel.apache.org/v1alpha1
       name: timer-source
     properties:
-      message: toto
+      message: titit
 
   sink:
     ref:

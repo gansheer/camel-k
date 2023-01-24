@@ -1,0 +1,8 @@
+
+spec:
+  build:
+    maven:
+      cliOptions:
+      - -X
+      settings: {}
+      settingsSecurity: {}

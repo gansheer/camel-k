@@ -6,6 +6,10 @@ metadata:
     trait.camel.apache.org/quarkus.package-type: native
     trait.camel.apache.org/builder.properties: quarkus.native.native-image-xmx=3g
 spec:
+  integration:
+    configuration:
+      - type: property
+        value: "native.additional-build-args= --initialize-at-run-time=io.netty.handler.proxy.Socks5ProxyHandler --allow-incomplete-classpath"
   sink:
     properties:
       destinationName: kameletNativeBindingUriTest
