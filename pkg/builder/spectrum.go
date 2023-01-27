@@ -89,6 +89,8 @@ func (t *spectrumTask) Do(ctx context.Context) v1.BuildStatus {
 
 	log.Debugf("Registry address: %s", t.task.Registry.Address)
 	log.Debugf("Base image: %s", baseImage)
+	log.Info("GAFOU Registry address: " + t.task.Registry.Address)
+	log.Info("GAFOU Base image: " + baseImage)
 
 	if !strings.HasPrefix(baseImage, t.task.Registry.Address) {
 		if pullInsecure {
@@ -125,6 +127,9 @@ func (t *spectrumTask) Do(ctx context.Context) v1.BuildStatus {
 		Stderr:        newStdW,
 		Recursive:     true,
 	}
+
+	log.Info("GAFOU PushConfigDir:" + options.PushConfigDir)
+	log.Info("GAFOU PullConfigDir:" + options.PullConfigDir)
 
 	if jobs := runtime.GOMAXPROCS(0); jobs > 1 {
 		options.Jobs = jobs

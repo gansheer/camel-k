@@ -113,6 +113,17 @@ func GenerateQuarkusProjectCommon(runtimeVersion string, quarkusVersion string, 
 		},
 	)
 
+	// GAFOU Add quarkus jib dependency
+	p.Dependencies = append(p.Dependencies,
+		maven.Dependency{
+			GroupID:    "io.quarkus",
+			ArtifactID: "quarkus-container-image-jib",
+			Version:    quarkusVersion,
+			Type:       "jar",
+			Scope:      "compile",
+		},
+	)
+
 	// Add all the properties from the build configuration
 	p.Properties.AddAll(buildTimeProperties)
 
@@ -169,6 +180,14 @@ func buildQuarkusRunner(ctx *builderContext) error {
 	mc.SettingsSecurity = ctx.Maven.SettingsSecurity
 	mc.LocalRepository = ctx.Build.Maven.LocalRepository
 	mc.AdditionalArguments = ctx.Build.Maven.CLIOptions
+
+	mc.AdditionalArguments = append(mc.AdditionalArguments,
+		"-Dquarkus.container-image.builder=jib",
+		"-Dquarkus.container-image.push=true",
+		"-Dquarkus.container-image.registry=10.100.164.108",
+		"-Dquarkus.container-image.insecure=true",
+		"-Dquarkus.container-image.group="+ctx.Namespace,
+		"-Dquarkus.container-image.name=test_jib")
 
 	if ctx.Maven.TrustStoreName != "" {
 		mc.ExtraMavenOpts = append(mc.ExtraMavenOpts,
