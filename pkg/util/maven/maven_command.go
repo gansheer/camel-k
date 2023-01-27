@@ -29,6 +29,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -131,6 +132,9 @@ func (c *Command) Do(ctx context.Context) error {
 
 	Log.WithValues("MAVEN_OPTS", mavenOptions).Infof("executing: %s", strings.Join(cmd.Args, " "))
 
+	// TODO gafou
+	Log.Infof("GAFOU is here")
+	time.Sleep(1 * time.Minute)
 	return util.RunAndLog(ctx, cmd, mavenLogHandler, mavenLogHandler)
 }
 

@@ -45,6 +45,7 @@ func RunAndLog(ctx context.Context, cmd *exec.Cmd, stdOutF func(string) string, 
 	}
 	err = cmd.Start()
 	// if the command is in error, we try to figure it out why also by parsing the log
+
 	if err != nil {
 		scanOutMsg = scan(stdOut, stdOutF)
 		scanErrMsg = scan(stdErr, stdErrF)
@@ -60,6 +61,7 @@ func RunAndLog(ctx context.Context, cmd *exec.Cmd, stdOutF func(string) string, 
 		scanErrMsg = scan(stdErr, stdErrF)
 		return nil
 	})
+
 	if err = g.Wait(); err != nil {
 		return errors.Wrapf(err, formatErr(scanOutMsg, scanErrMsg))
 	}

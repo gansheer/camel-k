@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -138,6 +139,8 @@ tasks:
 					break tasks
 				}
 				t.ContextDir = filepath.Join(buildDir, builder.ContextDir)
+				// GAFOU
+				time.Sleep(1 * time.Minute)
 			} else if t := task.S2i; t != nil && t.ContextDir == "" {
 				if buildDir == "" {
 					status.Failed(fmt.Errorf("cannot determine context directory for task %s", t.Name))
@@ -168,6 +171,14 @@ tasks:
 				status.Failed(err)
 				break tasks
 			}
+		}
+
+		// GAFOU
+		if t := task.Spectrum; t != nil {
+			time.Sleep(1 * time.Minute)
+		}
+		if t := task.Builder; t != nil {
+			time.Sleep(1 * time.Minute)
 		}
 	}
 
