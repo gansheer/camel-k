@@ -136,6 +136,12 @@ type SpectrumTask struct {
 	PublishTask `json:",inline"`
 }
 
+// JibTask is used to configure Jib
+type JibTask struct {
+	BaseTask    `json:",inline"`
+	PublishTask `json:",inline"`
+}
+
 // S2iTask is used to configure S2I
 type S2iTask struct {
 	BaseTask `json:",inline"`

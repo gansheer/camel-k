@@ -269,6 +269,8 @@ func (t *quarkusTrait) applyWhenBuildSubmitted(e *Environment) error {
 		// Spectrum does not rely on Dockerfile to assemble the image
 		if e.Platform.Status.Build.PublishStrategy != v1.IntegrationPlatformBuildPublishStrategySpectrum {
 			steps = append(steps, builder.Image.ExecutableDockerfile)
+		} else {
+			steps = append(steps, builder.Image.MavenCommandJib)
 		}
 	} else {
 		build.Maven.Properties["quarkus.package.type"] = string(traitv1.FastJarPackageType)
@@ -276,6 +278,8 @@ func (t *quarkusTrait) applyWhenBuildSubmitted(e *Environment) error {
 		// Spectrum does not rely on Dockerfile to assemble the image
 		if e.Platform.Status.Build.PublishStrategy != v1.IntegrationPlatformBuildPublishStrategySpectrum {
 			steps = append(steps, builder.Image.JvmDockerfile)
+		} else {
+			steps = append(steps, builder.Image.MavenCommandJib)
 		}
 	}
 

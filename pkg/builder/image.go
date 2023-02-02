@@ -49,6 +49,7 @@ type imageSteps struct {
 	StandardImageContext    Step
 	ExecutableDockerfile    Step
 	JvmDockerfile           Step
+	MavenCommandJib         Step
 }
 
 var Image = imageSteps{
@@ -57,6 +58,7 @@ var Image = imageSteps{
 	StandardImageContext:    NewStep(ApplicationPackagePhase, standardImageContext),
 	ExecutableDockerfile:    NewStep(ApplicationPackagePhase+1, executableDockerfile),
 	JvmDockerfile:           NewStep(ApplicationPackagePhase+1, jvmDockerfile),
+	MavenCommandJib:         NewStep(ApplicationPackagePhase+1, mavenCommandJib),
 }
 
 type artifactsSelector func(ctx *builderContext) error
@@ -113,6 +115,18 @@ func jvmDockerfile(ctx *builderContext) error {
 	`)
 
 	err := ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "Dockerfile"), dockerfile, 0o400)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func mavenCommandJib(ctx *builderContext) error {
+	// GAFOU get maven command context
+	jibContext := []byte(`do the jib`)
+
+	err := ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "JibContext"), jibContext, 0o400)
 	if err != nil {
 		return err
 	}

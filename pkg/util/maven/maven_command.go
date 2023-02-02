@@ -134,7 +134,7 @@ func (c *Command) Do(ctx context.Context) error {
 
 	// TODO gafou
 	Log.Infof("GAFOU is here")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(20 * time.Second)
 	return util.RunAndLog(ctx, cmd, mavenLogHandler, mavenLogHandler)
 }
 

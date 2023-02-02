@@ -140,7 +140,7 @@ tasks:
 				}
 				t.ContextDir = filepath.Join(buildDir, builder.ContextDir)
 				// GAFOU
-				time.Sleep(1 * time.Minute)
+				time.Sleep(20 * time.Second)
 			} else if t := task.S2i; t != nil && t.ContextDir == "" {
 				if buildDir == "" {
 					status.Failed(fmt.Errorf("cannot determine context directory for task %s", t.Name))
@@ -175,10 +175,10 @@ tasks:
 
 		// GAFOU
 		if t := task.Spectrum; t != nil {
-			time.Sleep(1 * time.Minute)
+			time.Sleep(20 * time.Second)
 		}
 		if t := task.Builder; t != nil {
-			time.Sleep(1 * time.Minute)
+			time.Sleep(20 * time.Second)
 		}
 	}
 

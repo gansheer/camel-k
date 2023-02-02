@@ -184,7 +184,7 @@ func buildQuarkusRunner(ctx *builderContext) error {
 	mc.AdditionalArguments = append(mc.AdditionalArguments,
 		"-Dquarkus.container-image.builder=jib",
 		"-Dquarkus.container-image.push=true",
-		"-Dquarkus.container-image.registry=10.100.164.108",
+		"-Dquarkus.container-image.registry=10.111.126.94",
 		"-Dquarkus.container-image.insecure=true",
 		"-Dquarkus.container-image.group="+ctx.Namespace,
 		"-Dquarkus.container-image.name=test_jib")
