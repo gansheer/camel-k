@@ -118,6 +118,9 @@ type IntegrationPlatformBuildSpec struct {
 	// a base image that can be used as base layer for all images.
 	// It can be useful if you want to provide some custom base image with further utility softwares
 	BaseImage string `json:"baseImage,omitempty"`
+	// a base image that can be used as base layer for all images.
+	// It can be useful if you want to provide some custom base image with further utility softwares
+	BaseImageJdk string `json:"baseImageJdk,omitempty"`
 	// the image registry used to push/pull Integration images
 	Registry RegistrySpec `json:"registry,omitempty"`
 	// how much time to wait before time out the build process

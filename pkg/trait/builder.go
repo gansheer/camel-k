@@ -74,6 +74,7 @@ func (t *builderTrait) Apply(e *Environment) error {
 
 	e.BuildTasks = append(e.BuildTasks, v1.Task{Builder: builderTask})
 
+	// Find a way to define valid BaseImage
 	switch e.Platform.Status.Build.PublishStrategy {
 	case v1.IntegrationPlatformBuildPublishStrategySpectrum:
 		e.BuildTasks = append(e.BuildTasks, v1.Task{Spectrum: &v1.SpectrumTask{
@@ -161,6 +162,7 @@ func (t *builderTrait) builderTask(e *Environment) (*v1.BuilderTask, error) {
 		maven.Repositories = append(maven.Repositories, mvn.NewRepository(repo))
 	}
 
+	// Find a way to define valid BaseImage
 	task := &v1.BuilderTask{
 		BaseTask: v1.BaseTask{
 			Name: "builder",

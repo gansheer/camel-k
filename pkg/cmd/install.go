@@ -175,6 +175,7 @@ type installCmdOptions struct {
 	OutputFormat                string   `mapstructure:"output"`
 	RuntimeVersion              string   `mapstructure:"runtime-version"`
 	BaseImage                   string   `mapstructure:"base-image"`
+	BaseImageJdk                string   `mapstructure:"base-image-jdk"`
 	OperatorID                  string   `mapstructure:"operator-id"`
 	OperatorImage               string   `mapstructure:"operator-image"`
 	OperatorImagePullPolicy     string   `mapstructure:"operator-image-pull-policy"`
@@ -513,6 +514,9 @@ func (o *installCmdOptions) setupIntegrationPlatform(
 	}
 	if o.BaseImage != "" {
 		platform.Spec.Build.BaseImage = o.BaseImage
+	}
+	if o.BaseImageJdk != "" {
+		platform.Spec.Build.BaseImageJdk = o.BaseImageJdk
 	}
 	if o.BuildStrategy != "" {
 		platform.Spec.Build.BuildStrategy = v1.BuildStrategy(o.BuildStrategy)

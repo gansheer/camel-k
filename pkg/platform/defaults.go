@@ -199,6 +199,10 @@ func setPlatformDefaults(p *v1.IntegrationPlatform, verbose bool) error {
 		log.Debugf("Integration Platform [%s]: setting base image", p.Namespace)
 		p.Status.Build.BaseImage = defaults.BaseImage()
 	}
+	if p.Status.Build.BaseImageJdk == "" {
+		log.Debugf("Integration Platform [%s]: setting base image jdk", p.Namespace)
+		p.Status.Build.BaseImageJdk = defaults.BaseImageJdk()
+	}
 	if p.Status.Build.Maven.LocalRepository == "" {
 		log.Debugf("Integration Platform [%s]: setting local repository", p.Namespace)
 		p.Status.Build.Maven.LocalRepository = defaults.LocalRepository

@@ -49,6 +49,7 @@ func createKanikoCacheWarmerPod(ctx context.Context, client client.Client, platf
 		warmerImage = fmt.Sprintf("%s:v%s", builder.KanikoDefaultWarmerImageName, defaults.KanikoVersion)
 	}
 
+	// TODO what to do about kaniko ?
 	pod := corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
