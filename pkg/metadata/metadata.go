@@ -58,6 +58,7 @@ func merge(m1 src.Metadata, m2 src.Metadata) src.Metadata {
 		FromURIs:             f,
 		ToURIs:               t,
 		Dependencies:         strset.Union(m1.Dependencies, m2.Dependencies),
+		Languages:            strset.Union(m1.Languages, m2.Languages),
 		RequiredCapabilities: strset.Union(m1.RequiredCapabilities, m2.RequiredCapabilities),
 		ExposesHTTPServices:  m1.ExposesHTTPServices || m2.ExposesHTTPServices,
 		PassiveEndpoints:     m1.PassiveEndpoints && m2.PassiveEndpoints,
@@ -78,6 +79,7 @@ func Extract(catalog *camel.RuntimeCatalog, source v1.SourceSpec) (IntegrationMe
 	meta := src.NewMetadata()
 	meta.PassiveEndpoints = true
 	meta.ExposesHTTPServices = false
+	meta.AddLanguage(string(language) + "-extract")
 
 	if err := src.InspectorForLanguage(catalog, language).Extract(source, &meta); err != nil {
 		return IntegrationMetadata{}, err

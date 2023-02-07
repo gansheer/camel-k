@@ -29,6 +29,8 @@ type Metadata struct {
 	ToURIs []string
 	// All inferred dependencies required to run the integration
 	Dependencies *strset.Set
+	// All inferred languages required to run the integration
+	Languages *strset.Set
 	// ExposesHTTPServices indicates if a route defined by the source is exposed
 	// through HTTP
 	ExposesHTTPServices bool
@@ -49,6 +51,7 @@ func NewMetadata() Metadata {
 		FromURIs:             make([]string, 0),
 		ToURIs:               make([]string, 0),
 		Dependencies:         strset.New(),
+		Languages:            strset.New(),
 		RequiredCapabilities: strset.New(),
 	}
 }
@@ -59,4 +62,8 @@ func (m *Metadata) AddRequiredCapability(capability string) {
 
 func (m *Metadata) AddDependency(dependency string) {
 	m.Dependencies.Add(dependency)
+}
+
+func (m *Metadata) AddLanguage(language string) {
+	m.Languages.Add(language)
 }

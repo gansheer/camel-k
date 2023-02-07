@@ -2162,6 +2162,13 @@ the container image used
 
 a list of dependencies needed by the application
 
+|`languages` +
+[]string
+|
+
+
+the profile needed to run this Integration
+
 |`profile` +
 *xref:#_camel_apache_org_v1_TraitProfile[TraitProfile]*
 |

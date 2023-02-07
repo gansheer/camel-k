@@ -128,6 +128,13 @@ func (command *describeIntegrationCommandOptions) describeIntegration(cmd *cobra
 			}
 		}
 
+		if len(i.Status.Languages) > 0 {
+			w.Writef(0, "Languages:\n")
+			for _, language := range i.Status.Languages {
+				w.Writef(1, "%s\n", language)
+			}
+		}
+
 		if len(i.Spec.Repositories) > 0 {
 			w.Writef(0, "Repositories:\n")
 			for _, repository := range i.Spec.Repositories {

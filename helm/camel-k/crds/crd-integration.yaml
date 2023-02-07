@@ -7586,6 +7586,11 @@ spec:
                     description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                     type: string
                 type: object
+              languages:
+                description: the profile needed to run this Integration
+                items:
+                  type: string
+                type: array
               lastInitTimestamp:
                 description: the timestamp representing the last time when this integration
                   was initialized.

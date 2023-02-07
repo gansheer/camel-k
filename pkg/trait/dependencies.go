@@ -88,6 +88,11 @@ func (t *dependenciesTrait) Apply(e *Environment) error {
 			util.StringSliceUniqueAdd(&e.Integration.Status.Capabilities, item)
 			return true
 		})
+
+		// GAFOU testing
+		language := s.InferLanguage()
+		util.StringSliceUniqueAdd(&e.Integration.Status.Languages, string(language))
+
 	}
 
 	// Add dependencies back to integration
