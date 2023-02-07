@@ -92,6 +92,8 @@ type IntegrationStatus struct {
 	// a list of dependencies needed by the application
 	Dependencies []string `json:"dependencies,omitempty"`
 	// the profile needed to run this Integration
+	Languages []Language `json:"languages,omitempty"`
+	// the profile needed to run this Integration
 	Profile TraitProfile `json:"profile,omitempty"`
 	// the reference of the `IntegrationKit` which is used for this Integration
 	IntegrationKit *corev1.ObjectReference `json:"integrationKit,omitempty"`

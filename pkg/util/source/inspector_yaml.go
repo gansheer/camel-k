@@ -58,6 +58,7 @@ func (i YAMLInspector) Extract(source v1.SourceSpec, meta *Metadata) error {
 
 	meta.ExposesHTTPServices = meta.ExposesHTTPServices || i.containsHTTPURIs(meta.FromURIs)
 	meta.PassiveEndpoints = i.hasOnlyPassiveEndpoints(meta.FromURIs)
+	meta.AddLanguage(string(v1.LanguageYaml))
 
 	return nil
 }
