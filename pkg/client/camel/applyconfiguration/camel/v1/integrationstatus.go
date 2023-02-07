@@ -33,6 +33,7 @@ type IntegrationStatusApplyConfiguration struct {
 	Digest                  *string                                  `json:"digest,omitempty"`
 	Image                   *string                                  `json:"image,omitempty"`
 	Dependencies            []string                                 `json:"dependencies,omitempty"`
+	Languages               []string                                 `json:"languages,omitempty"`
 	Profile                 *v1.TraitProfile                         `json:"profile,omitempty"`
 	IntegrationKit          *corev1.ObjectReference                  `json:"integrationKit,omitempty"`
 	Platform                *string                                  `json:"platform,omitempty"`
@@ -92,6 +93,16 @@ func (b *IntegrationStatusApplyConfiguration) WithImage(value string) *Integrati
 func (b *IntegrationStatusApplyConfiguration) WithDependencies(values ...string) *IntegrationStatusApplyConfiguration {
 	for i := range values {
 		b.Dependencies = append(b.Dependencies, values[i])
+	}
+	return b
+}
+
+// WithLanguages adds the given value to the Languages field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Languages field.
+func (b *IntegrationStatusApplyConfiguration) WithLanguages(values ...string) *IntegrationStatusApplyConfiguration {
+	for i := range values {
+		b.Languages = append(b.Languages, values[i])
 	}
 	return b
 }

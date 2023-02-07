@@ -147,6 +147,7 @@ func TestJavaSourceDataFormat(t *testing.T) {
 			assertExtract(t, inspector, test.source, func(meta *Metadata) {
 				for _, d := range test.deps {
 					assert.Contains(t, meta.Dependencies.List(), d)
+					assert.Contains(t, meta.Languages.List(), "java")
 				}
 			})
 		})

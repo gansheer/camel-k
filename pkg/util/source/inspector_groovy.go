@@ -51,6 +51,7 @@ func (i GroovyInspector) Extract(source v1.SourceSpec, meta *Metadata) error {
 		doubleQuotedKameletEip)
 
 	hasRest := restRegexp.MatchString(source.Content) || restClosureRegexp.MatchString(source.Content)
+	meta.AddLanguage(string(v1.LanguageGroovy))
 
 	return i.extract(source, meta, from, to, kameletEips, hasRest)
 }

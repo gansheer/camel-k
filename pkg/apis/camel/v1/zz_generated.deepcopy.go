@@ -1176,6 +1176,11 @@ func (in *IntegrationStatus) DeepCopyInto(out *IntegrationStatus) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.Languages != nil {
+		in, out := &in.Languages, &out.Languages
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.IntegrationKit != nil {
 		in, out := &in.IntegrationKit, &out.IntegrationKit
 		*out = new(corev1.ObjectReference)
