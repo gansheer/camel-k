@@ -35,7 +35,10 @@ const (
 	KanikoVersion = "0.17.1"
 
 	// baseImage --
-	baseImage = "docker.io/eclipse-temurin:11"
+	baseImage = "docker.io/eclipse-temurin:11-jre"
+
+	// baseImageJdk --
+	baseImageJdk = "docker.io/eclipse-temurin:11"
 
 	// LocalRepository --
 	LocalRepository = "/tmp/artifacts/m2"

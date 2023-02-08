@@ -115,9 +115,12 @@ type IntegrationPlatformBuildSpec struct {
 	RuntimeVersion string `json:"runtimeVersion,omitempty"`
 	// the runtime used. Likely Camel Quarkus (we used to have main runtime which has been discontinued since version 1.5)
 	RuntimeProvider RuntimeProvider `json:"runtimeProvider,omitempty"`
-	// a base image that can be used as base layer for all images.
+	// a base image that can be used as base layer for all non-javasource images.
 	// It can be useful if you want to provide some custom base image with further utility softwares
 	BaseImage string `json:"baseImage,omitempty"`
+	// a base image that can be used as base layer for all Java source images.
+	// It can be useful if you want to provide some custom base image with further utility softwares
+	BaseImageJdk string `json:"baseImageJdk,omitempty"`
 	// the image registry used to push/pull Integration images
 	Registry RegistrySpec `json:"registry,omitempty"`
 	// how much time to wait before time out the build process

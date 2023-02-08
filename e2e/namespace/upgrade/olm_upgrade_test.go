@@ -91,6 +91,7 @@ func TestOLMAutomaticUpgrade(t *testing.T) {
 			"--olm-source", catalogSourceName,
 			"--olm-source-namespace", ns,
 			"--base-image", defaults.BaseImage(),
+			"--base-image-jdk", defaults.BaseImageJdk(),
 		}
 
 		if prevUpdateChannel != "" {

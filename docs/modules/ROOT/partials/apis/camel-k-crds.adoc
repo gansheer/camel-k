@@ -1718,7 +1718,15 @@ string
 |
 
 
-a base image that can be used as base layer for all images.
+a base image that can be used as base layer for all non-javasource images.
+It can be useful if you want to provide some custom base image with further utility softwares
+
+|`baseImageJdk` +
+string
+|
+
+
+a base image that can be used as base layer for all Java source images.
 It can be useful if you want to provide some custom base image with further utility softwares
 
 |`registry` +
@@ -2161,6 +2169,13 @@ the container image used
 
 
 a list of dependencies needed by the application
+
+|`languages` +
+[]string
+|
+
+
+the profile needed to run this Integration
 
 |`profile` +
 *xref:#_camel_apache_org_v1_TraitProfile[TraitProfile]*

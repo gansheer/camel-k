@@ -94,6 +94,13 @@ func TestInstallBaseImageFlag(t *testing.T) {
 	assert.Equal(t, "someString", installCmdOptions.BaseImage)
 }
 
+func TestInstallBaseImageJdkFlag(t *testing.T) {
+	installCmdOptions, rootCmd, _ := initializeInstallCmdOptions(t)
+	_, err := test.ExecuteCommand(rootCmd, cmdInstall, "--base-image-jdk", "someString")
+	assert.Nil(t, err)
+	assert.Equal(t, "someString", installCmdOptions.BaseImage)
+}
+
 func TestInstallBuildPublishStrategyFlag(t *testing.T) {
 	installCmdOptions, rootCmd, _ := initializeInstallCmdOptions(t)
 	_, err := test.ExecuteCommand(rootCmd, cmdInstall, "--build-publish-strategy", "someString")

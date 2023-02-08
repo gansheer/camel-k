@@ -103,6 +103,7 @@ func newCmdInstall(rootCmdOptions *RootCmdOptions) (*cobra.Command, *installCmdO
 	cmd.Flags().StringArrayP("property", "p", nil, "Add a camel property")
 	cmd.Flags().String("runtime-version", "", "Set the camel-k runtime version")
 	cmd.Flags().String("base-image", "", "Set the base Image used to run integrations")
+	cmd.Flags().String("base-image-jdk", "", "Set the base Image used to run java integrations")
 	cmd.Flags().StringP("operator-id", "x", "camel-k", "Set the operator id that is used to select the resources this operator should manage")
 	cmd.Flags().String("operator-image", "", "Set the operator Image used for the operator deployment")
 	cmd.Flags().String("operator-image-pull-policy", "", "Set the operator ImagePullPolicy used for the operator deployment")
@@ -175,6 +176,7 @@ type installCmdOptions struct {
 	OutputFormat                string   `mapstructure:"output"`
 	RuntimeVersion              string   `mapstructure:"runtime-version"`
 	BaseImage                   string   `mapstructure:"base-image"`
+	BaseImageJdk                string   `mapstructure:"base-image-jdk"`
 	OperatorID                  string   `mapstructure:"operator-id"`
 	OperatorImage               string   `mapstructure:"operator-image"`
 	OperatorImagePullPolicy     string   `mapstructure:"operator-image-pull-policy"`
@@ -513,6 +515,9 @@ func (o *installCmdOptions) setupIntegrationPlatform(
 	}
 	if o.BaseImage != "" {
 		platform.Spec.Build.BaseImage = o.BaseImage
+	}
+	if o.BaseImageJdk != "" {
+		platform.Spec.Build.BaseImageJdk = o.BaseImageJdk
 	}
 	if o.BuildStrategy != "" {
 		platform.Spec.Build.BuildStrategy = v1.BuildStrategy(o.BuildStrategy)

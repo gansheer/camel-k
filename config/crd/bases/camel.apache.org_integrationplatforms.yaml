@@ -77,8 +77,13 @@ spec:
                     type: object
                   baseImage:
                     description: a base image that can be used as base layer for all
-                      images. It can be useful if you want to provide some custom
-                      base image with further utility softwares
+                      non-javasource images. It can be useful if you want to provide
+                      some custom base image with further utility softwares
+                    type: string
+                  baseImageJdk:
+                    description: a base image that can be used as base layer for all
+                      Java source images. It can be useful if you want to provide
+                      some custom base image with further utility softwares
                     type: string
                   buildStrategy:
                     description: the strategy to adopt for building an Integration
@@ -1592,8 +1597,13 @@ spec:
                     type: object
                   baseImage:
                     description: a base image that can be used as base layer for all
-                      images. It can be useful if you want to provide some custom
-                      base image with further utility softwares
+                      non-javasource images. It can be useful if you want to provide
+                      some custom base image with further utility softwares
+                    type: string
+                  baseImageJdk:
+                    description: a base image that can be used as base layer for all
+                      Java source images. It can be useful if you want to provide
+                      some custom base image with further utility softwares
                     type: string
                   buildStrategy:
                     description: the strategy to adopt for building an Integration

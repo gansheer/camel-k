@@ -58,10 +58,11 @@ func newCmdLocalBuild(localCmdOptions *LocalCmdOptions) (*cobra.Command, *localB
 	}
 
 	cmd.Flags().Bool("base-image", false, "Build base image used as a starting point for any integration")
+	cmd.Flags().Bool("base-image-jdk", false, "Build base image used as a starting point for java integration")
 	cmd.Flags().Bool("dependencies-only", false,
 		"Only output the integration dependencies. The integration-directory flag must be set.")
 	cmd.Flags().String("container-registry", "",
-		"Registry that holds intermediate images. This flag should only be used in conjunction with the base-image flag.")
+		"Registry that holds intermediate images. This flag should only be used in conjunction with the base-image and base-image-jdk flag.")
 	cmd.Flags().String("image", "", usageImage)
 	cmd.Flags().String("integration-directory", "", usageIntegrationDirectory)
 	cmd.Flags().StringArray("property-file", nil, usagePropertyFile)
@@ -73,6 +74,7 @@ func newCmdLocalBuild(localCmdOptions *LocalCmdOptions) (*cobra.Command, *localB
 type localBuildCmdOptions struct {
 	*LocalCmdOptions
 	BaseImage            bool     `mapstructure:"base-image"`
+	BaseImageJdk         bool     `mapstructure:"base-image-jdk"`
 	DependenciesOnly     bool     `mapstructure:"dependencies-only"`
 	ContainerRegistry    string   `mapstructure:"container-registry"`
 	Image                string   `mapstructure:"image"`
@@ -82,7 +84,7 @@ type localBuildCmdOptions struct {
 }
 
 func (o *localBuildCmdOptions) validate(cmd *cobra.Command, args []string) error {
-	if o.BaseImage {
+	if o.BaseImage || o.BaseImageJdk {
 		return o.validateBaseImageMode(cmd, args)
 	}
 
@@ -92,26 +94,26 @@ func (o *localBuildCmdOptions) validate(cmd *cobra.Command, args []string) error
 func (o *localBuildCmdOptions) validateBaseImageMode(cmd *cobra.Command, args []string) error {
 	// Cannot have both integration files and the base image construction enabled.
 	if len(args) > 0 {
-		return errors.New("cannot use --base-image with integration files")
+		return errors.New("cannot use --base-image or --base-image-jdk with integration files")
 	}
 
 	// Docker registry must be set.
 	if o.ContainerRegistry == "" {
-		return errors.New("--base-image requires --container-registry")
+		return errors.New("--base-image and --base-image-jdk requires --container-registry")
 	}
 
 	// If an integration directory is provided then no base image containerization can be enabled.
 	if o.IntegrationDirectory != "" {
-		return errors.New("cannot use --integration-directory with --base-image")
+		return errors.New("cannot use --integration-directory with --base-image or --base-image-jdk")
 	}
 
 	if o.DependenciesOnly {
-		return errors.New("cannot use --dependencies-only with --base-image")
+		return errors.New("cannot use --dependencies-only with --base-image or --base-image-jdk")
 	}
 
 	if len(o.Dependencies) > 0 || len(o.PropertyFiles) > 0 || len(o.Properties) > 0 {
 		fmt.Fprintln(cmd.OutOrStdout(),
-			"Warning: --dependency, --property, and --property-file are ignored in --base-image mode")
+			"Warning: --dependency, --property, and --property-file are ignored in --base-image or --base-image-jdk mode")
 	}
 
 	return nil
@@ -120,17 +122,17 @@ func (o *localBuildCmdOptions) validateBaseImageMode(cmd *cobra.Command, args []
 func (o *localBuildCmdOptions) validateIntegrationMode(args []string) error {
 	if len(args) == 0 {
 		if o.IntegrationDirectory == "" {
-			return errors.New("either integration files, --integration-directory, or --base-image must be provided")
+			return errors.New("either integration files, --integration-directory, or --base-image and --base-image-jdk must be provided")
 		}
 	} else {
 		if o.IntegrationDirectory == "" && o.Image == "" {
-			return errors.New("either --integration-directory or --image must be provided with integration files")
+			return errors.New("either --integration-directory or --base-image and --base-image-jdk must be provided with integration files")
 		}
 	}
 
 	if o.ContainerRegistry != "" {
 		// ContainerRegistry should only be specified when building the base image.
-		return errors.New("--container-registry must be used with --base-image")
+		return errors.New("--container-registry must be used with --base-image and --base-image-jdk")
 	}
 
 	// The integration directory must be set when only outputting dependencies.
