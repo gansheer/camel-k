@@ -99,6 +99,7 @@ func (command *describePlatformCommandOptions) describeIntegrationPlatform(cmd *
 		w.Writef(0, "Phase:\t%s\n", platform.Status.Phase)
 		w.Writef(0, "Version:\t%s\n", platform.Status.Version)
 		w.Writef(0, "Base Image:\t%s\n", platform.GetActualValue(getPlatformBaseImage))
+		w.Writef(0, "Base Image Jdk:\t%s\n", platform.GetActualValue(getPlatformBaseImageJdk))
 		w.Writef(0, "Runtime Version:\t%s\n", platform.GetActualValue(getPlatformRuntimeVersion))
 		w.Writef(0, "Local Repository:\t%s\n", platform.GetActualValue(getPlatformMavenLocalRepository))
 		w.Writef(0, "Publish Strategy:\t%s\n", platform.GetActualValue(getPlatformPublishStrategy))
@@ -109,6 +110,10 @@ func (command *describePlatformCommandOptions) describeIntegrationPlatform(cmd *
 
 func getPlatformBaseImage(spec v1.IntegrationPlatformSpec) string {
 	return spec.Build.BaseImage
+}
+
+func getPlatformBaseImageJdk(spec v1.IntegrationPlatformSpec) string {
+	return spec.Build.BaseImageJdk
 }
 
 func getPlatformRuntimeVersion(spec v1.IntegrationPlatformSpec) string {

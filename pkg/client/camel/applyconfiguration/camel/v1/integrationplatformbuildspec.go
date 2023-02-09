@@ -32,6 +32,7 @@ type IntegrationPlatformBuildSpecApplyConfiguration struct {
 	RuntimeVersion         *string                                     `json:"runtimeVersion,omitempty"`
 	RuntimeProvider        *v1.RuntimeProvider                         `json:"runtimeProvider,omitempty"`
 	BaseImage              *string                                     `json:"baseImage,omitempty"`
+	BaseImageJdk           *string                                     `json:"baseImageJdk,omitempty"`
 	Registry               *RegistrySpecApplyConfiguration             `json:"registry,omitempty"`
 	Timeout                *metav1.Duration                            `json:"timeout,omitempty"`
 	Maven                  *MavenSpecApplyConfiguration                `json:"maven,omitempty"`
@@ -81,6 +82,14 @@ func (b *IntegrationPlatformBuildSpecApplyConfiguration) WithRuntimeProvider(val
 // If called multiple times, the BaseImage field is set to the value of the last call.
 func (b *IntegrationPlatformBuildSpecApplyConfiguration) WithBaseImage(value string) *IntegrationPlatformBuildSpecApplyConfiguration {
 	b.BaseImage = &value
+	return b
+}
+
+// WithBaseImageJdk sets the BaseImageJdk field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the BaseImageJdk field is set to the value of the last call.
+func (b *IntegrationPlatformBuildSpecApplyConfiguration) WithBaseImageJdk(value string) *IntegrationPlatformBuildSpecApplyConfiguration {
+	b.BaseImageJdk = &value
 	return b
 }
 

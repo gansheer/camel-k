@@ -29,6 +29,10 @@ func BaseImage() string {
 	return envOrDefault(baseImage, "KAMEL_BASE_IMAGE", "RELATED_IMAGE_BASE")
 }
 
+func BaseImageJdk() string {
+	return envOrDefault(baseImageJdk, "KAMEL_BASE_IMAGE_JDK", "RELATED_IMAGE_BASE_JDK")
+}
+
 func OperatorImage() string {
 	return envOrDefault(fmt.Sprintf("%s:%s", ImageName, Version), "KAMEL_OPERATOR_IMAGE", "KAMEL_K_TEST_OPERATOR_CURRENT_IMAGE")
 }

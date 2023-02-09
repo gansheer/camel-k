@@ -31,7 +31,8 @@ CODEGEN_VERSION := v0.25.2
 OPERATOR_SDK_VERSION := v1.16.0
 KUSTOMIZE_VERSION := v4.5.4
 OPM_VERSION := v1.24.0
-BASE_IMAGE := docker.io/eclipse-temurin:11
+BASE_IMAGE := docker.io/eclipse-temurin:11-jre
+BASE_IMAGE_JDK := docker.io/eclipse-temurin:11
 LOCAL_REPOSITORY := /tmp/artifacts/m2
 IMAGE_NAME ?= docker.io/apache/camel-k
 
@@ -180,6 +181,9 @@ codegen:
 	@echo "" >> $(VERSIONFILE)
 	@echo "  // baseImage -- " >> $(VERSIONFILE)
 	@echo "  baseImage = \"$(BASE_IMAGE)\"" >> $(VERSIONFILE)
+	@echo "" >> $(VERSIONFILE)
+	@echo "  // baseImageJdk -- " >> $(VERSIONFILE)
+	@echo "  baseImageJdk = \"$(BASE_IMAGE_JDK)\"" >> $(VERSIONFILE)
 	@echo "" >> $(VERSIONFILE)
 	@echo "  // LocalRepository -- " >> $(VERSIONFILE)
 	@echo "  LocalRepository = \"$(LOCAL_REPOSITORY)\"" >> $(VERSIONFILE)

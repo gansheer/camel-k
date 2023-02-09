@@ -27,6 +27,7 @@ import (
 	v1 "github.com/apache/camel-k/pkg/apis/camel/v1"
 	traitv1 "github.com/apache/camel-k/pkg/apis/camel/v1/trait"
 	"github.com/apache/camel-k/pkg/builder"
+	"github.com/apache/camel-k/pkg/util/kubernetes"
 	mvn "github.com/apache/camel-k/pkg/util/maven"
 	"github.com/apache/camel-k/pkg/util/property"
 )
@@ -74,6 +75,18 @@ func (t *builderTrait) Apply(e *Environment) error {
 
 	e.BuildTasks = append(e.BuildTasks, v1.Task{Builder: builderTask})
 
+	// TODO gansheer : extract valid base image
+	computedBaseImage := e.Platform.Status.Build.BaseImage
+	sources, err := kubernetes.ResolveIntegrationSources(e.Ctx, e.Client, e.Integration, e.Resources)
+	if err != nil {
+		return err
+	}
+	for _, s := range sources {
+		if s.InferLanguage() == v1.LanguageJavaSource {
+			computedBaseImage = e.Platform.Status.Build.BaseImageJdk
+		}
+	}
+
 	switch e.Platform.Status.Build.PublishStrategy {
 	case v1.IntegrationPlatformBuildPublishStrategySpectrum:
 		e.BuildTasks = append(e.BuildTasks, v1.Task{Spectrum: &v1.SpectrumTask{
@@ -81,7 +94,7 @@ func (t *builderTrait) Apply(e *Environment) error {
 				Name: "spectrum",
 			},
 			PublishTask: v1.PublishTask{
-				BaseImage: e.Platform.Status.Build.BaseImage,
+				BaseImage: computedBaseImage,
 				Image:     getImageName(e),
 				Registry:  e.Platform.Status.Build.Registry,
 			},
@@ -161,11 +174,23 @@ func (t *builderTrait) builderTask(e *Environment) (*v1.BuilderTask, error) {
 		maven.Repositories = append(maven.Repositories, mvn.NewRepository(repo))
 	}
 
+	// TODO gansheer : extract valid base image
+	computedBaseImage := e.Platform.Status.Build.BaseImage
+	sources, err := kubernetes.ResolveIntegrationSources(e.Ctx, e.Client, e.Integration, e.Resources)
+	if err != nil {
+		return nil, err
+	}
+	for _, s := range sources {
+		if s.InferLanguage() == v1.LanguageJavaSource {
+			computedBaseImage = e.Platform.Status.Build.BaseImageJdk
+		}
+	}
+
 	task := &v1.BuilderTask{
 		BaseTask: v1.BaseTask{
 			Name: "builder",
 		},
-		BaseImage:    e.Platform.Status.Build.BaseImage,
+		BaseImage:    computedBaseImage,
 		Runtime:      e.CamelCatalog.Runtime,
 		Dependencies: e.IntegrationKit.Spec.Dependencies,
 		Maven:        maven,
