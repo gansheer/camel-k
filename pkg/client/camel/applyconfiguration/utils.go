@@ -116,6 +116,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &camelv1.IntegrationSpecApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("IntegrationStatus"):
 		return &camelv1.IntegrationStatusApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("JibTask"):
+		return &camelv1.JibTaskApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("KanikoTask"):
 		return &camelv1.KanikoTaskApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("KanikoTaskCache"):

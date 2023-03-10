@@ -19,6 +19,7 @@ package builder
 
 import (
 	"context"
+	"errors"
 
 	v1 "github.com/apache/camel-k/pkg/apis/camel/v1"
 	"github.com/apache/camel-k/pkg/client"
@@ -28,13 +29,13 @@ import (
 type jibTask struct {
 	c     client.Client
 	build *v1.Build
-	task  *v1.SpectrumTask
+	task  *v1.JibTask
 }
 
 var _ Task = &jibTask{}
 
 func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 	status := v1.BuildStatus{}
-	log.Infof("Doing things with jib")
+	log.Errorf(errors.New("Jib error from gfournie"), "Doing nothing in Jib sorry")
 	return status
 }

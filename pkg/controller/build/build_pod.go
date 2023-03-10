@@ -159,6 +159,8 @@ func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.P
 			addBuildTaskToPod(build, task.S2i.Name, pod)
 		case task.Spectrum != nil:
 			addBuildTaskToPod(build, task.Spectrum.Name, pod)
+		case task.Jib != nil:
+			addBuildTaskToPod(build, task.Jib.Name, pod)
 		}
 	}
 
