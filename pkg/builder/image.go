@@ -47,6 +47,7 @@ type imageSteps struct {
 	NativeImageContext      Step
 	StandardImageContext    Step
 	ExecutableDockerfile    Step
+	ExecutableMavenCommand  Step
 	JvmDockerfile           Step
 }
 
@@ -55,6 +56,7 @@ var Image = imageSteps{
 	NativeImageContext:      NewStep(ApplicationPackagePhase, nativeImageContext),
 	StandardImageContext:    NewStep(ApplicationPackagePhase, standardImageContext),
 	ExecutableDockerfile:    NewStep(ApplicationPackagePhase+1, executableDockerfile),
+	ExecutableMavenCommand:  NewStep(ApplicationPackagePhase+1, executableMavenCommand),
 	JvmDockerfile:           NewStep(ApplicationPackagePhase+1, jvmDockerfile),
 }
 
@@ -88,6 +90,41 @@ func executableDockerfile(ctx *builderContext) error {
 	`)
 
 	err := os.WriteFile(filepath.Join(ctx.Path, ContextDir, "Dockerfile"), dockerfile, 0o400)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func executableMavenCommand(ctx *builderContext) error {
+	// #nosec G202
+	// Need to pass to the publish
+	//ctx.Maven.TrustStoreName
+	//ctx.Maven.TrustStorePass
+	//ctx.Maven.GlobalSettings
+	//ctx.Maven.SettingsSecurity
+	//ctx.Maven.UserSettings
+
+	ctx_Maven_TrustStoreName := []byte(ctx.Maven.TrustStoreName)
+	err := ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStoreName"), ctx_Maven_TrustStoreName, 0o400)
+	if err != nil {
+		return err
+	}
+	ctx_Maven_TrustStorePass := []byte(ctx.Maven.TrustStorePass)
+	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStorePass"), ctx_Maven_TrustStorePass, 0o400)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_GlobalSettings"), ctx.Maven.GlobalSettings, 0o400)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_SettingsSecurity"), ctx.Maven.SettingsSecurity, 0o400)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_UserSettings"), ctx.Maven.UserSettings, 0o400)
 	if err != nil {
 		return err
 	}

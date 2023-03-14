@@ -19,6 +19,7 @@ package builder
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -29,7 +30,9 @@ import (
 	v1 "github.com/apache/camel-k/pkg/apis/camel/v1"
 	"github.com/apache/camel-k/pkg/client"
 	"github.com/apache/camel-k/pkg/util"
+	"github.com/apache/camel-k/pkg/util/defaults"
 	"github.com/apache/camel-k/pkg/util/log"
+	"github.com/apache/camel-k/pkg/util/maven"
 )
 
 type jibTask struct {
@@ -48,6 +51,17 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		baseImage = t.task.BaseImage
 		status.BaseImage = baseImage
 	}
+
+	mavenConfig := t.task.Maven
+	p := maven.NewProjectWithGAV("org.apache.camel.k.integration", "camel-k-integration", defaults.Version)
+	p.DependencyManagement = &maven.DependencyManagement{Dependencies: make([]maven.Dependency, 0)}
+	p.Dependencies = make([]maven.Dependency, 0)
+	p.Build = &maven.Build{Plugins: make([]maven.Plugin, 0)}
+	// TODO add the plugin, it is enougth
+
+	// FIXME : remove this code later
+	mavenJson, _ := json.Marshal(mavenConfig)
+	log.Errorf(errors.New("Jib error from gfournie"), "Maven: %s", string(mavenJson))
 
 	contextDir := t.task.ContextDir
 	if contextDir == "" {
@@ -80,21 +94,9 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 
 	pullInsecure := t.task.Registry.Insecure // incremental build case
 
-	errRead := filepath.Walk(contextDir, func(path string, info os.FileInfo, errRead error) error {
-		if errRead != nil {
-			log.Errorf(errRead, "Jib error from gfournie")
-			return errRead
-		}
-		msg := "dir: " + strconv.FormatBool(info.IsDir()) + ": name: " + path + "\n"
-		log.Errorf(errors.New("Jib error from gfournie"), msg)
-
-		return nil
-	})
-	if errRead != nil {
-		log.Errorf(errRead, "Jib error from gfournie")
-	}
-
-	log.Errorf(errRead, "Jib error from gfournie > displaying file")
+	log.Errorf(errors.New("Jib error from gfournie"), "Jib error from gfournie > listing folder")
+	errRead := listFolder(contextDir)
+	log.Errorf(errRead, "Jib error from gfournie > displaying listing file")
 	displayFile(contextDir + "/../maven/pom.xml")
 	log.Errorf(errRead, "Jib error from gfournie > finished file")
 
@@ -124,6 +126,26 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		}
 	}
 
+	mc := maven.NewContext(contextDir)
+
+	//mc.GlobalSettings = mavenConfig.Settings
+	//mc.UserSettings = mavenConfig.User
+	//mc.SettingsSecurity = mavenConfig.SettingsSecurity
+	mc.LocalRepository = mavenConfig.LocalRepository
+	mc.AdditionalArguments = mavenConfig.CLIOptions
+
+	//if ctx.Maven.TrustStoreName != "" {
+	//	mc.ExtraMavenOpts = append(mc.ExtraMavenOpts,
+	//		"-Djavax.net.ssl.trustStore="+filepath.Join(ctx.Path, ctx.Maven.TrustStoreName),
+	//		"-Djavax.net.ssl.trustStorePassword="+ctx.Maven.TrustStorePass,
+	//	)
+	//}
+
+	// Run the Maven goal
+	//if err := maven.Project.Command(mc).Do(ctx); err != nil {
+	//	return errors.Wrap(err, "failure while generating image")
+	//}
+
 	log.Errorf(errors.New("Jib error from gfournie"), "Doing nothing in Jib sorry")
 	return status
 }
@@ -142,4 +164,21 @@ func displayFile(filePath string) {
 	b, err := ioutil.ReadAll(file)
 	//fmt.Print(b)
 	log.Errorf(errors.New("Jib error from gfournie > this is the file"), string(b[:]))
+}
+
+func listFolder(filePath string) error {
+	errRead := filepath.Walk(filePath, func(path string, info os.FileInfo, errRead error) error {
+		if errRead != nil {
+			log.Errorf(errRead, "Jib error from gfournie")
+			return errRead
+		}
+		msg := "dir: " + strconv.FormatBool(info.IsDir()) + ": name: " + path + "\n"
+		log.Errorf(errors.New("Jib error from gfournie"), msg)
+
+		return nil
+	})
+	if errRead != nil {
+		log.Errorf(errRead, "Jib error from gfournie")
+	}
+	return errRead
 }

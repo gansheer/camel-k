@@ -105,6 +105,7 @@ func (t *builderTrait) Apply(e *Environment) error {
 				Image:     getImageName(e),
 				Registry:  e.Platform.Status.Build.Registry,
 			},
+			Maven: builderTask.Maven,
 		}})
 
 	case v1.IntegrationPlatformBuildPublishStrategyBuildah:

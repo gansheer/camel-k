@@ -157,6 +157,7 @@ type S2iTask struct {
 type JibTask struct {
 	BaseTask    `json:",inline"`
 	PublishTask `json:",inline"`
+	Maven       MavenBuildSpec `json:"maven,omitempty"`
 }
 
 // BuildStatus defines the observed state of Build
