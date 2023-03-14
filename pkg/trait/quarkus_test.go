@@ -44,7 +44,7 @@ func TestConfigureQuarkusTraitBuildSubmitted(t *testing.T) {
 	build := getBuilderTask(environment.BuildTasks)
 	assert.NotNil(t, t, build)
 
-	assert.Len(t, build.Steps, len(builder.Quarkus.CommonSteps)+3)
+	assert.Len(t, build.Steps, len(builder.Quarkus.CommonSteps)+4)
 }
 
 func TestConfigureDisabledQuarkusTraitShouldFail(t *testing.T) {

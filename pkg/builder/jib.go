@@ -98,6 +98,12 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 	errRead := listFolder(contextDir)
 	log.Errorf(errRead, "Jib error from gfournie > displaying listing file")
 	displayFile(contextDir + "/../maven/pom.xml")
+	displayFile(contextDir + "/ctx_Maven_GlobalSettings")
+	displayFile(contextDir + "/ctx_Maven_SettingsSecurity")
+	displayFile(contextDir + "/ctx_Maven_TrustStoreName")
+	displayFile(contextDir + "/ctx_Maven_TrustStorePass")
+	displayFile(contextDir + "/ctx_Maven_UserSettings")
+
 	log.Errorf(errRead, "Jib error from gfournie > finished file")
 
 	log.Debugf("Registry address: %s", t.task.Registry.Address)
@@ -163,7 +169,7 @@ func displayFile(filePath string) {
 
 	b, err := ioutil.ReadAll(file)
 	//fmt.Print(b)
-	log.Errorf(errors.New("Jib error from gfournie > this is the file"), string(b[:]))
+	log.Errorf(errors.New("Jib error from gfournie > this is the file "+filePath), string(b[:]))
 }
 
 func listFolder(filePath string) error {
