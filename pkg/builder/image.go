@@ -107,24 +107,24 @@ func executableMavenCommand(ctx *builderContext) error {
 	//ctx.Maven.UserSettings
 
 	ctx_Maven_TrustStoreName := []byte(ctx.Maven.TrustStoreName)
-	err := ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStoreName"), ctx_Maven_TrustStoreName, 0o400)
+	err := os.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStoreName"), ctx_Maven_TrustStoreName, 0o400)
 	if err != nil {
 		return err
 	}
 	ctx_Maven_TrustStorePass := []byte(ctx.Maven.TrustStorePass)
-	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStorePass"), ctx_Maven_TrustStorePass, 0o400)
+	err = os.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_TrustStorePass"), ctx_Maven_TrustStorePass, 0o400)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_GlobalSettings"), ctx.Maven.GlobalSettings, 0o400)
+	err = os.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_GlobalSettings"), ctx.Maven.GlobalSettings, 0o400)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_SettingsSecurity"), ctx.Maven.SettingsSecurity, 0o400)
+	err = os.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_SettingsSecurity"), ctx.Maven.SettingsSecurity, 0o400)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_UserSettings"), ctx.Maven.UserSettings, 0o400)
+	err = os.WriteFile(filepath.Join(ctx.Path, ContextDir, "ctx_Maven_UserSettings"), ctx.Maven.UserSettings, 0o400)
 	if err != nil {
 		return err
 	}
