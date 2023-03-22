@@ -58,42 +58,10 @@ func (c *Command) Do(ctx context.Context) error {
 		mvnCmd = c
 	}
 
-	args := make([]string, 0)
-	args = append(args, c.context.AdditionalArguments...)
-
-	if c.context.LocalRepository != "" {
-		if _, err := os.Stat(c.context.LocalRepository); err == nil {
-			args = append(args, "-Dmaven.repo.local="+c.context.LocalRepository)
-		}
-	}
-
-	settingsPath := filepath.Join(c.context.Path, "settings.xml")
-	if settingsExists, err := util.FileExists(settingsPath); err != nil {
+	// Generate Maven Arguments from the command context
+	args, err := c.GenerateArgs()
+	if err != nil {
 		return err
-	} else if settingsExists {
-		args = append(args, "--global-settings", settingsPath)
-	}
-
-	settingsPath = filepath.Join(c.context.Path, "user-settings.xml")
-	if settingsExists, err := util.FileExists(settingsPath); err != nil {
-		return err
-	} else if settingsExists {
-		args = append(args, "--settings", settingsPath)
-	}
-
-	settingsSecurityPath := filepath.Join(c.context.Path, "settings-security.xml")
-	if settingsSecurityExists, err := util.FileExists(settingsSecurityPath); err != nil {
-		return err
-	} else if settingsSecurityExists {
-		args = append(args, "-Dsettings.security="+settingsSecurityPath)
-	}
-
-	if !util.StringContainsPrefix(c.context.AdditionalArguments, "-Dmaven.artifact.threads") {
-		args = append(args, "-Dmaven.artifact.threads="+strconv.Itoa(runtime.GOMAXPROCS(0)))
-	}
-
-	if !util.StringSliceExists(c.context.AdditionalArguments, "-T") {
-		args = append(args, "-T", strconv.Itoa(runtime.GOMAXPROCS(0)))
 	}
 
 	cmd := exec.CommandContext(ctx, mvnCmd, args...)
@@ -280,4 +248,46 @@ func ParseGAV(gav string) (Dependency, error) {
 	}
 
 	return dep, nil
+}
+
+// TODO gansheer : write in a MAVEN_ARGS file (https://maven.apache.org/configure.html#maven_opts-environment-variable)
+func (c *Command) GenerateArgs() ([]string, error) {
+	args := make([]string, 0)
+	args = append(args, c.context.AdditionalArguments...)
+
+	if c.context.LocalRepository != "" {
+		if _, err := os.Stat(c.context.LocalRepository); err == nil {
+			args = append(args, "-Dmaven.repo.local="+c.context.LocalRepository)
+		}
+	}
+
+	settingsPath := filepath.Join(c.context.Path, "settings.xml")
+	if settingsExists, err := util.FileExists(settingsPath); err != nil {
+		return nil, err
+	} else if settingsExists {
+		args = append(args, "--global-settings", settingsPath)
+	}
+
+	settingsPath = filepath.Join(c.context.Path, "user-settings.xml")
+	if settingsExists, err := util.FileExists(settingsPath); err != nil {
+		return nil, err
+	} else if settingsExists {
+		args = append(args, "--settings", settingsPath)
+	}
+
+	settingsSecurityPath := filepath.Join(c.context.Path, "settings-security.xml")
+	if settingsSecurityExists, err := util.FileExists(settingsSecurityPath); err != nil {
+		return nil, err
+	} else if settingsSecurityExists {
+		args = append(args, "-Dsettings.security="+settingsSecurityPath)
+	}
+
+	if !util.StringContainsPrefix(c.context.AdditionalArguments, "-Dmaven.artifact.threads") {
+		args = append(args, "-Dmaven.artifact.threads="+strconv.Itoa(runtime.GOMAXPROCS(0)))
+	}
+
+	if !util.StringSliceExists(c.context.AdditionalArguments, "-T") {
+		args = append(args, "-T", strconv.Itoa(runtime.GOMAXPROCS(0)))
+	}
+	return args, nil
 }
