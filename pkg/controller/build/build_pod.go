@@ -159,6 +159,8 @@ func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.P
 			addBuildTaskToPod(build, task.S2i.Name, pod)
 		case task.Spectrum != nil:
 			addBuildTaskToPod(build, task.Spectrum.Name, pod)
+		case task.Jib != nil:
+			addBuildTaskToPod(build, task.Jib.Name, pod)
 		}
 	}
 
@@ -235,7 +237,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.Spec.ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",

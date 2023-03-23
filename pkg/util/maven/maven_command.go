@@ -143,6 +143,27 @@ func (c *Command) Do(ctx context.Context) error {
 
 	Log.WithValues("MAVEN_OPTS", mavenOptions).Infof("executing: %s", strings.Join(cmd.Args, " "))
 
+	// generate maven file
+	if err := generateMavenContext(c.context, cmd.Args); err != nil {
+		return err
+	}
+	// check file existence
+	Log.Info("Check if file MAVEN_CONTEXT exists")
+	fileExists, err := util.FileExists(filepath.Join(c.context.Path, "MAVEN_CONTEXT"))
+	if err != nil {
+		return err
+	}
+	if !fileExists {
+		Log.Info("File " + filepath.Join(c.context.Path, "MAVEN_CONTEXT") + " file does not exist")
+	}
+	// check file content
+	Log.Info("Check if file MAVEN_CONTEXT have content")
+	mavenContextContent2, err := util.ReadFile(filepath.Join(c.context.Path, "MAVEN_CONTEXT"))
+	if err != nil {
+		return err
+	}
+	Log.Info("File MAVEN_CONTEXT content is " + string(mavenContextContent2))
+
 	return util.RunAndLog(ctx, cmd, mavenLogHandler, mavenLogHandler)
 }
 
@@ -238,6 +259,12 @@ func generateProjectStructure(context Context, project Project) error {
 	}
 
 	return nil
+}
+
+// Create a MAVEN_CONTEXT file containing all arguments for a maven command
+func generateMavenContext(context Context, args []string) error {
+	Log.Infof("write %s containing this bidule : %s", filepath.Join(context.Path, "MAVEN_CONTEXT"), strings.Join(args, " "))
+	return util.WriteToFile(filepath.Join(context.Path, "MAVEN_CONTEXT"), strings.Join(args, " "))
 }
 
 // We expect a maven wrapper under /usr/share/maven/mvnw.

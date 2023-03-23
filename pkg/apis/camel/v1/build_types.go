@@ -57,6 +57,8 @@ type Task struct {
 	Spectrum *SpectrumTask `json:"spectrum,omitempty"`
 	// a S2iTask, for S2I strategy
 	S2i *S2iTask `json:"s2i,omitempty"`
+	// a JibTask, for Jib strategy
+	Jib *JibTask `json:"jib,omitempty"`
 }
 
 // BaseTask is a base for the struct hierarchy
@@ -151,6 +153,12 @@ type S2iTask struct {
 	ContextDir string `json:"contextDir,omitempty"`
 	// used by the ImageStream
 	Tag string `json:"tag,omitempty"`
+}
+
+// JibTask is used to configure Jib
+type JibTask struct {
+	BaseTask    `json:",inline"`
+	PublishTask `json:",inline"`
 }
 
 // BuildStatus defines the observed state of Build
