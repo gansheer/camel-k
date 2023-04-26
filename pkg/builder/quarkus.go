@@ -192,6 +192,8 @@ func GenerateQuarkusProjectCommon(runtimeVersion string, quarkusVersion string, 
 	configuration := v1.PluginProperties{}
 	configuration.AddProperties("properties", buildProperties)
 
+	jibConfiguration := v1.PluginConfiguration{}
+
 	// Plugins
 	p.Build.Plugins = append(p.Build.Plugins,
 		maven.Plugin{
@@ -205,6 +207,19 @@ func GenerateQuarkusProjectCommon(runtimeVersion string, quarkusVersion string, 
 						"build",
 					},
 					Configuration: configuration,
+				},
+			},
+		},
+		maven.Plugin{
+			GroupID:       "com.google.cloud.tools",
+			ArtifactID:    "jib-maven-plugin",
+			Version:       "3.3.1",
+			Configuration: jibConfiguration,
+			Dependencies: []maven.Dependency{
+				{
+					GroupID:    "com.google.cloud.tools",
+					ArtifactID: "jib-layer-filter-extension-maven",
+					Version:    "0.3.0",
 				},
 			},
 		},

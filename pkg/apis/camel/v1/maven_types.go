@@ -103,3 +103,4 @@ type StringOrProperties struct {
 
 type Properties map[string]string
 type PluginProperties map[string]StringOrProperties
+type PluginConfiguration map[string]any
