@@ -113,6 +113,14 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 	log.Infof("Registry address: %s", t.task.Registry.Address)
 	log.Infof("Base image: %s", baseImage)
 
+	log.Info("Jib start from gfournie > displaying file maven pom")
+	mavenPom, errPom := readFile(mavenDir + "/pom.xml")
+	if errPom != nil {
+		return status.Failed(errPom)
+	}
+	log.Info(string(mavenPom))
+	log.Info("Jib end from gfournie > finished file maven pom")
+
 	log.Info("Jib start from gfournie > displaying file MAVEN_CONTEXT")
 	mavenCommand, err := readFile(mavenDir + "/MAVEN_CONTEXT")
 	if err != nil {
@@ -127,6 +135,9 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 	// trying
 	mavenCommandStr := string(mavenCommand)
 	mavenCommandStr = strings.ReplaceAll(mavenCommandStr, "./mvnw", "")
+	mavenCommandStr = strings.ReplaceAll(mavenCommandStr, "package", "jib:build")
+	mavenCommandStr += " -Djib.to.image=" + t.task.Image
+	mavenCommandStr += " -Djib.from.image=" + baseImage
 	mavenCommandStr = strings.Trim(mavenCommandStr, " ")
 	mavenArgs := strings.Split(mavenCommandStr, " ")
 	log.Info("|" + mavenCommandStr + "|")
@@ -149,6 +160,17 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		return status.Failed(myerror)
 	} else {
 		log.Info("everything went so well T_T")
+		status.Image = t.task.Image
+
+		// retrieve image digest
+		log.Info("Jib start from gfournie > displaying file jib image digest")
+		mavenDigest, errDigest := readFile(mavenDir + "/target/jib-image.digest")
+		if errDigest != nil {
+			return status.Failed(errDigest)
+		}
+		log.Info(string(mavenDigest))
+		status.Digest = string(mavenDigest)
+		log.Info("Jib end from gfournie > finished file jib image digest")
 	}
 
 	return status
