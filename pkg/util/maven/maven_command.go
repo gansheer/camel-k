@@ -42,6 +42,7 @@ type Command struct {
 }
 
 func (c *Command) Do(ctx context.Context) error {
+	Log.Info("[S2I] ***************** Lets add some logsssss ************************")
 	if err := generateProjectStructure(c.context, c.project); err != nil {
 		return err
 	}
@@ -52,15 +53,41 @@ func (c *Command) Do(ctx context.Context) error {
 		return err
 	}
 
+	// What what what
+	if err := c.wtfIsHappening(ctx); err != nil {
+		return err
+	}
+
 	mvnCmd := "./mvnw"
 	if c, ok := os.LookupEnv("MAVEN_CMD"); ok {
 		mvnCmd = c
 	}
 
+	Log.Info("[S2I] Where is mvnw: " + c.context.Path + "/mvnw")
+	infosMvnCmd, _ := os.Stat(c.context.Path + "/mvnw")
+	Log.Info("[ERROR] MVN S2I ***************** File " + c.context.Path + "/mvnw" + " - " + infosMvnCmd.Name() +
+		" is dir or not: " + strconv.FormatBool(infosMvnCmd.IsDir()) +
+		" Permissions " + infosMvnCmd.Mode().Perm().String())
+
+	Log.Info("[S2I] Where is .mvnw: " + c.context.Path + "/.mvn")
+	infosMvnCmd, _ = os.Stat(c.context.Path + "/.mvn")
+	Log.Info("[ERROR] MVN S2I ***************** File " + c.context.Path + "/.mvn" + " - " + infosMvnCmd.Name() +
+		" is dir or not: " + strconv.FormatBool(infosMvnCmd.IsDir()) +
+		" Permissions " + infosMvnCmd.Mode().Perm().String())
+
 	args := make([]string, 0)
 	args = append(args, c.context.AdditionalArguments...)
 
+	infosContext, _ := os.Stat(c.context.Path)
+	Log.Info("[ERROR] S2I ***************** File " + c.context.Path + " - " + infosContext.Name() +
+		" is dir or not: " + strconv.FormatBool(infosContext.IsDir()) +
+		" Permissions " + infosContext.Mode().Perm().String())
+
 	if c.context.LocalRepository != "" {
+		infos, _ := os.Stat(c.context.LocalRepository)
+		Log.Info("[ERROR] S2I ***************** File " + c.context.LocalRepository + " - " + infos.Name() +
+			" is dir or not: " + strconv.FormatBool(infos.IsDir()) +
+			" Permissions " + infos.Mode().Perm().String())
 		if _, err := os.Stat(c.context.LocalRepository); err == nil {
 			args = append(args, "-Dmaven.repo.local="+c.context.LocalRepository)
 		}
@@ -70,6 +97,10 @@ func (c *Command) Do(ctx context.Context) error {
 	if settingsExists, err := util.FileExists(settingsPath); err != nil {
 		return err
 	} else if settingsExists {
+		infosSettings, _ := os.Stat(settingsPath)
+		Log.Info("[ERROR] ***************** File settings" + infosSettings.Name() +
+			" is dir or not: " + strconv.FormatBool(infosSettings.IsDir()) +
+			"Permissions " + infosSettings.Mode().Perm().String())
 		args = append(args, "--global-settings", settingsPath)
 	}
 
@@ -242,6 +273,12 @@ func generateProjectStructure(context Context, project Project) error {
 // We expect a maven wrapper under /usr/share/maven/mvnw.
 func (c *Command) prepareMavenWrapper(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "cp", "--recursive", "/usr/share/maven/mvnw/.", ".")
+	cmd.Dir = c.context.Path
+	return util.RunAndLog(ctx, cmd, mavenLogHandler, mavenLogHandler)
+}
+
+func (c *Command) wtfIsHappening(ctx context.Context) error {
+	cmd := exec.CommandContext(ctx, "ls", "-al", "/etc/maven/m2")
 	cmd.Dir = c.context.Path
 	return util.RunAndLog(ctx, cmd, mavenLogHandler, mavenLogHandler)
 }

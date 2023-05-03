@@ -270,10 +270,16 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 		)
 	}
 
+	var envVars []corev1.EnvVar = proxyFromEnvironment()
+	envVars = append(envVars, corev1.EnvVar{
+		Name:  "HOME",
+		Value: filepath.Join(builderDir, build.Name),
+	})
+
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.Spec.ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",
@@ -285,7 +291,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 			taskName,
 		},
 		WorkingDir: filepath.Join(builderDir, build.Name),
-		Env:        proxyFromEnvironment(),
+		Env:        envVars,
 	}
 
 	configureResources(build, &container)
@@ -504,7 +510,7 @@ func addKanikoTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, tas
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Args:            args,
 		Env:             env,
 		WorkingDir:      filepath.Join(builderDir, build.Name, builder.ContextDir),
@@ -542,6 +548,12 @@ func addContainerToPod(build *v1.Build, container corev1.Container, pod *corev1.
 			Name:      defaults.DefaultPVC,
 			MountPath: defaults.LocalRepository,
 		})
+	}
+	// TODO gansheer experiments
+	var ugfid int64 = 1000
+	container.SecurityContext = &corev1.SecurityContext{
+		RunAsUser:  &ugfid,
+		RunAsGroup: &ugfid,
 	}
 
 	pod.Spec.InitContainers = append(pod.Spec.InitContainers, container)

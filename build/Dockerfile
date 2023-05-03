@@ -38,7 +38,19 @@ ENV MAVEN_USER_HOME="${MAVEN_HOME}"
 RUN ${MVNW_DIR}mvnw --version | grep "Maven home:" | sed 's/Maven home: //' >> ${MVNW_DIR}default \
     && cp -r /usr/share/maven/lib/. $(cat ${MVNW_DIR}default)/lib \
     && rm $(cat ${MVNW_DIR}default)/lib/maven-slf4j-provider*
+
+RUN echo "${MVNW_DIR}default"
+RUN echo "${MVNW_DIR}default/lib"
+
+RUN ls /usr/share/maven
+RUN ls /usr/share/maven/*
+RUN ls /usr/share/maven/*/*
+
 ENV MAVEN_OPTS="${MAVEN_OPTS} -Dlogback.configurationFile=${MAVEN_HOME}/conf/logback.xml"
+
+RUN echo "${MAVEN_OPTS}"
+RUN ls /usr/share/maven/mvnw/.mvn/wrapper/
+RUN cat /usr/share/maven/mvnw/.mvn/wrapper/*.properties
 
 ADD build/_maven_output /tmp/local/m2
 ADD build/_kamelets /kamelets

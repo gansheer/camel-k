@@ -437,7 +437,7 @@ ifneq (,$(findstring SNAPSHOT,$(RUNTIME_VERSION)))
 endif
 	@echo "####### Building Camel K operator container image..."
 	mkdir -p build/_maven_output
-	docker build -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION) -f build/Dockerfile .
+	docker build --no-cache --progress=plain -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION) -f build/Dockerfile .
 
 images-arch: build kamel-overlay maven-overlay bundle-kamelets
 ifneq (,$(findstring SNAPSHOT,$(RUNTIME_VERSION)))
