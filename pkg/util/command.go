@@ -24,10 +24,10 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
+// TODO gansheer check again
 // RunAndLog starts the provided command, scans its standard and error outputs line by line,
 // to feed the provided handlers, and waits until the scans complete and the command returns.
 func RunAndLog(ctx context.Context, cmd *exec.Cmd, stdOutF func(string) string, stdErrF func(string) string) error {
@@ -49,7 +49,7 @@ func RunAndLog(ctx context.Context, cmd *exec.Cmd, stdOutF func(string) string, 
 		scanOutMsg = scan(stdOut, stdOutF)
 		scanErrMsg = scan(stdErr, stdErrF)
 
-		return errors.Wrapf(err, formatErr(scanOutMsg, scanErrMsg))
+		return fmt.Errorf(formatErr(scanOutMsg, scanErrMsg)+": %w", err)
 	}
 	g, _ := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -61,10 +61,10 @@ func RunAndLog(ctx context.Context, cmd *exec.Cmd, stdOutF func(string) string, 
 		return nil
 	})
 	if err = g.Wait(); err != nil {
-		return errors.Wrapf(err, formatErr(scanOutMsg, scanErrMsg))
+		return fmt.Errorf(formatErr(scanOutMsg, scanErrMsg)+": %w", err)
 	}
 	if err = cmd.Wait(); err != nil {
-		return errors.Wrapf(err, formatErr(scanOutMsg, scanErrMsg))
+		return fmt.Errorf(formatErr(scanOutMsg, scanErrMsg)+": %w", err)
 	}
 
 	return nil
