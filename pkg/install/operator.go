@@ -122,12 +122,6 @@ func OperatorOrCollect(ctx context.Context, cmd *cobra.Command, c client.Client,
 						d.Spec.Template.Spec.Containers[0].VolumeMounts = make([]corev1.VolumeMount, 0, 1)
 					}
 					d.Spec.Template.Spec.Containers[0].VolumeMounts = append(d.Spec.Template.Spec.Containers[0].VolumeMounts, vm)
-					// TODO experiments
-					var ugfid int64 = 0
-					d.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
-						FSGroup: &ugfid,
-					}
-
 				}
 			}
 		}

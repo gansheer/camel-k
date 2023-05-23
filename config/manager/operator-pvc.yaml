@@ -23,7 +23,7 @@ metadata:
     app: "camel-k"
 spec:
   accessModes:
-  - ReadWriteMany
+  - ReadWriteOnce
   resources:
     requests:
       storage: 20Gi

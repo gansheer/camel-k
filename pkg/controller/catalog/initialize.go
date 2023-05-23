@@ -126,7 +126,7 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 			ENV MAVEN_HOME="/usr/share/maven"
 			USER 0
 			RUN mkdir --chown=nonroot:root /builder
-			USER 1001
+			USER 1000
 		`))
 	*/
 
