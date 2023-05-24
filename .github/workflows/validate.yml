@@ -46,6 +46,5 @@ jobs:
         env:
           GOGC: 20
         with:
-          version: v1.47.3
-          only-new-issues: true
-          args: --verbose --deadline 15m --config .golangci.yml --exclude-use-default  
+          version: v1.52.2
+          args: --verbose --deadline 15m --config .golangci.yml
