@@ -48,4 +48,4 @@ jobs:
           GOGC: 20
         with:
           version: v1.47.3
-          args: --verbose --deadline 15m --config .golangci.yml --max-same-issues 0 --new true
+          args: --verbose --deadline 15m --config .golangci.yml --new true
