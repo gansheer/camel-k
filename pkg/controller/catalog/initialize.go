@@ -37,6 +37,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/client"
 	platformutil "github.com/apache/camel-k/v2/pkg/platform"
 	"github.com/apache/camel-k/v2/pkg/util"
+	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/log"
 	spectrum "github.com/container-tools/spectrum/pkg/builder"
 	gcrv1 "github.com/google/go-containerregistry/pkg/v1"
@@ -104,7 +105,8 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	Log.Infof("S2I container Registry is %s", ip.Status.Build.Registry.Address)
 	Log.Infof("S2I Tooling base image is %s", catalog.Spec.GetQuarkusToolingImage())
 	target := catalog.DeepCopy()
-	// TEMP remive registry to see what it does
+
+	// No registry in s2i
 	imageName := fmt.Sprintf(
 		"camel-k-runtime-%s-builder",
 		catalog.Spec.Runtime.Provider,
@@ -130,6 +132,7 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		`))
 	*/
 
+	// Dockfile
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
 		USER 1000
@@ -146,8 +149,20 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      imageName,
 			Namespace: ip.Namespace,
-			// TODO what to put ?
-			//Labels: t.build.Labels,
+			Labels: map[string]string{
+				kubernetes.CamelCreatorLabelKind:      v1.CamelCatalogKind,
+				kubernetes.CamelCreatorLabelName:      catalog.Name,
+				kubernetes.CamelCreatorLabelNamespace: catalog.Namespace,
+				kubernetes.CamelCreatorLabelVersion:   catalog.ResourceVersion,
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: catalog.APIVersion,
+					Kind:       catalog.Kind,
+					Name:       catalog.Name,
+					UID:        catalog.UID,
+				},
+			},
 		},
 		Spec: buildv1.BuildConfigSpec{
 			CommonSpec: buildv1.CommonSpec{
@@ -177,7 +192,22 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      bc.Name,
 			Namespace: bc.Namespace,
-			//Labels:    t.build.Labels,
+			Labels: map[string]string{
+				kubernetes.CamelCreatorLabelKind:      v1.CamelCatalogKind,
+				kubernetes.CamelCreatorLabelName:      catalog.Name,
+				kubernetes.CamelCreatorLabelNamespace: catalog.Namespace,
+				kubernetes.CamelCreatorLabelVersion:   catalog.ResourceVersion,
+				"camel.apache.org/runtime.version":    catalog.Spec.Runtime.Version,
+				"camel.apache.org/runtime.provider":   string(catalog.Spec.Runtime.Provider),
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: catalog.APIVersion,
+					Kind:       catalog.Kind,
+					Name:       catalog.Name,
+					UID:        catalog.UID,
+				},
+			},
 		},
 		// usefull ?
 		Spec: imagev1.ImageStreamSpec{
@@ -186,19 +216,6 @@ func initializeS2I(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 			},
 		},
 	}
-
-	// TODO set owner
-	/*references := []metav1.OwnerReference{
-		{
-			APIVersion:         e.Integration.APIVersion,
-			Kind:               e.Integration.Kind,
-			Name:               e.Integration.Name,
-			UID:                e.Integration.UID,
-			Controller:         &controller,
-			BlockOwnerDeletion: &blockOwnerDeletion,
-		},
-	}
-	*/
 
 	Log.Infof("Checking if Camel K builder container %s already exists...", imageName+":"+imageTag)
 	// check if image is not snapshot and does exists
