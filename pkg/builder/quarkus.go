@@ -28,6 +28,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util/camel"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
 	"github.com/apache/camel-k/v2/pkg/util/digest"
+	"github.com/apache/camel-k/v2/pkg/util/jib"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/maven"
 	corev1 "k8s.io/api/core/v1"
@@ -206,6 +207,7 @@ func GenerateQuarkusProjectCommon(runtimeVersion string, quarkusVersion string, 
 				},
 			},
 		},
+		jib.JibMavenPlugin(),
 	)
 
 	return p

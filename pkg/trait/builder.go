@@ -120,6 +120,18 @@ func (t *builderTrait) Apply(e *Environment) error {
 			},
 		}})
 
+	case v1.IntegrationPlatformBuildPublishStrategyJib:
+		pipelineTasks = append(pipelineTasks, v1.Task{Jib: &v1.JibTask{
+			BaseTask: v1.BaseTask{
+				Name: "jib",
+			},
+			PublishTask: v1.PublishTask{
+				BaseImage: e.Platform.Status.Build.BaseImage,
+				Image:     getImageName(e),
+				Registry:  e.Platform.Status.Build.Registry,
+			},
+		}})
+
 	case v1.IntegrationPlatformBuildPublishStrategyS2I:
 		pipelineTasks = append(pipelineTasks, v1.Task{S2i: &v1.S2iTask{
 			BaseTask: v1.BaseTask{
@@ -181,6 +193,7 @@ func (t *builderTrait) Apply(e *Environment) error {
 			ExecutorImage: executorImage,
 		}})
 	}
+
 	// add local pipeline tasks to env pipeline
 	e.Pipeline = append(e.Pipeline, pipelineTasks...)
 	return nil
