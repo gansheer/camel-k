@@ -207,7 +207,9 @@ func OperatorOrCollect(ctx context.Context, cmd *cobra.Command, c client.Client,
 			}
 			var ugfid int64 = 0
 			d.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
-				FSGroup: &ugfid,
+				FSGroup:    &ugfid,
+				RunAsGroup: &ugfid,
+				RunAsUser:  &ugfid,
 			}
 		}
 

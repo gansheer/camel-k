@@ -20,6 +20,9 @@ ARG MAVEN_HOME="/usr/share/maven"
 ARG MAVEN_DIST_URL="https://archive.apache.org/dist/maven/maven-3/${MAVEN_DEFAULT_VERSION}/binaries/apache-maven-${MAVEN_DEFAULT_VERSION}-bin.zip"
 ARG MVNW_DIR="/usr/share/maven/mvnw/"
 
+ARG JIB_CLI_VERSION=0.12.0
+ARG JIB_HOME="/opt/jib"
+
 USER 0
 
 # Maven configuration
@@ -39,6 +42,22 @@ RUN ${MVNW_DIR}/mvnw --version | grep "Maven home:" | sed 's/Maven home: //' >> 
     && cp -r /usr/share/maven/lib/. $(cat ${MVNW_DIR}default)/lib \
     && rm $(cat ${MVNW_DIR}default)/lib/maven-slf4j-provider*
 ENV MAVEN_OPTS="${MAVEN_OPTS} -Dlogback.configurationFile=${MAVEN_HOME}/conf/logback.xml"
+
+
+# Prepare the jib cli required in the Jib strategy
+RUN apt-get update && apt-get install -qqy --no-install-recommends \
+    ca-certificates \
+    curl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN set -xe \
+    && curl -sSL -o jib.zip https://github.com/GoogleContainerTools/jib/releases/download/v${JIB_CLI_VERSION}-cli/jib-jre-${JIB_CLI_VERSION}.zip \
+    && unzip jib.zip  \
+    && rm jib.zip \
+    && mv jib-${JIB_CLI_VERSION} ${JIB_HOME}
+RUN mkdir -p /google-cloud-tools-java/jib \
+    && echo "{\"disableUpdateCheck\":true,\"registryMirrors\":[]}" >> /google-cloud-tools-java/jib/config.json
 
 ADD build/_maven_output /tmp/local/m2
 ADD build/_kamelets /kamelets
