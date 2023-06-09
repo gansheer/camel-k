@@ -181,7 +181,20 @@ func initializeJib(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		catalog.Spec.Runtime.Provider,
 	)
 
-	err := jibBuildFile(ctx, catalog, jibBuildFileName)
+	root := os.TempDir()
+	jibContextDir, err := os.MkdirTemp(root, "jib-builder")
+	if err != nil {
+		target.Status.Phase = v1.CamelCatalogPhaseError
+		target.Status.SetErrorCondition(
+			v1.CamelCatalogConditionReady,
+			"Builder Image",
+			err,
+		)
+		return target, err
+	}
+	defer os.RemoveAll(jibContextDir)
+
+	err = jibBuildFile(ctx, catalog, jibContextDir, jibBuildFileName)
 	if err != nil {
 		target.Status.Phase = v1.CamelCatalogPhaseError
 		target.Status.SetErrorCondition(
@@ -194,14 +207,15 @@ func initializeJib(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	// TODO clean file after
 
 	jibCmd := "/opt/jib/bin/jib"
-	jibArgs := []string{"build", "--verbosity=info", "--target=" + imageName, "--allow-insecure-registries", "--build-file=/tmp/" + jibBuildFileName}
+	jibArgs := []string{"build", "--verbosity=info", "--target=" + imageName, "--allow-insecure-registries", "--build-file=" + filepath.Join(jibContextDir, jibBuildFileName)}
 
 	cmd := exec.CommandContext(ctx, jibCmd, jibArgs...)
 
-	cmd.Dir = "/"
+	cmd.Dir = jibContextDir
 
 	env := os.Environ()
-	env = append(env, "XDG_CONFIG_HOME=/")
+	env = append(env, "XDG_CONFIG_HOME="+jibContextDir)
+	env = append(env, "HOME="+jibContextDir)
 	cmd.Env = env
 
 	var loggerInfo = func(s string) string { log.Info(s); return "" }
@@ -615,7 +629,7 @@ func catalogReference(catalog *v1.CamelCatalog) *unstructured.Unstructured {
 	return owner
 }
 
-func jibBuildFile(ctx context.Context, catalog *v1.CamelCatalog, jibBuildFileName string) error {
+func jibBuildFile(ctx context.Context, catalog *v1.CamelCatalog, jibContextDir string, jibBuildFileName string) error {
 	// #nosec G202
 	jibBuildFile := []byte(`apiVersion: jib/v1alpha1
 kind: BuildFile
@@ -643,7 +657,8 @@ layers:
       dest: /usr/local/bin/kamel
 `)
 
-	err := os.WriteFile(filepath.Join("/tmp/", jibBuildFileName), jibBuildFile, 0o755)
+	log.Info(filepath.Join(jibContextDir, jibBuildFileName))
+	err := os.WriteFile(filepath.Join(jibContextDir, jibBuildFileName), jibBuildFile, 0o755)
 	if err != nil {
 		return err
 	}
