@@ -56,8 +56,6 @@ RUN set -xe \
     && unzip jib.zip  \
     && rm jib.zip \
     && mv jib-${JIB_CLI_VERSION} ${JIB_HOME}
-RUN mkdir -p /google-cloud-tools-java/jib \
-    && echo "{\"disableUpdateCheck\":true,\"registryMirrors\":[]}" >> /google-cloud-tools-java/jib/config.json
 
 ADD build/_maven_output /tmp/local/m2
 ADD build/_kamelets /kamelets

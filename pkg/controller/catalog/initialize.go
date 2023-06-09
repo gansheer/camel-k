@@ -204,10 +204,14 @@ func initializeJib(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		)
 		return target, err
 	}
-	// TODO clean file after
-
+	// TODO do filters with a little more ifs, manage registry credentials maybe ?
 	jibCmd := "/opt/jib/bin/jib"
-	jibArgs := []string{"build", "--verbosity=info", "--target=" + imageName, "--allow-insecure-registries", "--build-file=" + filepath.Join(jibContextDir, jibBuildFileName)}
+	jibArgs := []string{"build",
+		"--verbosity=info",
+		"--target=" + imageName,
+		"--allow-insecure-registries",
+		"--build-file=" + filepath.Join(jibContextDir, jibBuildFileName),
+		"--image-metadata-out=" + filepath.Join(jibContextDir, "jibimage.json")}
 
 	cmd := exec.CommandContext(ctx, jibCmd, jibArgs...)
 

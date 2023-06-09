@@ -86,8 +86,9 @@ func (t *spectrumTask) Do(ctx context.Context) v1.BuildStatus {
 
 	pullInsecure := t.task.Registry.Insecure // incremental build case
 
-	log.Debugf("Registry address: %s", t.task.Registry.Address)
-	log.Debugf("Base image: %s", baseImage)
+	log.Infof("Registry address: %s", t.task.Registry.Address)
+	log.Infof("Registry secret: %s", t.task.Registry.Secret)
+	log.Infof("Base image: %s", baseImage)
 
 	if !strings.HasPrefix(baseImage, t.task.Registry.Address) {
 		if pullInsecure {
@@ -103,6 +104,7 @@ func (t *spectrumTask) Do(ctx context.Context) v1.BuildStatus {
 			return status.Failed(err)
 		}
 	}
+	log.Infof("Registry configdir: %s", registryConfigDir)
 
 	newStdR, newStdW, pipeErr := os.Pipe()
 	defer util.CloseQuietly(newStdW)

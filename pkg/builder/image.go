@@ -30,6 +30,7 @@ import (
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	"github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
+	"github.com/apache/camel-k/v2/pkg/util/log"
 )
 
 const (
@@ -48,6 +49,7 @@ type imageSteps struct {
 	StandardImageContext    Step
 	ExecutableDockerfile    Step
 	JvmDockerfile           Step
+	JibCliBuildfile         Step
 }
 
 var Image = imageSteps{
@@ -56,6 +58,7 @@ var Image = imageSteps{
 	StandardImageContext:    NewStep(ApplicationPackagePhase, standardImageContext),
 	ExecutableDockerfile:    NewStep(ApplicationPackagePhase+1, executableDockerfile),
 	JvmDockerfile:           NewStep(ApplicationPackagePhase+1, jvmDockerfile),
+	JibCliBuildfile:         NewStep(ApplicationPackagePhase+1, jibCliBuildfile),
 }
 
 type artifactsSelector func(ctx *builderContext) error
@@ -116,6 +119,32 @@ func jvmDockerfile(ctx *builderContext) error {
 		return err
 	}
 
+	return nil
+}
+
+func jibCliBuildfile(ctx *builderContext) error {
+	// #nosec G202
+	jibcliBuildFile := []byte(`apiVersion: jib/v1alpha1
+kind: BuildFile
+from:
+  image: ` + ctx.BaseImage + `
+  platforms:
+    - architecture: amd64
+      os: linux
+workingDirectory: ` + filepath.Join(ctx.Path, DeploymentDir) + `
+user: 1000
+layers:
+  entries:
+  - name: maven
+    files:
+    - src: ` + filepath.Join(ctx.Path, ContextDir) + `
+      dest: ` + filepath.Join(ctx.Path, DeploymentDir) + `
+`)
+	err := os.WriteFile(filepath.Join(ctx.Path, ContextDir, "jibclibuild.yaml"), jibcliBuildFile, 0o400)
+	if err != nil {
+		return err
+	}
+	log.Info(string(jibcliBuildFile))
 	return nil
 }
 

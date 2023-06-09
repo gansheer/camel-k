@@ -81,8 +81,8 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		status.Image = baseImage
 		return status
 	}
-	mavenDir := strings.ReplaceAll(contextDir, "context", "maven")
 
+	// TODO manage registry auth conf
 	pullInsecure := t.task.Registry.Insecure // incremental build case
 
 	if !strings.HasPrefix(baseImage, t.task.Registry.Address) {
@@ -100,44 +100,39 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		}
 	}
 
-	if registryConfigDir != "" {
-		if err := os.RemoveAll(registryConfigDir); err != nil {
-			return status.Failed(err)
-		}
-	}
-
 	// Then do poc actions for jib
 	log.Infof("Registry address: %s", t.task.Registry.Address)
+	log.Infof("Registry secret: %s", t.task.Registry.Secret)
 	log.Infof("Base image: %s", baseImage)
 
-	/*mavenPom, errPom := readFile(mavenDir + "/pom.xml")
-	if errPom != nil {
-		return status.Failed(errPom)
+	errCreateJibConfig := createJibConfig(ctx, contextDir)
+	if errCreateJibConfig != nil {
+		return status.Failed(errCreateJibConfig)
 	}
-	log.Info(string(mavenPom))*/
-
-	mavenCommand, err := readFile(mavenDir + "/MAVEN_CONTEXT")
-	if err != nil {
-		return status.Failed(err)
+	// TODO temp
+	jibConfig, errConfig := readFile(filepath.Join(contextDir, "config.json"))
+	if errConfig != nil {
+		return status.Failed(errConfig)
 	}
-	log.Info(string(mavenCommand))
+	log.Info(string(jibConfig))
+	// TODO temp
 
-	// ugly replaces
-	mavenCommandStr := string(mavenCommand)
-	mavenCommandStr = strings.ReplaceAll(mavenCommandStr, "./mvnw", "")
-	mavenCommandStr = strings.ReplaceAll(mavenCommandStr, "package", "jib:build")
-	mavenCommandStr += " -Djib.to.image=" + t.task.Image
-	mavenCommandStr += " -Djib.from.image=" + baseImage
-	mavenCommandStr = strings.Trim(mavenCommandStr, " ")
-	mavenArgs := strings.Split(mavenCommandStr, " ")
-	log.Info("|" + mavenCommandStr + "|")
+	jibCmd := "/opt/jib/bin/jib"
+	jibArgs := []string{"build",
+		"--verbosity=info",
+		"--target=" + t.task.Image,
+		"--allow-insecure-registries",
+		"--build-file=" + filepath.Join(contextDir, "jibclibuild.yaml"),
+		"--image-metadata-out=" + filepath.Join(contextDir, "jibimage.json")}
 
-	mvnCmd := "./mvnw"
-	if c, ok := os.LookupEnv("MAVEN_CMD"); ok {
-		mvnCmd = c
-	}
-	cmd := exec.CommandContext(ctx, mvnCmd, mavenArgs...)
-	cmd.Dir = mavenDir
+	cmd := exec.CommandContext(ctx, jibCmd, jibArgs...)
+
+	cmd.Dir = contextDir
+
+	env := os.Environ()
+	env = append(env, "XDG_CONFIG_HOME="+contextDir)
+	env = append(env, "HOME="+contextDir)
+	cmd.Env = env
 
 	myerror := util.RunAndLog(ctx, cmd, loggerInfo, loggerError)
 	if myerror != nil {
@@ -148,12 +143,19 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		status.Image = t.task.Image
 
 		// retrieve image digest
-		mavenDigest, errDigest := readFile(mavenDir + "/target/jib-image.digest")
+		jibOutput, errDigest := readFile(filepath.Join(contextDir, "jibimage.json"))
 		if errDigest != nil {
 			return status.Failed(errDigest)
 		}
-		log.Info(string(mavenDigest))
-		status.Digest = string(mavenDigest)
+		log.Info(string(jibOutput))
+		// TODO  extract digest
+		//status.Digest = string("mavenDigest")
+	}
+
+	if registryConfigDir != "" {
+		if err := os.RemoveAll(registryConfigDir); err != nil {
+			return status.Failed(err)
+		}
 	}
 
 	return status
@@ -171,5 +173,19 @@ func readFile(filePath string) ([]byte, error) {
 	}()
 
 	return ioutil.ReadAll(file)
+
+}
+
+func createJibConfig(ctx context.Context, jibContextDir string) error {
+	// #nosec G202
+	jibConfig := []byte(`{"disableUpdateCheck": true, "registryMirrors": []}`)
+
+	log.Info(filepath.Join(jibContextDir, "config.json"))
+	err := os.WriteFile(filepath.Join(jibContextDir, "config.json"), jibConfig, 0o755)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
