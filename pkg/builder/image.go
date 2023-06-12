@@ -131,14 +131,14 @@ from:
   platforms:
     - architecture: amd64
       os: linux
-workingDirectory: ` + filepath.Join(ctx.Path, DeploymentDir) + `
+workingDirectory: ` + DeploymentDir + `
 user: 1000
 layers:
   entries:
   - name: maven
     files:
     - src: ` + filepath.Join(ctx.Path, ContextDir) + `
-      dest: ` + filepath.Join(ctx.Path, DeploymentDir) + `
+      dest: ` + DeploymentDir + `
 `)
 	err := os.WriteFile(filepath.Join(ctx.Path, ContextDir, "jibclibuild.yaml"), jibcliBuildFile, 0o400)
 	if err != nil {
