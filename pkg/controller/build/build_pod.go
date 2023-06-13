@@ -113,7 +113,8 @@ var (
 )
 
 func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.Pod, error) {
-	var ugfid int64 = 1000
+	var nonRoot = true
+	//var ugfid int64 = 1000
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -131,9 +132,10 @@ func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.P
 			ServiceAccountName: platform.BuilderServiceAccount,
 			RestartPolicy:      corev1.RestartPolicyNever,
 			SecurityContext: &corev1.PodSecurityContext{
-				RunAsUser:  &ugfid,
-				RunAsGroup: &ugfid,
-				FSGroup:    &ugfid,
+				//RunAsUser:  &ugfid,
+				//RunAsGroup: &ugfid,
+				//FSGroup:    &ugfid,
+				RunAsNonRoot: &nonRoot,
 			},
 		},
 	}
@@ -279,7 +281,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.BuilderConfiguration().ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",
@@ -510,7 +512,7 @@ func addKanikoTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, tas
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Args:            args,
 		Env:             env,
 		WorkingDir:      filepath.Join(builderDir, build.Name, builder.ContextDir),
