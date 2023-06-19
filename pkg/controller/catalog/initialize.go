@@ -200,7 +200,7 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
 		ADD /usr/local/bin/kamel /usr/local/bin/kamel
 		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
-		ADD --chmod=775 ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
+		ADD --chmod=775 /etc/maven/ /etc/maven/
 	`))
 
 	owner := catalogReference(catalog)
