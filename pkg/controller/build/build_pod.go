@@ -114,7 +114,9 @@ var (
 
 func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.Pod, error) {
 	// TODO we must find a way to run this non-root
-	var ugfid int64 = 0
+	//var ugfidRoot int64 = 0
+	//var ugfid int64 = 1000
+	//var ugfidOpenshift int64 = 1000660000
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -131,10 +133,11 @@ func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.P
 		Spec: corev1.PodSpec{
 			ServiceAccountName: platform.BuilderServiceAccount,
 			RestartPolicy:      corev1.RestartPolicyNever,
-			SecurityContext: &corev1.PodSecurityContext{
-				RunAsUser:  &ugfid,
-				RunAsGroup: &ugfid,
-				FSGroup:    &ugfid,
+			SecurityContext:    &corev1.PodSecurityContext{
+				/*SupplementalGroups: []int64{ugfid, ugfidRoot, ugfidOpenshift},
+				RunAsUser:          &ugfid,
+				RunAsGroup:         &ugfid,
+				FSGroup:            &ugfid,*/
 			},
 		},
 	}
@@ -273,7 +276,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.BuilderConfiguration().ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",
@@ -504,7 +507,7 @@ func addKanikoTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, tas
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Args:            args,
 		Env:             env,
 		WorkingDir:      filepath.Join(builderDir, build.Name, builder.ContextDir),

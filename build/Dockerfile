@@ -47,6 +47,7 @@ ADD build/_kamelets /kamelets
 
 RUN chgrp -R 0 ${MVN_REPO} \
     && chmod -R g=u ${MVN_REPO} \
+    && chmod -R 777 ${MVN_REPO}\
     && chgrp -R 0 /kamelets \
     && chmod -R g=u /kamelets \
     && chgrp -R 0 ${MAVEN_HOME} \

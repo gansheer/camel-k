@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -39,6 +40,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
+	"github.com/apache/camel-k/v2/pkg/util/log"
 	"github.com/apache/camel-k/v2/pkg/util/s2i"
 
 	spectrum "github.com/container-tools/spectrum/pkg/builder"
@@ -55,6 +57,13 @@ import (
 
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+)
+
+var (
+	logger = log.WithName("gansheer")
+
+	loggerInfo  = func(s string) string { logger.Info(s); return "" }
+	loggerError = func(s string) string { logger.Error(nil, s); return "" }
 )
 
 // NewInitializeAction returns a action that initializes the catalog configuration when not provided by the user.
@@ -164,6 +173,19 @@ func initializeSpectrum(options spectrum.Options, ip *v1.IntegrationPlatform, ca
 }
 
 func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatform, catalog *v1.CamelCatalog) (*v1.CamelCatalog, error) {
+
+	cmd := exec.CommandContext(ctx, "id")
+	cmd.Dir = "/"
+	util.RunAndLog(ctx, cmd, loggerInfo, loggerError)
+
+	cmdId := exec.CommandContext(ctx, "id")
+	cmdId.Dir = "/"
+	util.RunAndLog(ctx, cmdId, loggerInfo, loggerError)
+
+	cmd = exec.CommandContext(ctx, "ls", "-al", "/etc/maven/m2")
+	cmd.Dir = "/"
+	util.RunAndLog(ctx, cmd, loggerInfo, loggerError)
+
 	target := catalog.DeepCopy()
 	// No registry in s2i
 	imageName := fmt.Sprintf(
@@ -172,12 +194,13 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	)
 	imageTag := strings.ToLower(catalog.Spec.Runtime.Version)
 
+	// TODO : maybe remove the 1000
 	// Dockfile
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
-		USER 1000
 		ADD /usr/local/bin/kamel /usr/local/bin/kamel
 		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
+		ADD --chmod=775 ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
 	`))
 
 	owner := catalogReference(catalog)

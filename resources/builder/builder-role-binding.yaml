@@ -23,8 +23,8 @@ metadata:
     app: "camel-k"
 subjects:
   # TODO set the camel k builder SA with operator namespace
-  # - kind: ServiceAccount
-  #   name: camel-k-builder
+- kind: ServiceAccount
+  name: camel-k-builder
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: system:authenticated

@@ -57,6 +57,14 @@ func (c *Command) Do(ctx context.Context) error {
 		mvnCmd = c
 	}
 
+	cmdLs := exec.CommandContext(ctx, "ls", "-al", "/etc/maven/m2/org")
+	cmdLs.Dir = "/"
+	util.RunAndLog(ctx, cmdLs, mavenLogHandler, mavenLogHandler)
+
+	cmdMkdir := exec.CommandContext(ctx, "mkdir", "/etc/maven/m2/io")
+	cmdMkdir.Dir = "/"
+	util.RunAndLog(ctx, cmdMkdir, mavenLogHandler, mavenLogHandler)
+
 	args := make([]string, 0)
 	args = append(args, c.context.AdditionalArguments...)
 
