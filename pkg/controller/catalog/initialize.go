@@ -194,13 +194,10 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	)
 	imageTag := strings.ToLower(catalog.Spec.Runtime.Version)
 
-	// TODO : maybe remove the 1000
-	// Dockfile
+	// No need to filter is it is applyed on the binary tar
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
-		ADD /usr/local/bin/kamel /usr/local/bin/kamel
-		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
-		ADD ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
+		ADD / /
 	`))
 
 	owner := catalogReference(catalog)
@@ -543,7 +540,6 @@ func tarEntries(writer io.Writer, files ...string) error {
 		}
 
 		if err := filepath.Walk(fileSource, func(file string, fi os.FileInfo, err error) error {
-			log.Info(fileSource + ":" + fi.Name())
 			if err != nil {
 				return err
 			}
@@ -560,7 +556,6 @@ func tarEntries(writer io.Writer, files ...string) error {
 			// update the name to correctly reflect the desired destination when un-taring
 			header.Name = strings.TrimPrefix(strings.ReplaceAll(file, fileSource, fileTarget), string(filepath.Separator))
 			header.Mode = 0o775
-			log.Info(fileSource + ":" + header.Name + ":" + fi.Name())
 
 			if err := tw.WriteHeader(header); err != nil {
 				return err
