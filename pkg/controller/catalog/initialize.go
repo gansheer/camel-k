@@ -200,7 +200,7 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
 		ADD /usr/local/bin/kamel /usr/local/bin/kamel
 		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
-		ADD --chmod=775 /etc/maven/ /etc/maven/
+		ADD ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
 	`))
 
 	owner := catalogReference(catalog)
@@ -308,11 +308,17 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 			return fmt.Errorf("cannot create tar archive: %w", err)
 		}
 
+		log.Info("trying to chmod the archive file")
+		err = archiveFile.Chmod(0o775)
+		if err != nil {
+			return err
+		}
+
 		err = tarEntries(archiveFile,
 			"/usr/local/bin/kamel:/usr/local/bin/kamel",
 			"/usr/share/maven/mvnw/:/usr/share/maven/mvnw/",
 			// Required for snapshots dependencies in the runtimes
-			defaults.LocalRepository+":"+defaults.LocalRepository,
+			defaults.LocalRepository+"/:"+defaults.LocalRepository+"/",
 		)
 		if err != nil {
 			return fmt.Errorf("cannot tar path entry: %w", err)
@@ -322,6 +328,12 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 		if err != nil {
 			return err
 		}
+
+		/*log.Info("really trying to chmod the archive file")
+		err = f.Chmod(0o775)
+		if err != nil {
+			return err
+		}*/
 
 		restClient, err := apiutil.RESTClientForGVK(
 			schema.GroupVersionKind{Group: "build.openshift.io", Version: "v1"}, false,
@@ -531,11 +543,12 @@ func tarEntries(writer io.Writer, files ...string) error {
 		}
 
 		if err := filepath.Walk(fileSource, func(file string, fi os.FileInfo, err error) error {
+			log.Info(fileSource + ":" + fi.Name())
 			if err != nil {
 				return err
 			}
 
-			if !fi.Mode().IsRegular() {
+			if !fi.Mode().IsRegular() && !fi.Mode().IsDir() {
 				return nil
 			}
 
@@ -546,21 +559,29 @@ func tarEntries(writer io.Writer, files ...string) error {
 
 			// update the name to correctly reflect the desired destination when un-taring
 			header.Name = strings.TrimPrefix(strings.ReplaceAll(file, fileSource, fileTarget), string(filepath.Separator))
+			header.Mode = 0o775
+			log.Info(fileSource + ":" + header.Name + ":" + fi.Name())
 
 			if err := tw.WriteHeader(header); err != nil {
 				return err
 			}
 
-			f, err := util.Open(file)
-			if err != nil {
-				return err
-			}
+			// TODO close but not yet
+			if fi.Mode().IsRegular() {
 
-			if _, err := io.Copy(tw, f); err != nil {
-				return err
-			}
+				f, err := util.Open(file)
+				if err != nil {
+					return err
+				}
 
-			return f.Close()
+				if _, err := io.Copy(tw, f); err != nil {
+					return err
+				}
+
+				return f.Close()
+			} else {
+				return nil
+			}
 		}); err != nil {
 			return fmt.Errorf("unable to tar: %w", err)
 		}
