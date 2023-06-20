@@ -175,7 +175,7 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	// Dockfile
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
-		USER 1000
+		USER 1001
 		ADD /usr/local/bin/kamel /usr/local/bin/kamel
 		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
 		ADD ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
