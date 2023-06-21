@@ -19,6 +19,7 @@ package builder
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,6 +30,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
 	"github.com/apache/camel-k/v2/pkg/util/digest"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
+	"github.com/apache/camel-k/v2/pkg/util/log"
 	"github.com/apache/camel-k/v2/pkg/util/maven"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -136,6 +138,9 @@ func generateQuarkusProject(ctx *builderContext) error {
 
 	// Add Maven repositories
 	p.Repositories = append(p.Repositories, ctx.Build.Maven.Repositories...)
+	// Da fuck
+	bytes, _ := json.Marshal(p.Repositories)
+	log.Info(string(bytes))
 
 	ctx.Maven.Project = p
 

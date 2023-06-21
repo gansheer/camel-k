@@ -428,9 +428,9 @@ endif
 	@echo "####### Building Camel K operator arch $(IMAGE_ARCH) container image..."
 	mkdir -p build/_maven_output
 ifeq ($(IMAGE_ARCH), amd64)
-	docker build --platform=linux/$(IMAGE_ARCH) -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION) -f build/Dockerfile .
+	docker build --no-cache --platform=linux/$(IMAGE_ARCH) -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION) -f build/Dockerfile .
 else
-	docker build --platform=linux/$(IMAGE_ARCH) -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION)-$(IMAGE_ARCH) -f build/Dockerfile .
+	docker build --no-cache --platform=linux/$(IMAGE_ARCH) -t $(CUSTOM_IMAGE):$(CUSTOM_VERSION)-$(IMAGE_ARCH) -f build/Dockerfile .
 endif
 
 # Mainly used for internal CI purposes

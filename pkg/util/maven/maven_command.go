@@ -57,6 +57,18 @@ func (c *Command) Do(ctx context.Context) error {
 		mvnCmd = c
 	}
 
+	cmdId := exec.CommandContext(ctx, "id")
+	cmdId.Dir = "/"
+	util.RunAndLog(ctx, cmdId, mavenLogHandler, mavenLogHandler)
+
+	cmdLs := exec.CommandContext(ctx, "ls", "-alR", "/etc/maven/m2")
+	cmdLs.Dir = c.context.Path
+	util.RunAndLog(ctx, cmdLs, mavenLogHandler, mavenLogHandler)
+
+	cmdLs = exec.CommandContext(ctx, "ls", "-alR", "/etc/machine-id/maven/m2")
+	cmdLs.Dir = c.context.Path
+	util.RunAndLog(ctx, cmdLs, mavenLogHandler, mavenLogHandler)
+
 	args := make([]string, 0)
 	args = append(args, c.context.AdditionalArguments...)
 
@@ -95,6 +107,7 @@ func (c *Command) Do(ctx context.Context) error {
 		args = append(args, "-T", strconv.Itoa(runtime.GOMAXPROCS(0)))
 	}
 
+	//args = append(args, "-U")
 	cmd := exec.CommandContext(ctx, mvnCmd, args...)
 	cmd.Dir = c.context.Path
 
@@ -139,6 +152,13 @@ func (c *Command) Do(ctx context.Context) error {
 
 		cmd.Env = env
 	}
+
+	cmdMvnTree := exec.CommandContext(ctx, mvnCmd, "-V",
+		"--no-transfer-progress", "-Dstyle.color=never",
+		"org.apache.maven.plugins:maven-dependency-plugin:3.6.0:tree",
+		"-Dmaven.repo.local="+c.context.LocalRepository, "--global-settings", filepath.Join(c.context.Path, "settings.xml"))
+	cmdMvnTree.Dir = c.context.Path
+	util.RunAndLog(ctx, cmdMvnTree, mavenLogHandler, mavenLogHandler)
 
 	Log.WithValues("MAVEN_OPTS", mavenOptions).Infof("executing: %s", strings.Join(cmd.Args, " "))
 

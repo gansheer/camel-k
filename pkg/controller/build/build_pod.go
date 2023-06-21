@@ -113,7 +113,7 @@ var (
 )
 
 func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.Pod, error) {
-	var ugfid int64 = 1001
+	var ugfid int64 = 1000660000
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -268,7 +268,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.BuilderConfiguration().ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",
@@ -382,7 +382,7 @@ func addBuildahTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, ta
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command:         []string{"/bin/sh", "-c"},
 		Args:            []string{strings.Join(args, " && ")},
 		Env:             env,
@@ -499,7 +499,7 @@ func addKanikoTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, tas
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Args:            args,
 		Env:             env,
 		WorkingDir:      filepath.Join(builderDir, build.Name, builder.ContextDir),
@@ -529,7 +529,7 @@ func addCustomTaskToPod(build *v1.Build, task *v1.UserTask, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           task.ContainerImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command:         strings.Split(task.ContainerCommand, " "),
 		WorkingDir:      filepath.Join(builderDir, build.Name),
 		Env:             proxyFromEnvironment(),
@@ -546,6 +546,11 @@ func addContainerToPod(build *v1.Build, container corev1.Container, pod *corev1.
 		})
 	}
 
+	var ugfid int64 = 1000660000
+	container.SecurityContext = &corev1.SecurityContext{
+		RunAsUser:  &ugfid,
+		RunAsGroup: &ugfid,
+	}
 	pod.Spec.InitContainers = append(pod.Spec.InitContainers, container)
 }
 

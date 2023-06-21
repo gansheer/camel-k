@@ -175,10 +175,10 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	// Dockfile
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
-		USER 1001
+		USER 1000660000
 		ADD /usr/local/bin/kamel /usr/local/bin/kamel
 		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
-		ADD ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
+		ADD --chown=1000660000 ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
 	`))
 
 	owner := catalogReference(catalog)
@@ -526,6 +526,8 @@ func tarEntries(writer io.Writer, files ...string) error {
 
 			// update the name to correctly reflect the desired destination when un-taring
 			header.Name = strings.TrimPrefix(strings.ReplaceAll(file, fileSource, fileTarget), string(filepath.Separator))
+			header.Uid = 1000660000
+			header.Gid = 1000660000
 
 			if err := tw.WriteHeader(header); err != nil {
 				return err
