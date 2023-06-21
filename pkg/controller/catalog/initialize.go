@@ -382,6 +382,8 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 func imageExistsSpectrum(options spectrum.Options) bool {
 	Log.Infof("Checking if Camel K builder container %s already exists...", options.Base)
 	ctrImg, err := spectrum.Pull(options)
+	// Ignore the error-indent-flow as we save the need to declare a dependency explicitly
+	// nolint: revive
 	if ctrImg != nil && err == nil {
 		if hash, err := ctrImg.Digest(); err != nil {
 			Log.Errorf(err, "Cannot calculate digest")

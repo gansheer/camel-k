@@ -7,7 +7,7 @@ require (
 	github.com/apache/camel-k/v2/pkg/apis/camel v0.0.0
 	github.com/apache/camel-k/v2/pkg/client/camel v0.0.0
 	github.com/apache/camel-k/v2/pkg/kamelet/repository v0.0.0
-	github.com/container-tools/spectrum v0.6.23
+	github.com/container-tools/spectrum v0.6.24
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gertd/go-pluralize v0.2.1
@@ -165,3 +165,6 @@ replace (
 	github.com/apache/camel-k/v2/pkg/client/camel => ./pkg/client/camel
 	github.com/apache/camel-k/v2/pkg/kamelet/repository => ./pkg/kamelet/repository
 )
+
+// Using a fork that removes the HTTPS ping before using HTTP for insecure registries
+replace github.com/google/go-containerregistry => github.com/container-tools/go-containerregistry v0.7.1-0.20211124090132-40ccc94a466b

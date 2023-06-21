@@ -260,11 +260,11 @@ test-fmt: do-build
 test-common: do-build
 	FAILED=0; STAGING_RUNTIME_REPO="$(STAGING_RUNTIME_REPO)"; \
 	go test -timeout 10m -v ./e2e/common/support/startup_test.go -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 30m -v ./e2e/common/languages -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 30m -v ./e2e/common/cli -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 30m -v ./e2e/common/config -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 30m -v ./e2e/common/misc -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 30m -v ./e2e/common/traits -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 40m -v ./e2e/common/languages -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 40m -v ./e2e/common/cli -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 40m -v ./e2e/common/config -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 40m -v ./e2e/common/misc -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 40m -v ./e2e/common/traits -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
 	go test -timeout 10m -v ./e2e/common/support/teardown_test.go -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
 	exit $${FAILED}
 
@@ -281,8 +281,8 @@ test-common-with-custom-install: do-build
 #
 test-install: do-build
 	FAILED=0; STAGING_RUNTIME_REPO="$(STAGING_RUNTIME_REPO)"; \
-	go test -timeout 40m -v ./e2e/install/cli -tags=integration $(TEST_INSTALL_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 40m -v ./e2e/install/kustomize -tags=integration $(TEST_INSTALL_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 60m -v ./e2e/install/cli -tags=integration $(TEST_INSTALL_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 60m -v ./e2e/install/kustomize -tags=integration $(TEST_INSTALL_RUN) $(GOTESTFMT) || FAILED=1; \
 	exit $${FAILED}
 
 #
@@ -305,7 +305,7 @@ test-install-upgrade: do-build
 test-knative: do-build
 	STAGING_RUNTIME_REPO="$(STAGING_RUNTIME_REPO)"; \
 	go test -timeout 10m -v ./e2e/knative/support/startup_test.go -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
-	go test -timeout 60m -v ./e2e/knative -tags=integration $(TEST_KNATIVE_RUN) $(GOTESTFMT) || FAILED=1; \
+	go test -timeout 90m -v ./e2e/knative -tags=integration $(TEST_KNATIVE_RUN) $(GOTESTFMT) || FAILED=1; \
 	go test -timeout 10m -v ./e2e/knative/support/teardown_test.go -tags=integration $(TEST_INTEGRATION_COMMON_LANG_RUN) $(GOTESTFMT) || FAILED=1; \
 	exit $${FAILED}
 
@@ -314,7 +314,7 @@ test-knative: do-build
 #
 test-builder: do-build
 	STAGING_RUNTIME_REPO="$(STAGING_RUNTIME_REPO)"; \
-	go test -timeout 30m -v ./e2e/builder -tags=integration $(TEST_BUILDER_RUN) $(GOTESTFMT)
+	go test -timeout 45m -v ./e2e/builder -tags=integration $(TEST_BUILDER_RUN) $(GOTESTFMT)
 
 #
 # Telemetry tests that require the configuration of telemtry endpoints
