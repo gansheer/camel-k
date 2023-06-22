@@ -33,9 +33,11 @@ import (
 
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	"github.com/apache/camel-k/v2/pkg/builder"
+	"github.com/apache/camel-k/v2/pkg/client"
 	"github.com/apache/camel-k/v2/pkg/platform"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
+	"github.com/apache/camel-k/v2/pkg/util/openshift"
 )
 
 const (
@@ -112,8 +114,19 @@ var (
 	}
 )
 
-func newBuildPod(ctx context.Context, c ctrl.Reader, build *v1.Build) (*corev1.Pod, error) {
+func newBuildPod(ctx context.Context, c ctrl.Reader, client client.Client, build *v1.Build) (*corev1.Pod, error) {
 	var ugfid int64 = 1001
+	for _, task := range build.Spec.Tasks {
+		// get uid from security context constraint configuration in namespace
+		// TODO: find a way to have to one defined at the creating of te econtainer image instead.
+		if task.S2i != nil {
+			uid, _ := openshift.GetOpenshiftPodUID(ctx, client, build.BuilderPodNamespace())
+			if uid != -1 {
+				ugfid = uid
+			}
+		}
+	}
+
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -268,7 +281,7 @@ func addBuildTaskToPod(build *v1.Build, taskName string, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            taskName,
 		Image:           build.BuilderConfiguration().ToolImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command: []string{
 			"kamel",
 			"builder",
@@ -383,7 +396,7 @@ func addBuildahTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, ta
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command:         []string{"/bin/sh", "-c"},
 		Args:            []string{strings.Join(args, " && ")},
 		Env:             env,
@@ -505,7 +518,7 @@ func addKanikoTaskToPod(ctx context.Context, c ctrl.Reader, build *v1.Build, tas
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Args:            args,
 		Env:             env,
 		WorkingDir:      filepath.Join(builderDir, build.Name, builder.ContextDir),
@@ -535,7 +548,7 @@ func addCustomTaskToPod(build *v1.Build, task *v1.UserTask, pod *corev1.Pod) {
 	container := corev1.Container{
 		Name:            task.Name,
 		Image:           task.ContainerImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: corev1.PullAlways,
 		Command:         strings.Split(task.ContainerCommand, " "),
 		WorkingDir:      filepath.Join(builderDir, build.Name),
 		Env:             proxyFromEnvironment(),

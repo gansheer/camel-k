@@ -18,7 +18,14 @@ limitations under the License.
 package openshift
 
 import (
+	"context"
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -32,4 +39,28 @@ func IsOpenShift(client kubernetes.Interface) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetOpenShiftPodSecurityContext return the uid as the minimum value in the "openshift.io/sa.scc.uid-range" annotation from the namespace if present.
+// TODO : manage gid and fsgroup from "openshift.io/sa.scc.supplemental-groups".
+func GetOpenshiftPodUID(ctx context.Context, client kubernetes.Interface, namespace string) (int64, error) {
+
+	ns, err := client.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		return -1, fmt.Errorf("failed to get namespace %q: %w", namespace, err)
+	}
+
+	uidRange, ok := ns.ObjectMeta.Annotations["openshift.io/sa.scc.uid-range"]
+	if !ok {
+		return -1, errors.New("annotation 'openshift.io/sa.scc.uid-range' not found")
+	}
+
+	uidStr := strings.Split(uidRange, "/")[0]
+	uid, err := strconv.ParseInt(uidStr, 10, 64)
+	if err != nil {
+		return -1, fmt.Errorf("failed to convert uid to integer %q: %w", uidStr, err)
+	}
+
+	return uid, nil
+
 }

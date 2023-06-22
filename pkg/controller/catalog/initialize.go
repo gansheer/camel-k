@@ -29,6 +29,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
+	"github.com/apache/camel-k/v2/pkg/util/openshift"
 	"github.com/apache/camel-k/v2/pkg/util/s2i"
 
 	spectrum "github.com/container-tools/spectrum/pkg/builder"
@@ -172,13 +174,15 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	)
 	imageTag := strings.ToLower(catalog.Spec.Runtime.Version)
 
-	// Dockfile
+	uidStr := getS2iUID(ctx, c, ip, catalog)
+
+	// Dockerfile
 	dockerfile := string([]byte(`
 		FROM ` + catalog.Spec.GetQuarkusToolingImage() + `
-		USER 1001
-		ADD /usr/local/bin/kamel /usr/local/bin/kamel
-		ADD /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
-		ADD ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
+		USER ` + uidStr + `
+		ADD --chown=` + uidStr + ` /usr/local/bin/kamel /usr/local/bin/kamel
+		ADD --chown=` + uidStr + ` /usr/share/maven/mvnw/ /usr/share/maven/mvnw/
+		ADD --chown=` + uidStr + ` ` + defaults.LocalRepository + ` ` + defaults.LocalRepository + `
 	`))
 
 	owner := catalogReference(catalog)
@@ -377,6 +381,23 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 	}
 
 	return target, nil
+}
+
+// get uid from security context constraint configuration in namespace if present.
+func getS2iUID(ctx context.Context, c client.Client, ip *v1.IntegrationPlatform, catalog *v1.CamelCatalog) string {
+	uidStr := "1001"
+	if ip.Status.Cluster == v1.IntegrationPlatformClusterOpenShift {
+		uid, errUID := openshift.GetOpenshiftPodUID(ctx, c, catalog.GetNamespace())
+		if errUID != nil {
+			Log.Error(errUID, "Unable to retieve an Openshift Uid ")
+		}
+		if uid != -1 {
+			uidStr = strconv.FormatInt(uid, 10)
+		} else {
+			Log.Info("Openshift Uid was undefined")
+		}
+	}
+	return uidStr
 }
 
 func imageExistsSpectrum(options spectrum.Options) bool {
