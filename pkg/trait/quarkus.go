@@ -322,12 +322,20 @@ func (t *quarkusTrait) applyWhenBuildSubmitted(e *Environment) error {
 		if e.Platform.Status.Build.PublishStrategy != v1.IntegrationPlatformBuildPublishStrategySpectrum {
 			steps = append(steps, builder.Image.ExecutableDockerfile)
 		}
+		if e.Platform.Status.Build.PublishStrategy == v1.IntegrationPlatformBuildPublishStrategyJib {
+			// Add yaml
+			steps = append(steps, builder.Image.ExecutableJibCliBuildfile)
+		}
 	} else {
 		build.Maven.Properties["quarkus.package.type"] = string(traitv1.FastJarPackageType)
 		steps = append(steps, builder.Quarkus.ComputeQuarkusDependencies, builder.Image.IncrementalImageContext)
 		// Spectrum does not rely on Dockerfile to assemble the image
 		if e.Platform.Status.Build.PublishStrategy != v1.IntegrationPlatformBuildPublishStrategySpectrum {
 			steps = append(steps, builder.Image.JvmDockerfile)
+		}
+		if e.Platform.Status.Build.PublishStrategy == v1.IntegrationPlatformBuildPublishStrategyJib {
+			// Add yaml
+			steps = append(steps, builder.Image.JibCliBuildfile)
 		}
 	}
 
