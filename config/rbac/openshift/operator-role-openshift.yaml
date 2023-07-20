@@ -58,6 +58,7 @@ rules:
   - imagestreams
   - imagestreams/secrets
   - imagestreamtags
+  - images
   verbs:
   - create
   - delete

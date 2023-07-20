@@ -45,6 +45,7 @@ import (
 	spectrum "github.com/container-tools/spectrum/pkg/builder"
 
 	buildv1 "github.com/openshift/api/build/v1"
+	"github.com/openshift/api/image/docker10"
 	imagev1 "github.com/openshift/api/image/v1"
 
 	corev1 "k8s.io/api/core/v1"
@@ -228,6 +229,13 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 						Kind: "ImageStreamTag",
 						Name: imageName + ":" + imageTag,
 					},
+					ImageLabels: []buildv1.ImageLabel{
+						{Name: kubernetes.CamelCreatorLabelKind, Value: v1.CamelCatalogKind},
+						{Name: kubernetes.CamelCreatorLabelName, Value: catalog.Name},
+						{Name: kubernetes.CamelCreatorLabelNamespace, Value: catalog.Namespace},
+						{Name: kubernetes.CamelCreatorLabelVersion, Value: catalog.ResourceVersion},
+						{Name: "camel.apache.org/runtime.provider", Value: string(catalog.Spec.Runtime.Provider)},
+					},
 				},
 			},
 		},
@@ -378,6 +386,8 @@ func initializeS2i(ctx context.Context, c client.Client, ip *v1.IntegrationPlatf
 			"Container image successfully built",
 		)
 		target.Status.Image = is.Status.DockerImageRepository + ":" + imageTag
+
+		imageGetS2i(ctx, c, ip.Namespace, target.Status.Image)
 
 		return f.Close()
 	})
@@ -588,4 +598,63 @@ func getS2iUserID(ctx context.Context, c client.Client, ip *v1.IntegrationPlatfo
 		return uidStr
 	}
 	return ugfidStr
+}
+
+//https://github.com/openshift/library-go/blob/master/pkg/image/imageutil/helpers.go
+func ImageWithMetadatas(image *imagev1.Image) error {
+
+	//func ImageWithMetadata(image *imagev1.Image) error {
+	// Check if the metadata are already filled in for this image.
+	meta, hasMetadata := image.DockerImageMetadata.Object.(*docker10.DockerImage)
+	if hasMetadata && meta.Size > 0 {
+		return nil
+	}
+
+	version := image.DockerImageMetadataVersion
+	if len(version) == 0 {
+		version = "1.0"
+	}
+
+	obj := &docker10.DockerImage{}
+	if len(image.DockerImageMetadata.Raw) != 0 {
+		if err := json.Unmarshal(image.DockerImageMetadata.Raw, obj); err != nil {
+			return err
+		}
+		image.DockerImageMetadata.Object = obj
+	}
+
+	image.DockerImageMetadataVersion = version
+
+	return nil
+	//}
+}
+
+func imageGetS2i(ctx context.Context, c client.Client, namespace string, name string) bool {
+	image := &imagev1.Image{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: imagev1.GroupVersion.String(),
+			Kind:       "Image",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+	}
+	Log.Infof("Checking if Camel K image %s already exists...", image.Name)
+	key := ctrl.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}
+
+	err := c.Get(ctx, key, image)
+
+	if err != nil {
+		if !k8serrors.IsNotFound(err) {
+			Log.Infof("Couldn't find image due to %s", err.Error())
+		}
+		Log.Info("Could not find Camel K image")
+		return false
+	}
+	Log.Info("Found Camel K builder container ")
+	return true
 }
