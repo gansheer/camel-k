@@ -50,7 +50,7 @@ func main() {
 	flag.Parse()
 
 	if len(flag.Args()) < 1 {
-		println("usage: vfs-gen [-root <absolute root parent path>] [-dest <directory>] directory1 [directory2 ... ...]")
+		println("usage: vfs-gen [-root <absolute very root parent path>] [-dest <directory>] directory1 [directory2 ... ...]")
 		os.Exit(1)
 	}
 
