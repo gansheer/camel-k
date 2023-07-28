@@ -23,15 +23,13 @@ on:
       - main
       - "release-*"
     paths:
-      - 'go.mod'
-      - 'go.sum'
+      - 'go.*'
   push:
     branches:
       - main
       - "release-*"
     paths:
-      - 'go.mod'
-      - 'go.sum'
+      - 'go.*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
