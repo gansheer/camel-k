@@ -24,12 +24,14 @@ on:
       - "release-*"
     paths:
       - 'go.*'
+      - 'pkg/**'
   push:
     branches:
       - main
       - "release-*"
     paths:
       - 'go.*'
+      - 'pkg/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
