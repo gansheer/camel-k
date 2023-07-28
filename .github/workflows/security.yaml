@@ -22,16 +22,26 @@ on:
     branches:
       - main
       - "release-*"
-    paths:
-      - 'go.*'
-      - 'pkg/**'
+    paths-ignore:
+      - 'docs/**'
+      - 'proposals/**'
+      - '**.adoc'
+      - '**.md'
+      - 'KEYS'
+      - 'LICENSE'
+      - 'NOTICE'
   push:
     branches:
       - main
       - "release-*"
-    paths:
-      - 'go.*'
-      - 'pkg/**'
+    paths-ignore:
+      - 'docs/**'
+      - 'proposals/**'
+      - '**.adoc'
+      - '**.md'
+      - 'KEYS'
+      - 'LICENSE'
+      - 'NOTICE'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
