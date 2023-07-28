@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/apache/camel-k/v2/pkg/util"
+	"github.com/hamba/avro"
 
 	"github.com/apache/camel-k/v2/cmd/util/vfs-gen/multifs"
 	"github.com/apache/camel-k/v2/pkg/base"
@@ -37,6 +38,43 @@ import (
 )
 
 func main() {
+
+	type SimpleRecord struct {
+		A int64  `avro:"a"`
+		B string `avro:"b"`
+	}
+
+	schema, err := avro.Parse(`{
+		"type": "record",
+		"name": "simple",
+		"namespace": "org.hamba.avro",
+		"fields" : [
+			{"name": "a", "type": "long"},
+			{"name": "b", "type": "string"}
+		]
+	}`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	in := SimpleRecord{A: 27, B: "foo"}
+
+	data, err := avro.Marshal(schema, in)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(data)
+	// Outputs: [54 6 102 111 111]
+
+	out := SimpleRecord{}
+	err = avro.Unmarshal(schema, data, &out)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(out)
+
 	var rootDir string
 	var destDir string
 
