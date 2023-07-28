@@ -1,0 +1,64 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  annotations:
+    camel.apache.org/operator.id: camel-k
+  creationTimestamp: "2023-05-31T09:43:05Z"
+  generation: 1
+  name: test
+  namespace: default
+  resourceVersion: "15507"
+  uid: a76d27f3-f63f-481c-888a-d6979041b464
+spec:
+  sources:
+  - content: |
+      // camel-k: language=java
+
+      import org.apache.camel.builder.RouteBuilder;
+
+      public class Test extends RouteBuilder {
+
+          @Override
+          public void configure() throws Exception {
+
+              // Write your routes here, for example:
+              from("timer:java?period={{time:1000}}").routeId("java")
+                  .setBody()
+                      .simple("Hello Camel from ${routeId}")
+                  .log("${body}");
+          }
+      }
+    name: Test.java
+  traits: {}
+status:
+  conditions:
+  - firstTruthyTime: "2023-05-31T09:43:05Z"
+    lastTransitionTime: "2023-05-31T09:43:05Z"
+    lastUpdateTime: "2023-05-31T09:43:05Z"
+    message: default/camel-k
+    reason: IntegrationPlatformAvailable
+    status: "True"
+    type: IntegrationPlatformAvailable
+  - firstTruthyTime: "2023-05-31T09:43:39Z"
+    lastTransitionTime: "2023-05-31T09:43:39Z"
+    lastUpdateTime: "2023-05-31T09:43:39Z"
+    message: kit-chrhda9m2u9kdfv5qrv0
+    reason: IntegrationKitAvailable
+    status: "True"
+    type: IntegrationKitAvailable
+  dependencies:
+  - camel:timer
+  - mvn:org.apache.camel.k:camel-k-runtime
+  - mvn:org.apache.camel.quarkus:camel-quarkus-java-joor-dsl
+  digest: vVPfq-TdRlEih2sytMwCAzkTm0hR3rW736ZIJef9nfPs
+  integrationKit:
+    name: kit-chrhda9m2u9kdfv5qrv0
+    namespace: default
+  lastInitTimestamp: "2023-05-31T09:43:05Z"
+  observedGeneration: 1
+  phase: Deploying
+  platform: camel-k
+  profile: Kubernetes
+  runtimeProvider: quarkus
+  runtimeVersion: 2.16.0-SNAPSHOT
+  version: 2.0.0-SNAPSHOT

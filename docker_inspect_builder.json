@@ -1,0 +1,166 @@
+[
+    {
+        "Id": "sha256:7359cf67d14ead7a991491602298100bbdb11ddd169525527fa772332fe35304",
+        "RepoTags": [],
+        "RepoDigests": [
+            "default-route-openshift-image-registry.apps-crc.testing/default/camel-k-runtime-quarkus-builder@sha256:0cc4579bb7d95acfff9b0451b9ce6082c036981b06b421d1c5e951f5a429e716"
+        ],
+        "Parent": "",
+        "Comment": "FROM 9d1c9ee9a6f4",
+        "Created": "2023-06-23T15:00:15.455203304Z",
+        "Container": "d61c9c52b7554f3c0e0b7af7331bac759de25b2c3e5885cc6f0962c5f1c39ced",
+        "ContainerConfig": {
+            "Hostname": "aaa6d7ea3d66",
+            "Domainname": "",
+            "User": "1000010000",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mandrel/bin",
+                "container=oci",
+                "LANG=en_US.UTF-8",
+                "LANGUAGE=en_US:en",
+                "LC_ALL=en_US.UTF-8",
+                "APP_HOME=/home/quarkus",
+                "UPX_VERSION=3.96",
+                "JAVA_HOME=/opt/mandrel",
+                "GRAALVM_HOME=/opt/mandrel",
+                "OPENSHIFT_BUILD_NAME=camel-k-runtime-quarkus-builder-1",
+                "OPENSHIFT_BUILD_NAMESPACE=default"
+            ],
+            "Cmd": [],
+            "Image": "",
+            "Volumes": {},
+            "WorkingDir": "/project",
+            "Entrypoint": [
+                "native-image"
+            ],
+            "OnBuild": [],
+            "Labels": {
+                "architecture": "x86_64",
+                "build-date": "2023-03-28T04:02:11",
+                "com.redhat.component": "ubi8-minimal-container",
+                "com.redhat.license_terms": "https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI",
+                "description": "The Universal Base Image Minimal is a stripped down image that uses microdnf as a package manager. This base image is freely redistributable, but Red Hat only supports Red Hat technologies through subscriptions for Red Hat products. This image is maintained by Red Hat and updated regularly.",
+                "distribution-scope": "public",
+                "io.buildah.version": "1.26.4",
+                "io.k8s.description": "Quarkus.io executable image providing the `native-image` executable.io.k8s.display-name=Quarkus.io executable (GraalVM Native, Mandrel distribution)io.openshift.tags=executable,java,quarkus,mandrel,nativemaintainer=Quarkus Team <quarkus-dev@googlegroups.com>",
+                "io.k8s.display-name": "Red Hat Universal Base Image 8 Minimal",
+                "io.openshift.build.name": "camel-k-runtime-quarkus-builder-1",
+                "io.openshift.build.namespace": "default",
+                "io.openshift.expose-services": "",
+                "io.openshift.tags": "minimal rhel8",
+                "maintainer": "Red Hat, Inc.",
+                "name": "ubi8-minimal",
+                "release": "1107",
+                "summary": "Provides the latest release of the minimal Red Hat Universal Base Image 8.",
+                "url": "https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8-minimal/images/8.7-1107",
+                "vcs-ref": "146fdafc2595e26f5f9c1b9a2b3f36bbca8237e4",
+                "vcs-type": "git",
+                "vendor": "Red Hat, Inc.",
+                "version": "8.7"
+            }
+        },
+        "DockerVersion": "",
+        "Author": "",
+        "Config": {
+            "Hostname": "aaa6d7ea3d66",
+            "Domainname": "",
+            "User": "1000010000",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mandrel/bin",
+                "container=oci",
+                "LANG=en_US.UTF-8",
+                "LANGUAGE=en_US:en",
+                "LC_ALL=en_US.UTF-8",
+                "APP_HOME=/home/quarkus",
+                "UPX_VERSION=3.96",
+                "JAVA_HOME=/opt/mandrel",
+                "GRAALVM_HOME=/opt/mandrel",
+                "OPENSHIFT_BUILD_NAME=camel-k-runtime-quarkus-builder-1",
+                "OPENSHIFT_BUILD_NAMESPACE=default"
+            ],
+            "Cmd": [],
+            "Image": "",
+            "Volumes": {},
+            "WorkingDir": "/project",
+            "Entrypoint": [
+                "native-image"
+            ],
+            "OnBuild": [],
+            "Labels": {
+                "architecture": "x86_64",
+                "build-date": "2023-03-28T04:02:11",
+                "com.redhat.component": "ubi8-minimal-container",
+                "com.redhat.license_terms": "https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI",
+                "description": "The Universal Base Image Minimal is a stripped down image that uses microdnf as a package manager. This base image is freely redistributable, but Red Hat only supports Red Hat technologies through subscriptions for Red Hat products. This image is maintained by Red Hat and updated regularly.",
+                "distribution-scope": "public",
+                "io.buildah.version": "1.26.4",
+                "io.k8s.description": "Quarkus.io executable image providing the `native-image` executable.io.k8s.display-name=Quarkus.io executable (GraalVM Native, Mandrel distribution)io.openshift.tags=executable,java,quarkus,mandrel,nativemaintainer=Quarkus Team <quarkus-dev@googlegroups.com>",
+                "io.k8s.display-name": "Red Hat Universal Base Image 8 Minimal",
+                "io.openshift.build.name": "camel-k-runtime-quarkus-builder-1",
+                "io.openshift.build.namespace": "default",
+                "io.openshift.expose-services": "",
+                "io.openshift.tags": "minimal rhel8",
+                "maintainer": "Red Hat, Inc.",
+                "name": "ubi8-minimal",
+                "release": "1107",
+                "summary": "Provides the latest release of the minimal Red Hat Universal Base Image 8.",
+                "url": "https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8-minimal/images/8.7-1107",
+                "vcs-ref": "146fdafc2595e26f5f9c1b9a2b3f36bbca8237e4",
+                "vcs-type": "git",
+                "vendor": "Red Hat, Inc.",
+                "version": "8.7"
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 1084441136,
+        "VirtualSize": 1084441136,
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/f2d0de874014d0bf0c1988075a299f5a9d30a32f051cc0406bd60e0dd40fc228/diff:/var/lib/docker/overlay2/14a7602eed012316a5f9e12d685be96ce5411107452d2f53749e50eed9e316b6/diff:/var/lib/docker/overlay2/cf8b9317a7bde8e923ec24ec0cb3ed48c11415d07c1bb46805b0ffce3827639d/diff:/var/lib/docker/overlay2/546510c7d11313fce9cf58703c69195b676a029099b25b695616fd427e921fab/diff:/var/lib/docker/overlay2/7caa60c392f6130efa4bf2ceaa4126f8cd362351e673cb4ff8b1a5e8143b02bf/diff:/var/lib/docker/overlay2/3ae289aba96e32f2d8fd89f4833dc63e7a6c2dd6446086f7b5456e9ff57da40c/diff:/var/lib/docker/overlay2/d4efb5260514c58bb173efa8de7084f7869a6aa6b2faaaa7080e972182e3f01f/diff:/var/lib/docker/overlay2/733ab448d8242b10373b9c5f86e17ffc55d448a3f07045fcafff6ebe81399fe7/diff:/var/lib/docker/overlay2/5aaf703e2bdef2d876247c1147ecef85b8dbaf3db3050d50fece911fbd0148cc/diff:/var/lib/docker/overlay2/7289a49730dc60e4268773ee2ecac9af517074ff1f4241ca00117521a4c646a0/diff:/var/lib/docker/overlay2/d149f373322f136670f040e0a1cbc40e7f79af2bd94fc805f1f28d7b2f9db94c/diff:/var/lib/docker/overlay2/3b71e848c5b5ec7b2a2e0a56574b10bc2fee8319904fe47d3fb4ca3ef04d7dc6/diff:/var/lib/docker/overlay2/9898dbf1596a72ad4de3040daf773f7f2b7a83787aed826060c39ad345d94589/diff:/var/lib/docker/overlay2/dac86061cf7891cb084e9caa4145d3b90f11eff3c9f2a3d0bdca7404f036fa05/diff:/var/lib/docker/overlay2/0bb2b90e786f5b5a9bea5921c118fc6be3c290f9904ead445ed0005dc538742d/diff:/var/lib/docker/overlay2/14279281818e12d148155df465c5dd5b421dcfcea91bcf6b56d4c9ee457c963c/diff:/var/lib/docker/overlay2/989b45fc8e11906fb6006eeb0f56d23d0efa88d99ddb14da04ed38c6f329e537/diff",
+                "MergedDir": "/var/lib/docker/overlay2/3b736e52343d37e63141efa4aae364b2e18f0c022fb0f17349d7df4f34e48d0c/merged",
+                "UpperDir": "/var/lib/docker/overlay2/3b736e52343d37e63141efa4aae364b2e18f0c022fb0f17349d7df4f34e48d0c/diff",
+                "WorkDir": "/var/lib/docker/overlay2/3b736e52343d37e63141efa4aae364b2e18f0c022fb0f17349d7df4f34e48d0c/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:55ea6d5a354edb8a6eeeadb772359359f82959156d04193d5a7b2d79c827d9ee",
+                "sha256:2a7940c06cd8ea34827728a7b6b22488cadb0c2c171d3b969c2d8c8467069cca",
+                "sha256:02f6d477847939608b5d7041e5e22e67c44e71e8f4972c4c9af3aaacc674aa64",
+                "sha256:ad6e2dd9ae569bb6b7d8d8327475898b5b3c9d5c2b9c6226853a95423e3d23bf",
+                "sha256:2a66158c65f3378ef7f136ad16063e874764362426676033d87e88a8254d94ba",
+                "sha256:3c9d1c426defb45be549448aea401ee889b9d4f3e7967aa75ba95b9227863435",
+                "sha256:5a8d34cec9a384ddef7fd07967c25adc87431c63b15824d60a8346aa658382de",
+                "sha256:a331a73e9153bb74cde2d73dd44e91a5ffa49dbda6b3e404b54d3f63f0412620",
+                "sha256:af37ee71b39f084f4c063da3590f6e8141ec0907ed7e85715e6d0ad54d0e8dee",
+                "sha256:e5980375dbd2c62a5d3a4f6d3348d7645162ae35dedb3024990c50234259a9e7",
+                "sha256:9a0b53f1da3f4b9a1df9e1112f83ffcf015dd1b652f7bc3809e45562ff203f51",
+                "sha256:f138ca6d267c32c1836baa3dc12a465d140c248486a328d6c83dbf03084d6698",
+                "sha256:84a4e927826e731d36c9940b0504f4d2308e49e6b7932c9f66ba43c0713c0c45",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+                "sha256:7f270bb3caad9d54ebe991211c17e5f796bb1a252dfe5306183bda08730e130f",
+                "sha256:95ab68d48ce56e13cd7b80c24a3f1a39ff6d36d4202e80652ce04531a0dfd943",
+                "sha256:8751457dedb03ff6cf508912b9af29e44e5d60ddf714ce65affd3a30f4e98c9e"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "0001-01-01T00:00:00Z"
+        }
+    }
+]

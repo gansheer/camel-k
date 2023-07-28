@@ -1,0 +1,187 @@
+Using go1.18.9 and govulncheck@v1.0.0 with vulnerability data from https://vuln.go.dev (last modified 2023-07-13 22:19:53 +0000 UTC).
+
+Scanning your code and 1084 packages across 148 dependent modules for known vulnerabilities...
+
+Vulnerability #1: GO-2023-1878
+    Insufficient sanitization of Host header in net/http
+  More info: https://pkg.go.dev/vuln/GO-2023-1878
+  Standard library
+    Found in: net/http@go1.18.9
+    Fixed in: net/http@go1.20.6
+    Example traces found:
+      #1: pkg/util/kubernetes/log/util.go:53:28: log.DumpLog calls rest.Request.Stream, which calls http.Client.Do
+      #2: pkg/client/apply.go:54:25: client.ServerOrClientSideApplier.Apply calls sync.Once.Do, which eventually calls http.Request.Write
+      #3: pkg/client/apply.go:54:25: client.ServerOrClientSideApplier.Apply calls sync.Once.Do, which eventually calls http.Transport.CloseIdleConnections
+      #4: pkg/client/apply.go:54:25: client.ServerOrClientSideApplier.Apply calls sync.Once.Do, which eventually calls http.Transport.RoundTrip
+
+Vulnerability #2: GO-2023-1840
+    Unsafe behavior in setuid/setgid binaries in runtime
+  More info: https://pkg.go.dev/vuln/GO-2023-1840
+  Standard library
+    Found in: runtime@go1.18.9
+    Fixed in: runtime@go1.20.5
+    Example traces found:
+      #1: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.BlockProfile
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.StackRecord.Stack
+      #3: cmd/util/vfs-gen/main.go:45:14: vfs.main calls log.Fatalln, which eventually calls runtime.Caller
+      #4: pkg/trait/test_support.go:153:10: trait.ToAddonTrait calls testing.common.Helper, which calls runtime.Callers
+      #5: pkg/cmd/root.go:251:15: cmd.RootCmdOptions.PrintVerboseOut calls fmt.Fprintln, which eventually calls runtime.CallersFrames
+      #6: pkg/cmd/root.go:251:15: cmd.RootCmdOptions.PrintVerboseOut calls fmt.Fprintln, which eventually calls runtime.Frames.Next
+      #7: pkg/util/watch/watch.go:227:2: watch.WaitPodToTerminate calls watch.RaceFreeFakeWatcher.Stop, which eventually calls runtime.Func.FileLine
+      #8: pkg/trait/test_support.go:156:16: trait.ToAddonTrait calls assert.NoError, which eventually calls runtime.Func.Name
+      #9: pkg/trait/test_support.go:156:16: trait.ToAddonTrait calls assert.NoError, which eventually calls runtime.FuncForPC
+      #10: pkg/controller/kameletbinding/monitor.go:93:54: kameletbinding.monitorAction.Handle calls reflect.Equalities.DeepDerivative, which eventually calls runtime.GC
+      #11: pkg/builder/spectrum.go:128:31: builder.spectrumTask.Do calls runtime.GOMAXPROCS
+      #12: pkg/util/s2i/build.go:25:2: s2i.init calls time.init, which calls runtime.GOROOT
+      #13: pkg/util/log/log.go:75:18: log.Logger.Error calls logr.Logger.Error, which eventually calls runtime.Goexit
+      #14: pkg/util/monitoring/timer.go:44:11: monitoring.Timer.ObserveDurationInSeconds calls prometheus.histogram.Observe, which eventually calls runtime.Gosched
+      #15: pkg/util/util.go:626:21: util.WriteFileWithContent calls os.File.Write, which eventually calls runtime.KeepAlive
+      #16: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.MemProfile
+      #17: cmd/util/doc-gen/generators/traitmetadatagen.go:107:12: generators.traitMetaDataGen.Finalize calls sort.Slice, which eventually calls runtime.MemProfileRecord.InUseBytes
+      #18: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.MemProfileRecord.InUseObjects
+      #19: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.MemProfileRecord.Stack
+      #20: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.MutexProfile
+      #21: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.NumGoroutine
+      #22: pkg/util/source/inspector_yaml.go:187:37: source.YAMLInspector.parseStepsParam calls expvar.Func.String, which eventually calls runtime.ReadMemStats
+      #23: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.ReadTrace
+      #24: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.SetCPUProfileRate
+      #25: pkg/util/tar/util_compress.go:35:2: tar.CreateTarFile calls os.File.Close, which eventually calls runtime.SetFinalizer
+      #26: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.SetMutexProfileFraction
+      #27: pkg/trait/health.go:92:22: trait.healthTrait.Apply calls intstr.FromInt, which eventually calls runtime.Stack
+      #28: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.StartTrace
+      #29: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.StopTrace
+      #30: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls runtime.ThreadCreateProfile
+      #31: pkg/resources/resources.go:769:76: resources.vfsgen۰FS.Open calls runtime.TypeAssertionError.Error
+      #32: pkg/cmd/operator/operator.go:75:56: operator.printVersion calls runtime.Version
+      #33: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which calls runtime.defaultMemProfileRate
+      #34: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which calls runtime.efaceOf
+      #35: pkg/resources/resources.go:769:76: resources.vfsgen۰FS.Open calls runtime.errorString.Error
+      #36: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which eventually calls runtime.findfunc
+      #37: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which calls runtime.float64frombits
+      #38: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which eventually calls runtime.forcegchelper
+      #39: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which eventually calls runtime.funcMaxSPDelta
+      #40: pkg/resources/resources.go:769:76: resources.vfsgen۰FS.Open calls runtime.plainError.Error
+      #41: pkg/util/maven/maven_command.go:29:2: maven.init calls runtime.init, which eventually calls runtime.throw
+
+Vulnerability #3: GO-2023-1753
+    Improper handling of empty HTML attributes in html/template
+  More info: https://pkg.go.dev/vuln/GO-2023-1753
+  Standard library
+    Found in: html/template@go1.18.9
+    Fixed in: html/template@go1.20.4
+    Example traces found:
+      #1: pkg/trait/service_binding.go:133:11: trait.process calls pipeline.HandlerFunc.Handle, which eventually calls template.Template.Execute
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls template.Template.ExecuteTemplate
+
+Vulnerability #4: GO-2023-1752
+    Improper handling of JavaScript whitespace in html/template
+  More info: https://pkg.go.dev/vuln/GO-2023-1752
+  Standard library
+    Found in: html/template@go1.18.9
+    Fixed in: html/template@go1.20.4
+    Example traces found:
+      #1: pkg/trait/service_binding.go:133:11: trait.process calls pipeline.HandlerFunc.Handle, which eventually calls template.Template.Execute
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls template.Template.ExecuteTemplate
+
+Vulnerability #5: GO-2023-1751
+    Improper sanitization of CSS values in html/template
+  More info: https://pkg.go.dev/vuln/GO-2023-1751
+  Standard library
+    Found in: html/template@go1.18.9
+    Fixed in: html/template@go1.20.4
+    Example traces found:
+      #1: pkg/trait/service_binding.go:133:11: trait.process calls pipeline.HandlerFunc.Handle, which eventually calls template.Template.Execute
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls template.Template.ExecuteTemplate
+
+Vulnerability #6: GO-2023-1705
+    Excessive resource consumption in net/http, net/textproto and mime/multipart
+  More info: https://pkg.go.dev/vuln/GO-2023-1705
+  Standard library
+    Found in: net/textproto@go1.18.9
+    Fixed in: net/textproto@go1.20.3
+    Example traces found:
+      #1: pkg/util/gzip/compress.go:65:24: gzip.Uncompress calls io.ReadAll, which eventually calls textproto.Reader.ReadMIMEHeader
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls multipart.Reader.ReadForm
+
+Vulnerability #7: GO-2023-1704
+    Excessive memory allocation in net/http and net/textproto
+  More info: https://pkg.go.dev/vuln/GO-2023-1704
+  Standard library
+    Found in: net/textproto@go1.18.9
+    Fixed in: net/textproto@go1.20.3
+    Example traces found:
+      #1: pkg/util/gzip/compress.go:65:24: gzip.Uncompress calls io.ReadAll, which eventually calls textproto.Reader.ReadMIMEHeader
+
+Vulnerability #8: GO-2023-1703
+    Backticks not treated as string delimiters in html/template
+  More info: https://pkg.go.dev/vuln/GO-2023-1703
+  Standard library
+    Found in: html/template@go1.18.9
+    Fixed in: html/template@go1.20.3
+    Example traces found:
+      #1: pkg/trait/service_binding.go:133:11: trait.process calls pipeline.HandlerFunc.Handle, which eventually calls template.Template.Execute
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls template.Template.ExecuteTemplate
+
+Vulnerability #9: GO-2023-1702
+    Infinite loop in parsing in go/scanner
+  More info: https://pkg.go.dev/vuln/GO-2023-1702
+  Standard library
+    Found in: go/scanner@go1.18.9
+    Fixed in: go/scanner@go1.20.3
+    Example traces found:
+      #1: pkg/builder/quarkus.go:287:22: builder.ProcessQuarkusTransitiveDependencies calls filepath.Walk, which eventually calls scanner.Scanner.Scan
+
+Vulnerability #10: GO-2023-1571
+    Denial of service via crafted HTTP/2 stream in net/http and golang.org/x/net
+  More info: https://pkg.go.dev/vuln/GO-2023-1571
+  Standard library
+    Found in: net/http@go1.18.9
+    Fixed in: net/http@go1.20.1
+    Example traces found:
+      #1: pkg/util/kubernetes/log/util.go:53:28: log.DumpLog calls rest.Request.Stream, which calls http.Client.Do
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls http.Server.Serve
+      #3: pkg/client/apply.go:54:25: client.ServerOrClientSideApplier.Apply calls sync.Once.Do, which eventually calls http.Transport.RoundTrip
+
+Vulnerability #11: GO-2023-1570
+    Panic on large handshake records in crypto/tls
+  More info: https://pkg.go.dev/vuln/GO-2023-1570
+  Standard library
+    Found in: crypto/tls@go1.18.9
+    Fixed in: crypto/tls@go1.20.1
+    Example traces found:
+      #1: pkg/client/apply.go:54:25: client.ServerOrClientSideApplier.Apply calls sync.Once.Do, which eventually calls tls.Conn.Handshake
+      #2: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls tls.Conn.HandshakeContext
+      #3: pkg/util/util.go:285:24: util.CopyFile calls io.Copy, which eventually calls tls.Conn.Read
+      #4: pkg/cmd/root.go:262:14: cmd.RootCmdOptions.PrintfVerboseErrf calls fmt.Fprintf, which calls tls.Conn.Write
+      #5: pkg/util/kubernetes/log/util.go:53:28: log.DumpLog calls rest.Request.Stream, which eventually calls tls.DialWithDialer
+      #6: pkg/util/kubernetes/log/util.go:53:28: log.DumpLog calls rest.Request.Stream, which eventually calls tls.Dialer.DialContext
+
+Vulnerability #12: GO-2023-1569
+    Excessive resource consumption in mime/multipart
+  More info: https://pkg.go.dev/vuln/GO-2023-1569
+  Standard library
+    Found in: mime/multipart@go1.18.9
+    Fixed in: mime/multipart@go1.20.1
+    Example traces found:
+      #1: pkg/cmd/operator/operator.go:241:23: operator.Run calls manager.controllerManager.Start, which eventually calls multipart.Reader.ReadForm
+
+Vulnerability #13: GO-2023-1568
+    Path traversal on Windows in path/filepath
+  More info: https://pkg.go.dev/vuln/GO-2023-1568
+  Standard library
+    Found in: path/filepath@go1.18.9
+    Fixed in: path/filepath@go1.20.1
+    Platforms: windows
+    Example traces found:
+      #1: pkg/base/root.go:43:33: base.init#1 calls filepath.Abs
+      #2: pkg/util/util.go:590:37: util.WithFileReader calls filepath.Clean
+      #3: pkg/cmd/util_config.go:148:22: cmd.Config.Save calls filepath.Dir
+      #4: pkg/util/util.go:301:42: util.CopyDir calls filepath.EvalSymlinks
+      #5: pkg/util/util.go:332:43: util.WriteFileWithBytesMarshallerContent calls filepath.Join
+      #6: pkg/cmd/operator/operator.go:127:24: operator.Run calls maxprocs.Set, which eventually calls filepath.Rel
+      #7: pkg/builder/quarkus.go:287:22: builder.ProcessQuarkusTransitiveDependencies calls filepath.Walk
+      #8: pkg/install/kamelets.go:80:24: install.KameletCatalog calls filepath.WalkDir
+
+Your code is affected by 13 vulnerabilities from the Go standard library.
+
+Share feedback at https://go.dev/s/govulncheck-feedback.

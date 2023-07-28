@@ -1,0 +1,15 @@
+# camel-k: language=yaml
+
+# Write your routes here, for example:
+- from:
+    uri: "kamelet:timer-source"
+    parameters:
+      period: 1000
+      message: '{ "foo": "John"}'
+    steps:
+      - to:
+          uri: "kamelet:xj-identity-action"
+          parameters:
+            direction: "XML2JSON"
+      - to:
+          uri: "log:info"

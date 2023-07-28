@@ -1,0 +1,198 @@
+apiVersion: image.openshift.io/v1
+image:
+  dockerImageLayers:
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:a49367d57626b909254c52a27854d7d4163acce34b18157d7d5b08a60b897e34
+    size: 36941176
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:2bcde7a852f280fb5f8416c8b2187dfca6ea9b279049aac1fc104d71bfdc7575
+    size: 70241859
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:3e9da1368550d553594dbcf0c3d687802b7f95efe961f9ecb1799626b4ef9ffc
+    size: 6275856
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:e4262da93fc25964e6258d82b3d71a80414849b19ced4ff3c46daa051a3c0db5
+    size: 1316
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:5f94ca2f1df5568c4a43d4e26266215b36c97ecdfb7a7015263116888af93684
+    size: 103
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:ce3e2fcd549d7ec55f5ce2cafb78cb919c8412ffd4ecdc8f08d8864404219227
+    size: 100
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:33988ca02c3bc2664c7e7102e15e303491e2d98aae954e8bd72c206ea3f04d78
+    size: 4591817
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:82413a42ac33e3a2c6a6fcde45a64d60753f1abda3b160c4f4957356d0197381
+    size: 463179
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:bb30c9e62b452e7f167395a0c696c7616773b1278a7e73b4bee3ff938c43a5c2
+    size: 481366
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:16e8de07d955daa10ede2dcd4fed7c27b7eaeb2c05de2671b460d3e486a6654d
+    size: 8691892
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:2a69434d8218d8965f77253777157d8bfe0e583df183ff1944db2bcc991118c0
+    size: 229766946
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:033a518c59b1941bd60b32260e5921289dd9cf57278be2fc86205ba24a86d2f7
+    size: 231538192
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:de028952d86ee1f993f074b4bd41361cab57ebc1edfe8113684e77c427f71666
+    size: 426796
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1
+    size: 32
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1
+    size: 32
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:5518919e08cb5a7053510ecf591b4f8d7ab970453721abdad598ad23e297181a
+    size: 37015129
+  - mediaType: application/vnd.docker.image.rootfs.diff.tar.gzip
+    name: sha256:961d0cf66f033e134b7620e90f0b2154e70f39a6f906aca937aac950ae6dd5a2
+    size: 60190
+  dockerImageManifestMediaType: application/vnd.docker.distribution.manifest.v2+json
+  dockerImageMetadata:
+    Architecture: amd64
+    Config:
+      Entrypoint:
+      - native-image
+      Env:
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mandrel/bin
+      - container=oci
+      - LANG=en_US.UTF-8
+      - LANGUAGE=en_US:en
+      - LC_ALL=en_US.UTF-8
+      - APP_HOME=/home/quarkus
+      - UPX_VERSION=3.96
+      - JAVA_HOME=/opt/mandrel
+      - GRAALVM_HOME=/opt/mandrel
+      - OPENSHIFT_BUILD_NAME=camel-k-runtime-quarkus-builder-1
+      - OPENSHIFT_BUILD_NAMESPACE=default
+      Hostname: c00a68635beb
+      Labels:
+        architecture: x86_64
+        build-date: 2023-03-28T04:02:11
+        com.redhat.component: ubi8-minimal-container
+        com.redhat.license_terms: https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI
+        description: The Universal Base Image Minimal is a stripped down image that
+          uses microdnf as a package manager. This base image is freely redistributable,
+          but Red Hat only supports Red Hat technologies through subscriptions for
+          Red Hat products. This image is maintained by Red Hat and updated regularly.
+        distribution-scope: public
+        io.buildah.version: 1.26.4
+        io.k8s.description: Quarkus.io executable image providing the `native-image`
+          executable.io.k8s.display-name=Quarkus.io executable (GraalVM Native, Mandrel
+          distribution)io.openshift.tags=executable,java,quarkus,mandrel,nativemaintainer=Quarkus
+          Team <quarkus-dev@googlegroups.com>
+        io.k8s.display-name: Red Hat Universal Base Image 8 Minimal
+        io.openshift.build.name: camel-k-runtime-quarkus-builder-1
+        io.openshift.build.namespace: default
+        io.openshift.expose-services: ""
+        io.openshift.tags: minimal rhel8
+        maintainer: Red Hat, Inc.
+        name: ubi8-minimal
+        release: "1107"
+        summary: Provides the latest release of the minimal Red Hat Universal Base
+          Image 8.
+        url: https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8-minimal/images/8.7-1107
+        vcs-ref: 146fdafc2595e26f5f9c1b9a2b3f36bbca8237e4
+        vcs-type: git
+        vendor: Red Hat, Inc.
+        version: "8.7"
+      User: "1000010000:0"
+      WorkingDir: /project
+    Container: e029eac683caca0094685d52d995a77569e02a035096802b1f03a644b00e326b
+    ContainerConfig:
+      Entrypoint:
+      - native-image
+      Env:
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mandrel/bin
+      - container=oci
+      - LANG=en_US.UTF-8
+      - LANGUAGE=en_US:en
+      - LC_ALL=en_US.UTF-8
+      - APP_HOME=/home/quarkus
+      - UPX_VERSION=3.96
+      - JAVA_HOME=/opt/mandrel
+      - GRAALVM_HOME=/opt/mandrel
+      - OPENSHIFT_BUILD_NAME=camel-k-runtime-quarkus-builder-1
+      - OPENSHIFT_BUILD_NAMESPACE=default
+      Hostname: c00a68635beb
+      Labels:
+        architecture: x86_64
+        build-date: 2023-03-28T04:02:11
+        com.redhat.component: ubi8-minimal-container
+        com.redhat.license_terms: https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI
+        description: The Universal Base Image Minimal is a stripped down image that
+          uses microdnf as a package manager. This base image is freely redistributable,
+          but Red Hat only supports Red Hat technologies through subscriptions for
+          Red Hat products. This image is maintained by Red Hat and updated regularly.
+        distribution-scope: public
+        io.buildah.version: 1.26.4
+        io.k8s.description: Quarkus.io executable image providing the `native-image`
+          executable.io.k8s.display-name=Quarkus.io executable (GraalVM Native, Mandrel
+          distribution)io.openshift.tags=executable,java,quarkus,mandrel,nativemaintainer=Quarkus
+          Team <quarkus-dev@googlegroups.com>
+        io.k8s.display-name: Red Hat Universal Base Image 8 Minimal
+        io.openshift.build.name: camel-k-runtime-quarkus-builder-1
+        io.openshift.build.namespace: default
+        io.openshift.expose-services: ""
+        io.openshift.tags: minimal rhel8
+        maintainer: Red Hat, Inc.
+        name: ubi8-minimal
+        release: "1107"
+        summary: Provides the latest release of the minimal Red Hat Universal Base
+          Image 8.
+        url: https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8-minimal/images/8.7-1107
+        vcs-ref: 146fdafc2595e26f5f9c1b9a2b3f36bbca8237e4
+        vcs-type: git
+        vendor: Red Hat, Inc.
+        version: "8.7"
+      User: "1000010000:0"
+      WorkingDir: /project
+    Created: "2023-07-17T10:01:18Z"
+    Id: sha256:7764167e4cd6c8f0273fb602f70644aef4d2bda5039ad66583a4202ebd8117bc
+    Parent: sha256:b37cbc0aadb5fab9486cbb6fa8296dbc7b1e99afaa78ca5873b27f45afcd1cf2
+    Size: 626512150
+    apiVersion: image.openshift.io/1.0
+    kind: DockerImage
+  dockerImageMetadataVersion: "1.0"
+  dockerImageReference: image-registry.openshift-image-registry.svc:5000/default/camel-k-runtime-quarkus-builder@sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+  metadata:
+    annotations:
+      image.openshift.io/dockerLayersOrder: ascending
+      image.openshift.io/manifestBlobStored: "true"
+      openshift.io/image.managed: "true"
+    creationTimestamp: "2023-07-17T10:01:20Z"
+    name: sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+    resourceVersion: "40422"
+    uid: 6e9ffe70-b5ea-4f4f-a956-1fe61a33dc3a
+kind: ImageTag
+metadata:
+  creationTimestamp: "2023-07-17T10:00:38Z"
+  generation: 1
+  labels:
+    camel.apache.org/created.by.kind: CamelCatalog
+    camel.apache.org/created.by.name: camel-catalog-2.16.0
+    camel.apache.org/created.by.namespace: default
+    camel.apache.org/created.by.version: "39613"
+    camel.apache.org/runtime.provider: quarkus
+  name: camel-k-runtime-quarkus-builder:2.16.0
+  namespace: default
+  ownerReferences:
+  - apiVersion: camel.apache.org/v1
+    kind: CamelCatalog
+    name: camel-catalog-2.16.0
+    uid: 14048d23-262e-4846-a887-8ef6f3b58224
+  resourceVersion: "40423"
+  uid: 4f0b9221-b135-47af-8378-05495bd64912
+spec: null
+status:
+  items:
+  - created: "2023-07-17T10:01:20Z"
+    dockerImageReference: image-registry.openshift-image-registry.svc:5000/default/camel-k-runtime-quarkus-builder@sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+    generation: 1
+    image: sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+  tag: 2.16.0

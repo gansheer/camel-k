@@ -1,0 +1,33 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  creationTimestamp: "2023-07-17T10:00:38Z"
+  generation: 1
+  labels:
+    camel.apache.org/created.by.kind: CamelCatalog
+    camel.apache.org/created.by.name: camel-catalog-2.16.0
+    camel.apache.org/created.by.namespace: default
+    camel.apache.org/created.by.version: "39613"
+    camel.apache.org/runtime.provider: quarkus
+  name: camel-k-runtime-quarkus-builder
+  namespace: default
+  ownerReferences:
+  - apiVersion: camel.apache.org/v1
+    kind: CamelCatalog
+    name: camel-catalog-2.16.0
+    uid: 14048d23-262e-4846-a887-8ef6f3b58224
+  resourceVersion: "40423"
+  uid: 4f0b9221-b135-47af-8378-05495bd64912
+spec:
+  lookupPolicy:
+    local: true
+status:
+  dockerImageRepository: image-registry.openshift-image-registry.svc:5000/default/camel-k-runtime-quarkus-builder
+  publicDockerImageRepository: default-route-openshift-image-registry.apps-crc.testing/default/camel-k-runtime-quarkus-builder
+  tags:
+  - items:
+    - created: "2023-07-17T10:01:20Z"
+      dockerImageReference: image-registry.openshift-image-registry.svc:5000/default/camel-k-runtime-quarkus-builder@sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+      generation: 1
+      image: sha256:b5a0a34621693b72eef5f4fad62e7687167795464754553b49ea7d5c17f13fb3
+    tag: 2.16.0

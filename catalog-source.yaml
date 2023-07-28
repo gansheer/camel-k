@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: camel-k-catalog
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: default-route-openshift-image-registry.apps-crc.testing/camelk/camel-k-catalog:2.0.0-SNAPSHOT
+  displayName: Camel K catalog
+  publisher: My publisher

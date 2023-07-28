@@ -1,0 +1,99 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  annotations:
+    camel.apache.org/operator.id: camel-k
+  creationTimestamp: "2023-05-31T09:49:39Z"
+  generation: 1
+  name: test
+  namespace: default
+  resourceVersion: "17393"
+  uid: 77f7a294-1cf2-4282-8fcb-07f69e50cbdc
+spec:
+  sources:
+  - content: |
+      // camel-k: language=java
+
+      import org.apache.camel.builder.RouteBuilder;
+
+      public class Test extends RouteBuilder {
+
+          @Override
+          public void configure() throws Exception {
+
+              // Write your routes here, for example:
+              from("timer:java?period={{time:1000}}").routeId("java")
+                  .setBody()
+                      .simple("Hello Camel from ${routeId}")
+                  .log("${body}");
+          }
+      }
+    name: Test.java
+  traits: {}
+status:
+  conditions:
+  - firstTruthyTime: "2023-05-31T09:49:39Z"
+    lastTransitionTime: "2023-05-31T09:49:39Z"
+    lastUpdateTime: "2023-05-31T09:49:39Z"
+    message: default/camel-k
+    reason: IntegrationPlatformAvailable
+    status: "True"
+    type: IntegrationPlatformAvailable
+  - firstTruthyTime: "2023-05-31T09:50:17Z"
+    lastTransitionTime: "2023-05-31T09:50:17Z"
+    lastUpdateTime: "2023-05-31T09:50:17Z"
+    message: kit-chrhgcraol2j866ggj00
+    reason: IntegrationKitAvailable
+    status: "True"
+    type: IntegrationKitAvailable
+  - lastTransitionTime: "2023-05-31T09:50:17Z"
+    lastUpdateTime: "2023-05-31T09:50:17Z"
+    message: different controller strategy used (deployment)
+    reason: CronJobNotAvailableReason
+    status: "False"
+    type: CronJobAvailable
+  - firstTruthyTime: "2023-05-31T09:50:17Z"
+    lastTransitionTime: "2023-05-31T09:50:17Z"
+    lastUpdateTime: "2023-05-31T09:50:17Z"
+    message: deployment name is test
+    reason: DeploymentAvailable
+    status: "True"
+    type: DeploymentAvailable
+  - lastTransitionTime: "2023-05-31T09:50:17Z"
+    lastUpdateTime: "2023-05-31T09:50:17Z"
+    message: no http service required
+    reason: ServiceNotAvailable
+    status: "False"
+    type: ServiceAvailable
+  - lastTransitionTime: "2023-05-31T09:50:17Z"
+    lastUpdateTime: "2023-05-31T09:50:17Z"
+    message: no service defined
+    reason: IngressNotAvailable
+    status: "False"
+    type: ExposureAvailable
+  - firstTruthyTime: "2023-05-31T09:50:20Z"
+    lastTransitionTime: "2023-05-31T09:50:20Z"
+    lastUpdateTime: "2023-05-31T09:50:20Z"
+    message: 1/1 ready replicas
+    reason: DeploymentReady
+    status: "True"
+    type: Ready
+  dependencies:
+  - camel:timer
+  - mvn:org.apache.camel.k:camel-k-runtime
+  - mvn:org.apache.camel.quarkus:camel-quarkus-java-joor-dsl
+  digest: vVPfq-TdRlEih2sytMwCAzkTm0hR3rW736ZIJef9nfPs
+  image: 10.106.137.15/default/camel-k-kit-chrhgcraol2j866ggj00@sha256:e0e44303ec8238143dfd334459a5798b936a5c47f537d20e80a370ad5c627e9a
+  integrationKit:
+    name: kit-chrhgcraol2j866ggj00
+    namespace: default
+  lastInitTimestamp: "2023-05-31T09:49:39Z"
+  observedGeneration: 1
+  phase: Running
+  platform: camel-k
+  profile: Kubernetes
+  replicas: 1
+  runtimeProvider: quarkus
+  runtimeVersion: 2.16.0-SNAPSHOT
+  selector: camel.apache.org/integration=test
+  version: 2.0.0-SNAPSHOT

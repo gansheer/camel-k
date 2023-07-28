@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2023-06-09T15:22:53Z"
+  generateName: camel-k-operator-5ccdc95657-
+  labels:
+    app: camel-k
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/name: camel-k
+    app.kubernetes.io/version: 2.0.0-SNAPSHOT
+    camel.apache.org/component: operator
+    name: camel-k-operator
+    pod-template-hash: 5ccdc95657
+  name: camel-k-operator-5ccdc95657-9zbkb
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: camel-k-operator-5ccdc95657
+    uid: b62027f7-738e-4324-b7bf-0549e643ad29
+  resourceVersion: "7651"
+  uid: 5d6153cb-d996-4762-8dd5-c88681f81cb2
+spec:
+  containers:
+  - args:
+    - --monitoring-port=8080
+    - --health-port=8081
+    command:
+    - kamel
+    - operator
+    env:
+    - name: WATCH_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: OPERATOR_NAME
+      value: camel-k
+    - name: OPERATOR_ID
+      value: camel-k
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: KAMEL_OPERATOR_ID
+      value: camel-k
+    - name: LOG_LEVEL
+      value: info
+    image: docker.io/apache/camel-k:2.0.0-SNAPSHOT
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz
+        port: 8081
+        scheme: HTTP
+      initialDelaySeconds: 20
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: camel-k-operator
+    ports:
+    - containerPort: 8080
+      name: metrics
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /etc/maven/m2
+      name: camel-k-pvc
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-fbrmz
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: minikube
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 0
+  serviceAccount: camel-k-operator
+  serviceAccountName: camel-k-operator
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: camel-k-pvc
+    persistentVolumeClaim:
+      claimName: camel-k-pvc
+  - name: kube-api-access-fbrmz
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-09T15:22:53Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-09T15:22:54Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-09T15:22:54Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2023-06-09T15:22:53Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://4d6175f4928caa4fa1889d9d3296486c46c9b6fb155fa0b21c4179ad8c629745
+    image: apache/camel-k:2.0.0-SNAPSHOT
+    imageID: docker://sha256:b4dd34a4f2956ed784eac0b1728bbf64e28d10d333a07c7f50ac4c9d23669ea0
+    lastState: {}
+    name: camel-k-operator
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2023-06-09T15:22:53Z"
+  hostIP: 192.168.49.2
+  phase: Running
+  podIP: 10.244.0.24
+  podIPs:
+  - ip: 10.244.0.24
+  qosClass: BestEffort
+  startTime: "2023-06-09T15:22:53Z"

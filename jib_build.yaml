@@ -1,0 +1,698 @@
+apiVersion: camel.apache.org/v1
+kind: Build
+metadata:
+  annotations:
+    camel.apache.org/operator.id: camel-k
+  creationTimestamp: "2023-05-31T13:58:27Z"
+  generation: 1
+  labels:
+    camel.apache.org/created.by.kind: Integration
+    camel.apache.org/created.by.name: test
+    camel.apache.org/created.by.namespace: default
+    camel.apache.org/created.by.version: "12535"
+    camel.apache.org/kit.layout: fast-jar
+  name: kit-chrl50g1ql5dg7p4t540
+  namespace: default
+  ownerReferences:
+  - apiVersion: camel.apache.org/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: IntegrationKit
+    name: kit-chrl50g1ql5dg7p4t540
+    uid: 1ff2947c-fea7-40ad-8f28-ad44154b1959
+  resourceVersion: "12587"
+  uid: 8cf0fa01-ac61-4013-960d-b8e9cccce84a
+spec:
+  configuration: {}
+  tasks:
+  - builder:
+      baseImage: docker.io/eclipse-temurin:11
+      configuration:
+        operatorNamespace: default
+        strategy: pod
+        toolImage: 10.101.51.13/camel-k-runtime-quarkus-builder:2.16.0-snapshot
+      dependencies:
+      - camel:timer
+      - mvn:org.apache.camel.k:camel-k-runtime
+      - mvn:org.apache.camel.quarkus:camel-quarkus-java-joor-dsl
+      maven:
+        cliOptions:
+        - -e
+        localRepository: /etc/maven/m2
+        properties:
+          quarkus.package.type: fast-jar
+        settings: {}
+        settingsSecurity: {}
+      name: builder
+      runtime:
+        applicationClass: io.quarkus.bootstrap.runner.QuarkusEntryPoint
+        capabilities:
+          circuit-breaker:
+            dependencies:
+            - artifactId: camel-quarkus-microprofile-fault-tolerance
+              groupId: org.apache.camel.quarkus
+          cron:
+            dependencies:
+            - artifactId: camel-k-cron
+              groupId: org.apache.camel.k
+          health:
+            dependencies:
+            - artifactId: camel-quarkus-microprofile-health
+              groupId: org.apache.camel.quarkus
+          master:
+            dependencies:
+            - artifactId: camel-k-master
+              groupId: org.apache.camel.k
+          platform-http:
+            dependencies:
+            - artifactId: camel-quarkus-platform-http
+              groupId: org.apache.camel.quarkus
+          rest:
+            dependencies:
+            - artifactId: camel-quarkus-platform-http
+              groupId: org.apache.camel.quarkus
+            - artifactId: camel-quarkus-rest
+              groupId: org.apache.camel.quarkus
+          resume-kafka:
+            dependencies:
+            - artifactId: camel-k-resume-kafka
+              groupId: org.apache.camel.k
+          telemetry:
+            dependencies:
+            - artifactId: camel-quarkus-opentelemetry
+              groupId: org.apache.camel.quarkus
+          tracing:
+            dependencies:
+            - artifactId: camel-quarkus-opentracing
+              groupId: org.apache.camel.quarkus
+        dependencies:
+        - artifactId: camel-k-runtime
+          groupId: org.apache.camel.k
+        metadata:
+          camel-quarkus.version: 2.16.0
+          camel.version: 3.20.1
+          quarkus.native-builder-image: quay.io/quarkus/ubi-quarkus-mandrel:22.2.0.0-Final-java11
+          quarkus.version: 2.16.0.Final
+        provider: quarkus
+        version: 2.16.0-SNAPSHOT
+      steps:
+      - github.com/apache/camel-k/v2/pkg/builder/LoadCamelQuarkusCatalog
+      - github.com/apache/camel-k/v2/pkg/builder/CleanUpBuildDir
+      - github.com/apache/camel-k/v2/pkg/builder/GenerateJavaKeystore
+      - github.com/apache/camel-k/v2/pkg/builder/GenerateQuarkusProject
+      - github.com/apache/camel-k/v2/pkg/builder/GenerateProjectSettings
+      - github.com/apache/camel-k/v2/pkg/builder/InjectDependencies
+      - github.com/apache/camel-k/v2/pkg/builder/SanitizeDependencies
+      - github.com/apache/camel-k/v2/pkg/builder/BuildQuarkusRunner
+      - github.com/apache/camel-k/v2/pkg/builder/ComputeQuarkusDependencies
+      - github.com/apache/camel-k/v2/pkg/builder/IncrementalImageContext
+  - {}
+  timeout: 5m0s
+status:
+  artifacts:
+  - checksum: sha1:On4SJLAAfmFLmyXqYRRqfiEsuFw=
+    id: camel-k-integration-2.0.0-SNAPSHOT.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/app/camel-k-integration-2.0.0-SNAPSHOT.jar
+    target: dependencies/app/camel-k-integration-2.0.0-SNAPSHOT.jar
+  - checksum: sha1:eMo2eeyP9wfBixeIXvWJRneAxIY=
+    id: io.github.crac.org-crac-0.1.3.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/io.github.crac.org-crac-0.1.3.jar
+    target: dependencies/lib/boot/io.github.crac.org-crac-0.1.3.jar
+  - checksum: sha1:PeDWF9j3u9fSFapXwipek4MYCSY=
+    id: io.quarkus.quarkus-bootstrap-runner-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/io.quarkus.quarkus-bootstrap-runner-2.16.0.Final.jar
+    target: dependencies/lib/boot/io.quarkus.quarkus-bootstrap-runner-2.16.0.Final.jar
+  - checksum: sha1:Rwb6zlxFUVa0qzaSd8S6oToeB84=
+    id: io.quarkus.quarkus-development-mode-spi-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/io.quarkus.quarkus-development-mode-spi-2.16.0.Final.jar
+    target: dependencies/lib/boot/io.quarkus.quarkus-development-mode-spi-2.16.0.Final.jar
+  - checksum: sha1:5GKur0wC40wlHr8XiNBAZ/bdrgk=
+    id: io.smallrye.common.smallrye-common-io-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/io.smallrye.common.smallrye-common-io-1.13.2.jar
+    target: dependencies/lib/boot/io.smallrye.common.smallrye-common-io-1.13.2.jar
+  - checksum: sha1:o5q6DvCnDD9UpEosU5pPEcm7B+g=
+    id: org.glassfish.jakarta.json-1.1.6.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/org.glassfish.jakarta.json-1.1.6.jar
+    target: dependencies/lib/boot/org.glassfish.jakarta.json-1.1.6.jar
+  - checksum: sha1:gxeeMxCi7OhyZpI/7eXvc1XGjJo=
+    id: org.graalvm.sdk.graal-sdk-22.3.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/org.graalvm.sdk.graal-sdk-22.3.0.jar
+    target: dependencies/lib/boot/org.graalvm.sdk.graal-sdk-22.3.0.jar
+  - checksum: sha1:wZMHzBHyj14meTR+YzoylNhlM00=
+    id: org.jboss.logging.jboss-logging-3.5.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/org.jboss.logging.jboss-logging-3.5.0.Final.jar
+    target: dependencies/lib/boot/org.jboss.logging.jboss-logging-3.5.0.Final.jar
+  - checksum: sha1:kyyJQ3jWA7eKuzZNF93RE/cSKpA=
+    id: org.jboss.logmanager.jboss-logmanager-embedded-1.0.11.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/org.jboss.logmanager.jboss-logmanager-embedded-1.0.11.jar
+    target: dependencies/lib/boot/org.jboss.logmanager.jboss-logmanager-embedded-1.0.11.jar
+  - checksum: sha1:1gCynVEwazCynn3mT2/t9hvrGAg=
+    id: org.wildfly.common.wildfly-common-1.5.4.Final-format-001.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/boot/org.wildfly.common.wildfly-common-1.5.4.Final-format-001.jar
+    target: dependencies/lib/boot/org.wildfly.common.wildfly-common-1.5.4.Final-format-001.jar
+  - checksum: sha1:KmrVBNWRp5A//ex2tbclKBmi0WI=
+    id: com.fasterxml.jackson.core.jackson-annotations-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.core.jackson-annotations-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.core.jackson-annotations-2.14.1.jar
+  - checksum: sha1:ege8U1zPC39pKcTQ8qubKU73xKM=
+    id: com.fasterxml.jackson.core.jackson-core-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.core.jackson-core-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.core.jackson-core-2.14.1.jar
+  - checksum: sha1:JoUkuQVsrhIRufH1JWDvGTR/TRc=
+    id: com.fasterxml.jackson.core.jackson-databind-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.core.jackson-databind-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.core.jackson-databind-2.14.1.jar
+  - checksum: sha1:z20YZRZZouZDAUUshB5tqmLne/Y=
+    id: com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.14.1.jar
+  - checksum: sha1:2hlBl9GHvySoaZUUNE6/Cr18NCo=
+    id: com.fasterxml.jackson.datatype.jackson-datatype-jdk8-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.datatype.jackson-datatype-jdk8-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.datatype.jackson-datatype-jdk8-2.14.1.jar
+  - checksum: sha1:8k6MsUN+BRSbejBJ69ZwD0LmZLE=
+    id: com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.14.1.jar
+  - checksum: sha1:LgWobbo9SwUHS2oxPE1bf/hEyN0=
+    id: com.fasterxml.jackson.module.jackson-module-parameter-names-2.14.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.fasterxml.jackson.module.jackson-module-parameter-names-2.14.1.jar
+    target: dependencies/lib/main/com.fasterxml.jackson.module.jackson-module-parameter-names-2.14.1.jar
+  - checksum: sha1:s3j4c7To12FsPZIOITLLHIdnlgA=
+    id: com.github.mifmif.generex-1.0.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.github.mifmif.generex-1.0.2.jar
+    target: dependencies/lib/main/com.github.mifmif.generex-1.0.2.jar
+  - checksum: sha1:c1i2+h1sHIuMAcsFrNdNvm1oD7E=
+    id: com.squareup.okhttp3.logging-interceptor-3.14.9.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.squareup.okhttp3.logging-interceptor-3.14.9.jar
+    target: dependencies/lib/main/com.squareup.okhttp3.logging-interceptor-3.14.9.jar
+  - checksum: sha1:Pm0QE0PH6mh81ZPkmQ9zslyHg4M=
+    id: com.squareup.okhttp3.okhttp-3.14.9.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.squareup.okhttp3.okhttp-3.14.9.jar
+    target: dependencies/lib/main/com.squareup.okhttp3.okhttp-3.14.9.jar
+  - checksum: sha1:eMeCCyBQAtpNLRN/bzEr1ks9YEk=
+    id: com.squareup.okio.okio-1.17.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/com.squareup.okio.okio-1.17.2.jar
+    target: dependencies/lib/main/com.squareup.okio.okio-1.17.2.jar
+  - checksum: sha1:br+mXrQx/0txWiO+enUMvEzJbQ8=
+    id: dk.brics.automaton.automaton-1.11-8.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/dk.brics.automaton.automaton-1.11-8.jar
+    target: dependencies/lib/main/dk.brics.automaton.automaton-1.11-8.jar
+  - checksum: sha1:rx/cLW9XM/bsXMJTKrYcL3nwWQ4=
+    id: io.fabric8.kubernetes-client-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-client-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-client-6.3.1.jar
+  - checksum: sha1:/tvEVUQpMN3kOUVEpYSGXym2THc=
+    id: io.fabric8.kubernetes-client-api-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-client-api-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-client-api-6.3.1.jar
+  - checksum: sha1:c2guphPW5nEVOxZbIpII3/lkuJg=
+    id: io.fabric8.kubernetes-httpclient-okhttp-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-httpclient-okhttp-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-httpclient-okhttp-6.3.1.jar
+  - checksum: sha1:TV2aIL6w8B4V9iFuTi4V3bDJYrg=
+    id: io.fabric8.kubernetes-model-admissionregistration-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-admissionregistration-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-admissionregistration-6.3.1.jar
+  - checksum: sha1:9NYXTSsEmfvzy5fQGNNqzyiysCU=
+    id: io.fabric8.kubernetes-model-apiextensions-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-apiextensions-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-apiextensions-6.3.1.jar
+  - checksum: sha1:JOclUlMRJ1KQhCneZ9W6qVLawug=
+    id: io.fabric8.kubernetes-model-apps-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-apps-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-apps-6.3.1.jar
+  - checksum: sha1:nfPqNSbnIxvui+XUDJ5xPzE8Ts0=
+    id: io.fabric8.kubernetes-model-autoscaling-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-autoscaling-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-autoscaling-6.3.1.jar
+  - checksum: sha1:whebKTvKumoILdwpn3S9A9gsWdw=
+    id: io.fabric8.kubernetes-model-batch-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-batch-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-batch-6.3.1.jar
+  - checksum: sha1:IpSjA2LQe9dVO6H9UWHpHhDRc/A=
+    id: io.fabric8.kubernetes-model-certificates-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-certificates-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-certificates-6.3.1.jar
+  - checksum: sha1:SqUg1PaivM5QuxMsjROeFQ4sAU8=
+    id: io.fabric8.kubernetes-model-common-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-common-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-common-6.3.1.jar
+  - checksum: sha1:IG2gGeidcwBkDus8OEoxhp0wb1s=
+    id: io.fabric8.kubernetes-model-coordination-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-coordination-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-coordination-6.3.1.jar
+  - checksum: sha1:0ujRjvJ/eKwLbWKz1Eu/VgS/i1w=
+    id: io.fabric8.kubernetes-model-core-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-core-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-core-6.3.1.jar
+  - checksum: sha1:DbUZQ4Q69GaU7tqs1LLEfzUsRJQ=
+    id: io.fabric8.kubernetes-model-discovery-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-discovery-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-discovery-6.3.1.jar
+  - checksum: sha1:Uhg+pfvnf9f6uk7YSs5JxPm8gsU=
+    id: io.fabric8.kubernetes-model-events-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-events-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-events-6.3.1.jar
+  - checksum: sha1:lP1WNGwX0ASPtuY99jBDsEBbBoQ=
+    id: io.fabric8.kubernetes-model-extensions-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-extensions-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-extensions-6.3.1.jar
+  - checksum: sha1:GEH16/zymegbzdBHSQ86LtBA144=
+    id: io.fabric8.kubernetes-model-flowcontrol-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-flowcontrol-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-flowcontrol-6.3.1.jar
+  - checksum: sha1:VPUCbTU7Y7oB1msFK0WRRGCK2tE=
+    id: io.fabric8.kubernetes-model-gatewayapi-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-gatewayapi-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-gatewayapi-6.3.1.jar
+  - checksum: sha1:lQ00n0fKeLeamHwJcJqxdgPEBGw=
+    id: io.fabric8.kubernetes-model-metrics-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-metrics-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-metrics-6.3.1.jar
+  - checksum: sha1:ZgA5mFLfWB3jHsCOUtWekWHW4Jw=
+    id: io.fabric8.kubernetes-model-networking-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-networking-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-networking-6.3.1.jar
+  - checksum: sha1:ZIGm/XKiJBveS7qF5N+hs/QP/64=
+    id: io.fabric8.kubernetes-model-node-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-node-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-node-6.3.1.jar
+  - checksum: sha1:ykWkwCMHZ+4gf/rRpVxnnBjsvc4=
+    id: io.fabric8.kubernetes-model-policy-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-policy-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-policy-6.3.1.jar
+  - checksum: sha1:coctPWgKOzHXVZktZrhRpTASgNE=
+    id: io.fabric8.kubernetes-model-rbac-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-rbac-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-rbac-6.3.1.jar
+  - checksum: sha1:dLvRtgvxbxtcZkiiUIdPNf4JmYo=
+    id: io.fabric8.kubernetes-model-scheduling-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-scheduling-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-scheduling-6.3.1.jar
+  - checksum: sha1:M9SVt9pjCzOI4pV3S5kmq6rOYJU=
+    id: io.fabric8.kubernetes-model-storageclass-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.kubernetes-model-storageclass-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.kubernetes-model-storageclass-6.3.1.jar
+  - checksum: sha1:sh+aBXA6Z+nLQfpt15+1hB6Gg/s=
+    id: io.fabric8.openshift-client-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-client-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-client-6.3.1.jar
+  - checksum: sha1:z5mvUO30zjldduZKmg3liuMF+68=
+    id: io.fabric8.openshift-client-api-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-client-api-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-client-api-6.3.1.jar
+  - checksum: sha1:WV6pXfaRMjXdBEpi5IS16dwwfNo=
+    id: io.fabric8.openshift-model-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-6.3.1.jar
+  - checksum: sha1:V+DTT1h1YhZVND6wybvcnhhTCRc=
+    id: io.fabric8.openshift-model-clusterautoscaling-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-clusterautoscaling-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-clusterautoscaling-6.3.1.jar
+  - checksum: sha1:J+3Tor8wkpzCWvB/IE12M1m/gbI=
+    id: io.fabric8.openshift-model-config-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-config-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-config-6.3.1.jar
+  - checksum: sha1:7rlOQ9wGJWaZODbm5sFTzPj0rLo=
+    id: io.fabric8.openshift-model-console-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-console-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-console-6.3.1.jar
+  - checksum: sha1:cvp26BxOQjvfFkfwW6DRfLGTVx0=
+    id: io.fabric8.openshift-model-hive-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-hive-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-hive-6.3.1.jar
+  - checksum: sha1:u2j2CCoDur8AiRNd0QSgeHvN2tg=
+    id: io.fabric8.openshift-model-installer-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-installer-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-installer-6.3.1.jar
+  - checksum: sha1:+xblM1E06T/pRxeuOP+xNEThHlU=
+    id: io.fabric8.openshift-model-machine-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-machine-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-machine-6.3.1.jar
+  - checksum: sha1:nsZCmCS6RZay4oIuMZ7Fbb8ojHA=
+    id: io.fabric8.openshift-model-machineconfig-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-machineconfig-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-machineconfig-6.3.1.jar
+  - checksum: sha1:mrGblWuqDMhOSQgcBIqng4isotc=
+    id: io.fabric8.openshift-model-miscellaneous-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-miscellaneous-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-miscellaneous-6.3.1.jar
+  - checksum: sha1:+OElEt1Xb3dK5HJfOOInORSw7gE=
+    id: io.fabric8.openshift-model-monitoring-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-monitoring-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-monitoring-6.3.1.jar
+  - checksum: sha1:lgztUfhE2Zx3AlV/TRoto8EzWI4=
+    id: io.fabric8.openshift-model-operator-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-operator-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-operator-6.3.1.jar
+  - checksum: sha1:zLIUsFT+nG0lsTWmO9XEMrp/pPE=
+    id: io.fabric8.openshift-model-operatorhub-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-operatorhub-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-operatorhub-6.3.1.jar
+  - checksum: sha1:MQapt5Q6xMQfba5XYDN2ZqQYtv8=
+    id: io.fabric8.openshift-model-storageversionmigrator-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-storageversionmigrator-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-storageversionmigrator-6.3.1.jar
+  - checksum: sha1:wH2tUGJiPAtBpSkPdihLa3LEde8=
+    id: io.fabric8.openshift-model-tuned-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-tuned-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-tuned-6.3.1.jar
+  - checksum: sha1:krIi92WN196KngaudKk5Nq7bpXM=
+    id: io.fabric8.openshift-model-whereabouts-6.3.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.openshift-model-whereabouts-6.3.1.jar
+    target: dependencies/lib/main/io.fabric8.openshift-model-whereabouts-6.3.1.jar
+  - checksum: sha1:0+vw8pEpdkm0yNw+zIHS7d7cEA0=
+    id: io.fabric8.zjsonpatch-0.3.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.fabric8.zjsonpatch-0.3.0.jar
+    target: dependencies/lib/main/io.fabric8.zjsonpatch-0.3.0.jar
+  - checksum: sha1:RHprq8pWkVeii5y0MrgdTc5YiWM=
+    id: io.quarkus.arc.arc-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.arc.arc-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.arc.arc-2.16.0.Final.jar
+  - checksum: sha1:ytvhZz+0XwmJ/2F10RF7sw7ADaw=
+    id: io.quarkus.quarkus-arc-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-arc-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-arc-2.16.0.Final.jar
+  - checksum: sha1:3zV4xI3ECRswf3762XER84KnTao=
+    id: io.quarkus.quarkus-core-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-core-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-core-2.16.0.Final.jar
+  - checksum: sha1:r0OotNoqLJEZ5SgJKYh0RYR1l6A=
+    id: io.quarkus.quarkus-fs-util-0.0.9.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-fs-util-0.0.9.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-fs-util-0.0.9.jar
+  - checksum: sha1:6BToEOo+1cQTOOn6CU09jkFpcfc=
+    id: io.quarkus.quarkus-jackson-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-jackson-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-jackson-2.16.0.Final.jar
+  - checksum: sha1:Kc9GqxsGLge7sM2EB1ktv1ZDLlE=
+    id: io.quarkus.quarkus-jsonp-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-jsonp-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-jsonp-2.16.0.Final.jar
+  - checksum: sha1:6J/12XvPHbDy0n/5aQ7m7Tjp2Ms=
+    id: io.quarkus.quarkus-kubernetes-client-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-kubernetes-client-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-kubernetes-client-2.16.0.Final.jar
+  - checksum: sha1:smSeq/q+dIYdleepIY4krntNg9w=
+    id: io.quarkus.quarkus-kubernetes-client-internal-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-kubernetes-client-internal-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-kubernetes-client-internal-2.16.0.Final.jar
+  - checksum: sha1:Bekdpi7jhc0DaM431jM4ggC3D88=
+    id: io.quarkus.quarkus-logging-json-2.16.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.quarkus.quarkus-logging-json-2.16.0.Final.jar
+    target: dependencies/lib/main/io.quarkus.quarkus-logging-json-2.16.0.Final.jar
+  - checksum: sha1:RK1OuzexWcQwP3h8GlMg+n5Y9fk=
+    id: io.smallrye.common.smallrye-common-annotation-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.common.smallrye-common-annotation-1.13.2.jar
+    target: dependencies/lib/main/io.smallrye.common.smallrye-common-annotation-1.13.2.jar
+  - checksum: sha1:ey1rsvYI3XeXSSbL0J2SAjPuthE=
+    id: io.smallrye.common.smallrye-common-classloader-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.common.smallrye-common-classloader-1.13.2.jar
+    target: dependencies/lib/main/io.smallrye.common.smallrye-common-classloader-1.13.2.jar
+  - checksum: sha1:1/xUpHGF7S8gY/Cu55+Cez7zETU=
+    id: io.smallrye.common.smallrye-common-constraint-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.common.smallrye-common-constraint-1.13.2.jar
+    target: dependencies/lib/main/io.smallrye.common.smallrye-common-constraint-1.13.2.jar
+  - checksum: sha1:O0sSva0TJB2MGkOaruzcJxYB7TQ=
+    id: io.smallrye.common.smallrye-common-expression-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.common.smallrye-common-expression-1.13.2.jar
+    target: dependencies/lib/main/io.smallrye.common.smallrye-common-expression-1.13.2.jar
+  - checksum: sha1:eB2AJyFApjgsLVTwKz/GEzcXlVg=
+    id: io.smallrye.common.smallrye-common-function-1.13.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.common.smallrye-common-function-1.13.2.jar
+    target: dependencies/lib/main/io.smallrye.common.smallrye-common-function-1.13.2.jar
+  - checksum: sha1:n9vxW1aPFYRSbr5ZWKYhpFMA+kg=
+    id: io.smallrye.config.smallrye-config-2.13.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.config.smallrye-config-2.13.1.jar
+    target: dependencies/lib/main/io.smallrye.config.smallrye-config-2.13.1.jar
+  - checksum: sha1:tXiLentVKMB9/4blHMuyCWovtOQ=
+    id: io.smallrye.config.smallrye-config-common-2.13.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.config.smallrye-config-common-2.13.1.jar
+    target: dependencies/lib/main/io.smallrye.config.smallrye-config-common-2.13.1.jar
+  - checksum: sha1:KGtQACQ/IYUCOF1KI53YUN43BII=
+    id: io.smallrye.config.smallrye-config-core-2.13.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.config.smallrye-config-core-2.13.1.jar
+    target: dependencies/lib/main/io.smallrye.config.smallrye-config-core-2.13.1.jar
+  - checksum: sha1:fPuo4HMGZU/w6w4UPnBMTlOLI6w=
+    id: io.smallrye.config.smallrye-config-source-yaml-2.13.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.config.smallrye-config-source-yaml-2.13.1.jar
+    target: dependencies/lib/main/io.smallrye.config.smallrye-config-source-yaml-2.13.1.jar
+  - checksum: sha1:lb+ApFchWqT3zvAk+IV2pu+yL1w=
+    id: io.smallrye.reactive.mutiny-1.8.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/io.smallrye.reactive.mutiny-1.8.0.jar
+    target: dependencies/lib/main/io.smallrye.reactive.mutiny-1.8.0.jar
+  - checksum: sha1:WeuE7g1hYzL/RKugZfOIjPACzS0=
+    id: jakarta.annotation.jakarta.annotation-api-1.3.5.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.annotation.jakarta.annotation-api-1.3.5.jar
+    target: dependencies/lib/main/jakarta.annotation.jakarta.annotation-api-1.3.5.jar
+  - checksum: sha1:8xGrlLsdQ4BpClPXNyJqa4ed1PE=
+    id: jakarta.el.jakarta.el-api-3.0.3.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.el.jakarta.el-api-3.0.3.jar
+    target: dependencies/lib/main/jakarta.el.jakarta.el-api-3.0.3.jar
+  - checksum: sha1:WPSX82LNGcL4hC11xJHScPBgDn8=
+    id: jakarta.enterprise.jakarta.enterprise.cdi-api-2.0.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.enterprise.jakarta.enterprise.cdi-api-2.0.2.jar
+    target: dependencies/lib/main/jakarta.enterprise.jakarta.enterprise.cdi-api-2.0.2.jar
+  - checksum: sha1:kxZENwRuBrSHbgabjnoyGgLxCi0=
+    id: jakarta.inject.jakarta.inject-api-1.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.inject.jakarta.inject-api-1.0.jar
+    target: dependencies/lib/main/jakarta.inject.jakarta.inject-api-1.0.jar
+  - checksum: sha1:IMveaSxVVpLKg1+27LSoyVrL5uA=
+    id: jakarta.interceptor.jakarta.interceptor-api-1.2.5.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.interceptor.jakarta.interceptor-api-1.2.5.jar
+    target: dependencies/lib/main/jakarta.interceptor.jakarta.interceptor-api-1.2.5.jar
+  - checksum: sha1:xBedSHIKHocgIRX77WCJvcQZVAU=
+    id: jakarta.transaction.jakarta.transaction-api-1.3.3.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/jakarta.transaction.jakarta.transaction-api-1.3.3.jar
+    target: dependencies/lib/main/jakarta.transaction.jakarta.transaction-api-1.3.3.jar
+  - checksum: sha1:8HJOnmtd5eDWISOEEtIzconfdDs=
+    id: org.apache.camel.camel-api-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-api-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-api-3.20.1.jar
+  - checksum: sha1:ChGivbUb7I8XIM9+59BBUXCswnY=
+    id: org.apache.camel.camel-base-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-base-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-base-3.20.1.jar
+  - checksum: sha1:jCwCoZkhSGy7E65WkfcHVFBiaPk=
+    id: org.apache.camel.camel-base-engine-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-base-engine-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-base-engine-3.20.1.jar
+  - checksum: sha1:7eFLqALlk+wmz+d6lYnaUBxQbvg=
+    id: org.apache.camel.camel-bean-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-bean-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-bean-3.20.1.jar
+  - checksum: sha1:/V2XuxJGmt7BKLMTQcsJsFPP2EU=
+    id: org.apache.camel.camel-cloud-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-cloud-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-cloud-3.20.1.jar
+  - checksum: sha1:4VySYT+GTywt5kjxm5zjW3g7HyU=
+    id: org.apache.camel.camel-cluster-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-cluster-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-cluster-3.20.1.jar
+  - checksum: sha1:29QIMxlub38aDyaror0J4TTBkRw=
+    id: org.apache.camel.camel-componentdsl-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-componentdsl-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-componentdsl-3.20.1.jar
+  - checksum: sha1:h3x2HNNCoaMPQz5lJXNE4GB40qs=
+    id: org.apache.camel.camel-core-catalog-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-catalog-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-catalog-3.20.1.jar
+  - checksum: sha1:/ov9b8sJ5xyhdpASfpvMKAJRb0U=
+    id: org.apache.camel.camel-core-engine-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-engine-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-engine-3.20.1.jar
+  - checksum: sha1:UP+Tj5cWyPXYnG1ky+FZ9FFX/d4=
+    id: org.apache.camel.camel-core-languages-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-languages-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-languages-3.20.1.jar
+  - checksum: sha1:/hO+WIlI119zceeNL8u0bFvZNWg=
+    id: org.apache.camel.camel-core-model-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-model-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-model-3.20.1.jar
+  - checksum: sha1:TU4qdzVIMAMTH30GD/48j9Y2C4c=
+    id: org.apache.camel.camel-core-processor-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-processor-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-processor-3.20.1.jar
+  - checksum: sha1:i+pLhZ85L6O69VKxKMEqIvl9O2s=
+    id: org.apache.camel.camel-core-reifier-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-core-reifier-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-core-reifier-3.20.1.jar
+  - checksum: sha1:haQeT/AcIwcmHgdaWKBdeCD1m9o=
+    id: org.apache.camel.camel-dsl-support-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-dsl-support-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-dsl-support-3.20.1.jar
+  - checksum: sha1:4FG9s2JXim6KDndziATDxRzD6pA=
+    id: org.apache.camel.camel-endpointdsl-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-endpointdsl-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-endpointdsl-3.20.1.jar
+  - checksum: sha1:UQ7t7YSSZIC+ejudKtSa/sONnsg=
+    id: org.apache.camel.camel-java-joor-dsl-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-java-joor-dsl-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-java-joor-dsl-3.20.1.jar
+  - checksum: sha1:iIYtScJ9+ZgW/tZP3wGLL9nbESg=
+    id: org.apache.camel.camel-kubernetes-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-kubernetes-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-kubernetes-3.20.1.jar
+  - checksum: sha1:anEyfRrhoKw5f972J+BrqbNrJBs=
+    id: org.apache.camel.camel-main-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-main-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-main-3.20.1.jar
+  - checksum: sha1:NjQxOY/PwXRUeL4vcpBF1E+P3i0=
+    id: org.apache.camel.camel-management-api-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-management-api-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-management-api-3.20.1.jar
+  - checksum: sha1:1hXjimEgKh4fXF0OzucWIDMnDDw=
+    id: org.apache.camel.camel-microprofile-config-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-microprofile-config-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-microprofile-config-3.20.1.jar
+  - checksum: sha1:+odE1AOwg/03MzUrc0HjDzHLGL0=
+    id: org.apache.camel.camel-support-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-support-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-support-3.20.1.jar
+  - checksum: sha1:VbXdFXSO/TfPBwTNAguSirGz+1E=
+    id: org.apache.camel.camel-timer-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-timer-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-timer-3.20.1.jar
+  - checksum: sha1:iCO7ixggNZUJvuf0U7xovdw1Nv4=
+    id: org.apache.camel.camel-tooling-model-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-tooling-model-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-tooling-model-3.20.1.jar
+  - checksum: sha1:gH9SP4jAZ6VAUF2yMY4m9mbciGo=
+    id: org.apache.camel.camel-util-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-util-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-util-3.20.1.jar
+  - checksum: sha1:A9LQGY5Z6AIZEU3aBIEge9E5UB4=
+    id: org.apache.camel.camel-util-json-3.20.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.camel-util-json-3.20.1.jar
+    target: dependencies/lib/main/org.apache.camel.camel-util-json-3.20.1.jar
+  - checksum: sha1:91kserd2m/8fHygWF9lNa8izg1E=
+    id: org.apache.camel.k.camel-k-core-2.16.0-SNAPSHOT.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.k.camel-k-core-2.16.0-SNAPSHOT.jar
+    target: dependencies/lib/main/org.apache.camel.k.camel-k-core-2.16.0-SNAPSHOT.jar
+  - checksum: sha1:dcDT5DXl/qsMYr/3P7CtXAN1x+4=
+    id: org.apache.camel.k.camel-k-core-api-2.16.0-SNAPSHOT.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.k.camel-k-core-api-2.16.0-SNAPSHOT.jar
+    target: dependencies/lib/main/org.apache.camel.k.camel-k-core-api-2.16.0-SNAPSHOT.jar
+  - checksum: sha1:xjeZei5gVzXT6YM6au/+uwoh7/Y=
+    id: org.apache.camel.k.camel-k-core-support-2.16.0-SNAPSHOT.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.k.camel-k-core-support-2.16.0-SNAPSHOT.jar
+    target: dependencies/lib/main/org.apache.camel.k.camel-k-core-support-2.16.0-SNAPSHOT.jar
+  - checksum: sha1:P2GcC/4kWw4zDYAoX8aXIXO4s+g=
+    id: org.apache.camel.k.camel-k-runtime-2.16.0-SNAPSHOT.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.k.camel-k-runtime-2.16.0-SNAPSHOT.jar
+    target: dependencies/lib/main/org.apache.camel.k.camel-k-runtime-2.16.0-SNAPSHOT.jar
+  - checksum: sha1:hai+jmcn9QjjXtIE0IxbF8p1p/g=
+    id: org.apache.camel.quarkus.camel-quarkus-bean-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-bean-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-bean-2.16.0.jar
+  - checksum: sha1:6HfE+ziP3dQm0izj230coniQHM4=
+    id: org.apache.camel.quarkus.camel-quarkus-core-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-core-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-core-2.16.0.jar
+  - checksum: sha1:HTaYSMzyvFr/UOzzKZTzWg2cVZg=
+    id: org.apache.camel.quarkus.camel-quarkus-core-cloud-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-core-cloud-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-core-cloud-2.16.0.jar
+  - checksum: sha1:65sajI1MYY/me8E8NOhNPjfrw7Y=
+    id: org.apache.camel.quarkus.camel-quarkus-java-joor-dsl-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-java-joor-dsl-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-java-joor-dsl-2.16.0.jar
+  - checksum: sha1:5HzD45FjSpdKC2XDdchIgGeSTQg=
+    id: org.apache.camel.quarkus.camel-quarkus-kubernetes-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-kubernetes-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-kubernetes-2.16.0.jar
+  - checksum: sha1:Kl6RSPVUCEVvDVWi7EawevMHdVU=
+    id: org.apache.camel.quarkus.camel-quarkus-support-commons-logging-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-support-commons-logging-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-support-commons-logging-2.16.0.jar
+  - checksum: sha1:yo7zJOqfhMQy2VtyM+Nj1VcCDos=
+    id: org.apache.camel.quarkus.camel-quarkus-timer-2.16.0.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.camel.quarkus.camel-quarkus-timer-2.16.0.jar
+    target: dependencies/lib/main/org.apache.camel.quarkus.camel-quarkus-timer-2.16.0.jar
+  - checksum: sha1:aRqLTmz0JIw7xyyLcZM31ctzWfo=
+    id: org.apache.commons.commons-compress-1.22.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.apache.commons.commons-compress-1.22.jar
+    target: dependencies/lib/main/org.apache.commons.commons-compress-1.22.jar
+  - checksum: sha1:JvwKukGsRQ3fhsjXLVhjXom4T+s=
+    id: org.eclipse.microprofile.config.microprofile-config-api-2.0.1.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.eclipse.microprofile.config.microprofile-config-api-2.0.1.jar
+    target: dependencies/lib/main/org.eclipse.microprofile.config.microprofile-config-api-2.0.1.jar
+  - checksum: sha1:6O/A8qtOxrMb2EdKSk2DSWXk6Ok=
+    id: org.eclipse.microprofile.context-propagation.microprofile-context-propagation-api-1.2.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.eclipse.microprofile.context-propagation.microprofile-context-propagation-api-1.2.jar
+    target: dependencies/lib/main/org.eclipse.microprofile.context-propagation.microprofile-context-propagation-api-1.2.jar
+  - checksum: sha1:J6ToI9ZhveZ+wQO7orrzPN3ebnU=
+    id: org.jboss.logging.commons-logging-jboss-logging-1.0.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jboss.logging.commons-logging-jboss-logging-1.0.0.Final.jar
+    target: dependencies/lib/main/org.jboss.logging.commons-logging-jboss-logging-1.0.0.Final.jar
+  - checksum: sha1:7j24LZVu4ixPHy35xhHgSOeaSkM=
+    id: org.jboss.logging.jboss-logging-annotations-2.2.1.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jboss.logging.jboss-logging-annotations-2.2.1.Final.jar
+    target: dependencies/lib/main/org.jboss.logging.jboss-logging-annotations-2.2.1.Final.jar
+  - checksum: sha1:uv+K54AR5oWeEnpctvFjMqBW/ZM=
+    id: org.jboss.slf4j.slf4j-jboss-logmanager-1.2.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jboss.slf4j.slf4j-jboss-logmanager-1.2.0.Final.jar
+    target: dependencies/lib/main/org.jboss.slf4j.slf4j-jboss-logmanager-1.2.0.Final.jar
+  - checksum: sha1:HStUBKVWpK7d3oqWds7I7gG04KA=
+    id: org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec-2.0.0.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec-2.0.0.Final.jar
+    target: dependencies/lib/main/org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec-2.0.0.Final.jar
+  - checksum: sha1:JDOgTloPiYJFSiu+JwDuJyo6ccI=
+    id: org.jboss.threads.jboss-threads-3.4.3.Final.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jboss.threads.jboss-threads-3.4.3.Final.jar
+    target: dependencies/lib/main/org.jboss.threads.jboss-threads-3.4.3.Final.jar
+  - checksum: sha1:Hhb9uc4rOs2p1keQKJP1WCn7AK4=
+    id: org.jooq.joor-0.9.14.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.jooq.joor-0.9.14.jar
+    target: dependencies/lib/main/org.jooq.joor-0.9.14.jar
+  - checksum: sha1:2ft6eSb/pjWz3KpQSfsr+iWz59A=
+    id: org.reactivestreams.reactive-streams-1.0.3.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.reactivestreams.reactive-streams-1.0.3.jar
+    target: dependencies/lib/main/org.reactivestreams.reactive-streams-1.0.3.jar
+  - checksum: sha1:bGJoGi9lW0mWOlmDuLCVCmEgrhQ=
+    id: org.slf4j.slf4j-api-1.7.36.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.slf4j.slf4j-api-1.7.36.jar
+    target: dependencies/lib/main/org.slf4j.slf4j-api-1.7.36.jar
+  - checksum: sha1:LNCof/fflT+BDDRL3y/jNAuVTGk=
+    id: org.yaml.snakeyaml-1.33.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/lib/main/org.yaml.snakeyaml-1.33.jar
+    target: dependencies/lib/main/org.yaml.snakeyaml-1.33.jar
+  - checksum: sha1:ORufXpYEDu5W0PXcmd2OPnd6jic=
+    id: generated-bytecode.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/quarkus/generated-bytecode.jar
+    target: dependencies/quarkus/generated-bytecode.jar
+  - checksum: sha1:He/IiuZ1CihIFDJrL3MQbc3eStA=
+    id: quarkus-application.dat
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/quarkus/quarkus-application.dat
+    target: dependencies/quarkus/quarkus-application.dat
+  - checksum: sha1:qcn6sxJZJ5uEgxtSrdWsEfXNmjc=
+    id: quarkus-app-dependencies.txt
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/quarkus-app-dependencies.txt
+    target: dependencies/quarkus-app-dependencies.txt
+  - checksum: sha1:mZZNqjgonW0kjIWepcF3DCwf7Fs=
+    id: quarkus-run.jar
+    location: /builder/kit-chrl50g1ql5dg7p4t540/maven/target/quarkus-app/quarkus-run.jar
+    target: dependencies/quarkus-run.jar
+  baseImage: docker.io/eclipse-temurin:11
+  conditions:
+  - lastTransitionTime: "2023-05-31T13:58:39Z"
+    lastUpdateTime: "2023-05-31T13:58:39Z"
+    message: |
+      {"level":"info","ts":1685541515.8123345,"logger":"camel-k.builder","msg":"step done in 7.724687 seconds","step":"github.com/apache/camel-k/v2/pkg/builder/BuildQuarkusRunner","phase":"20","task":"builder"}
+      {"level":"info","ts":1685541515.8123631,"logger":"camel-k.builder","msg":"executing step","step":"github.com/apache/camel-k/v2/pkg/builder/ComputeQuarkusDependencies","phase":"21","task":"builder"}
+      {"level":"info","ts":1685541515.9130857,"logger":"camel-k.builder","msg":"step done in 0.100711 seconds","step":"github.com/apache/camel-k/v2/pkg/builder/ComputeQuarkusDependencies","phase":"21","task":"builder"}
+      {"level":"info","ts":1685541515.9131098,"logger":"camel-k.builder","msg":"executing step","step":"github.com/apache/camel-k/v2/pkg/builder/IncrementalImageContext","phase":"30","task":"builder"}
+      {"level":"info","ts":1685541516.0510669,"logger":"camel-k.builder","msg":"step done in 0.137942 seconds","step":"github.com/apache/camel-k/v2/pkg/builder/IncrementalImageContext","phase":"30","task":"builder"}
+      {"level":"info","ts":1685541516.051102,"logger":"camel-k.builder","msg":"dependencies: [camel:timer mvn:org.apache.camel.k:camel-k-runtime mvn:org.apache.camel.quarkus:camel-quarkus-java-joor-dsl]"}
+      {"level":"info","ts":1685541516.0511599,"logger":"camel-k.builder","msg":"artifacts: [camel-k-integration-2.0.0-SNAPSHOT.jar io.github.crac.org-crac-0.1.3.jar io.quarkus.quarkus-bootstrap-runner-2.16.0.Final.jar io.quarkus.quarkus-development-mode-spi-2.16.0.Final.jar io.smallrye.common.smallrye-common-io-1.13.2.jar org.glassfish.jakarta.json-1.1.6.jar org.graalvm.sdk.graal-sdk-22.3.0.jar org.jboss.logging.jboss-logging-3.5.0.Final.jar org.jboss.logmanager.jboss-logmanager-embedded-1.0.11.jar org.wildfly.common.wildfly-common-1.5.4.Final-format-001.jar com.fasterxml.jackson.core.jackson-annotations-2.14.1.jar com.fasterxml.jackson.core.jackson-core-2.14.1.jar com.fasterxml.jackson.core.jackson-databind-2.14.1.jar com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.14.1.jar com.fasterxml.jackson.datatype.jackson-datatype-jdk8-2.14.1.jar com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.14.1.jar com.fasterxml.jackson.module.jackson-module-parameter-names-2.14.1.jar com.github.mifmif.generex-1.0.2.jar com.squareup.okhttp3.logging-interceptor-3.14.9.jar com.squareup.okhttp3.okhttp-3.14.9.jar com.squareup.okio.okio-1.17.2.jar dk.brics.automaton.automaton-1.11-8.jar io.fabric8.kubernetes-client-6.3.1.jar io.fabric8.kubernetes-client-api-6.3.1.jar io.fabric8.kubernetes-httpclient-okhttp-6.3.1.jar io.fabric8.kubernetes-model-admissionregistration-6.3.1.jar io.fabric8.kubernetes-model-apiextensions-6.3.1.jar io.fabric8.kubernetes-model-apps-6.3.1.jar io.fabric8.kubernetes-model-autoscaling-6.3.1.jar io.fabric8.kubernetes-model-batch-6.3.1.jar io.fabric8.kubernetes-model-certificates-6.3.1.jar io.fabric8.kubernetes-model-common-6.3.1.jar io.fabric8.kubernetes-model-coordination-6.3.1.jar io.fabric8.kubernetes-model-core-6.3.1.jar io.fabric8.kubernetes-model-discovery-6.3.1.jar io.fabric8.kubernetes-model-events-6.3.1.jar io.fabric8.kubernetes-model-extensions-6.3.1.jar io.fabric8.kubernetes-model-flowcontrol-6.3.1.jar io.fabric8.kubernetes-model-gatewayapi-6.3.1.jar io.fabric8.kubernetes-model-metrics-6.3.1.jar io.fabric8.kubernetes-model-networking-6.3.1.jar io.fabric8.kubernetes-model-node-6.3.1.jar io.fabric8.kubernetes-model-policy-6.3.1.jar io.fabric8.kubernetes-model-rbac-6.3.1.jar io.fabric8.kubernetes-model-scheduling-6.3.1.jar io.fabric8.kubernetes-model-storageclass-6.3.1.jar io.fabric8.openshift-client-6.3.1.jar io.fabric8.openshift-client-api-6.3.1.jar io.fabric8.openshift-model-6.3.1.jar io.fabric8.openshift-model-clusterautoscaling-6.3.1.jar io.fabric8.openshift-model-config-6.3.1.jar io.fabric8.openshift-model-console-6.3.1.jar io.fabric8.openshift-model-hive-6.3.1.jar io.fabric8.openshift-model-installer-6.3.1.jar io.fabric8.openshift-model-machine-6.3.1.jar io.fabric8.openshift-model-machineconfig-6.3.1.jar io.fabric8.openshift-model-miscellaneous-6.3.1.jar io.fabric8.openshift-model-monitoring-6.3.1.jar io.fabric8.openshift-model-operator-6.3.1.jar io.fabric8.openshift-model-operatorhub-6.3.1.jar io.fabric8.openshift-model-storageversionmigrator-6.3.1.jar io.fabric8.openshift-model-tuned-6.3.1.jar io.fabric8.openshift-model-whereabouts-6.3.1.jar io.fabric8.zjsonpatch-0.3.0.jar io.quarkus.arc.arc-2.16.0.Final.jar io.quarkus.quarkus-arc-2.16.0.Final.jar io.quarkus.quarkus-core-2.16.0.Final.jar io.quarkus.quarkus-fs-util-0.0.9.jar io.quarkus.quarkus-jackson-2.16.0.Final.jar io.quarkus.quarkus-jsonp-2.16.0.Final.jar io.quarkus.quarkus-kubernetes-client-2.16.0.Final.jar io.quarkus.quarkus-kubernetes-client-internal-2.16.0.Final.jar io.quarkus.quarkus-logging-json-2.16.0.Final.jar io.smallrye.common.smallrye-common-annotation-1.13.2.jar io.smallrye.common.smallrye-common-classloader-1.13.2.jar io.smallrye.common.smallrye-common-constraint-1.13.2.jar io.smallrye.common.smallrye-common-expression-1.13.2.jar io.smallrye.common.smallrye-common-function-1.13.2.jar io.smallrye.config.smallrye-config-2.13.1.jar io.smallrye.config.smallrye-config-common-2.13.1.jar io.smallrye.config.smallrye-config-core-2.13.1.jar io.smallrye.config.smallrye-config-source-yaml-2.13.1.jar io.smallrye.reactive.mutiny-1.8.0.jar jakarta.annotation.jakarta.annotation-api-1.3.5.jar jakarta.el.jakarta.el-api-3.0.3.jar jakarta.enterprise.jakarta.enterprise.cdi-api-2.0.2.jar jakarta.inject.jakarta.inject-api-1.0.jar jakarta.interceptor.jakarta.interceptor-api-1.2.5.jar jakarta.transaction.jakarta.transaction-api-1.3.3.jar org.apache.camel.camel-api-3.20.1.jar org.apache.camel.camel-base-3.20.1.jar org.apache.camel.camel-base-engine-3.20.1.jar org.apache.camel.camel-bean-3.20.1.jar org.apache.camel.camel-cloud-3.20.1.jar org.apache.camel.camel-cluster-3.20.1.jar org.apache.camel.camel-componentdsl-3.20.1.jar org.apache.camel.camel-core-catalog-3.20.1.jar org.apache.camel.camel-core-engine-3.20.1.jar org.apache.camel.camel-core-languages-3.20.1.jar org.apache.camel.camel-core-model-3.20.1.jar org.apache.camel.camel-core-processor-3.20.1.jar org.apache.camel.camel-core-reifier-3.20.1.jar org.apache.camel.camel-dsl-support-3.20.1.jar org.apache.camel.camel-endpointdsl-3.20.1.jar org.apache.camel.camel-java-joor-dsl-3.20.1.jar org.apache.camel.camel-kubernetes-3.20.1.jar org.apache.camel.camel-main-3.20.1.jar org.apache.camel.camel-management-api-3.20.1.jar org.apache.camel.camel-microprofile-config-3.20.1.jar org.apache.camel.camel-support-3.20.1.jar org.apache.camel.camel-timer-3.20.1.jar org.apache.camel.camel-tooling-model-3.20.1.jar org.apache.camel.camel-util-3.20.1.jar org.apache.camel.camel-util-json-3.20.1.jar org.apache.camel.k.camel-k-core-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-core-api-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-core-support-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-runtime-2.16.0-SNAPSHOT.jar org.apache.camel.quarkus.camel-quarkus-bean-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-core-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-core-cloud-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-java-joor-dsl-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-kubernetes-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-support-commons-logging-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-timer-2.16.0.jar org.apache.commons.commons-compress-1.22.jar org.eclipse.microprofile.config.microprofile-config-api-2.0.1.jar org.eclipse.microprofile.context-propagation.microprofile-context-propagation-api-1.2.jar org.jboss.logging.commons-logging-jboss-logging-1.0.0.Final.jar org.jboss.logging.jboss-logging-annotations-2.2.1.Final.jar org.jboss.slf4j.slf4j-jboss-logmanager-1.2.0.Final.jar org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec-2.0.0.Final.jar org.jboss.threads.jboss-threads-3.4.3.Final.jar org.jooq.joor-0.9.14.jar org.reactivestreams.reactive-streams-1.0.3.jar org.slf4j.slf4j-api-1.7.36.jar org.yaml.snakeyaml-1.33.jar generated-bytecode.jar quarkus-application.dat quarkus-app-dependencies.txt quarkus-run.jar]"}
+      {"level":"info","ts":1685541516.051281,"logger":"camel-k.builder","msg":"artifacts selected: [camel-k-integration-2.0.0-SNAPSHOT.jar io.github.crac.org-crac-0.1.3.jar io.quarkus.quarkus-bootstrap-runner-2.16.0.Final.jar io.quarkus.quarkus-development-mode-spi-2.16.0.Final.jar io.smallrye.common.smallrye-common-io-1.13.2.jar org.glassfish.jakarta.json-1.1.6.jar org.graalvm.sdk.graal-sdk-22.3.0.jar org.jboss.logging.jboss-logging-3.5.0.Final.jar org.jboss.logmanager.jboss-logmanager-embedded-1.0.11.jar org.wildfly.common.wildfly-common-1.5.4.Final-format-001.jar com.fasterxml.jackson.core.jackson-annotations-2.14.1.jar com.fasterxml.jackson.core.jackson-core-2.14.1.jar com.fasterxml.jackson.core.jackson-databind-2.14.1.jar com.fasterxml.jackson.dataformat.jackson-dataformat-yaml-2.14.1.jar com.fasterxml.jackson.datatype.jackson-datatype-jdk8-2.14.1.jar com.fasterxml.jackson.datatype.jackson-datatype-jsr310-2.14.1.jar com.fasterxml.jackson.module.jackson-module-parameter-names-2.14.1.jar com.github.mifmif.generex-1.0.2.jar com.squareup.okhttp3.logging-interceptor-3.14.9.jar com.squareup.okhttp3.okhttp-3.14.9.jar com.squareup.okio.okio-1.17.2.jar dk.brics.automaton.automaton-1.11-8.jar io.fabric8.kubernetes-client-6.3.1.jar io.fabric8.kubernetes-client-api-6.3.1.jar io.fabric8.kubernetes-httpclient-okhttp-6.3.1.jar io.fabric8.kubernetes-model-admissionregistration-6.3.1.jar io.fabric8.kubernetes-model-apiextensions-6.3.1.jar io.fabric8.kubernetes-model-apps-6.3.1.jar io.fabric8.kubernetes-model-autoscaling-6.3.1.jar io.fabric8.kubernetes-model-batch-6.3.1.jar io.fabric8.kubernetes-model-certificates-6.3.1.jar io.fabric8.kubernetes-model-common-6.3.1.jar io.fabric8.kubernetes-model-coordination-6.3.1.jar io.fabric8.kubernetes-model-core-6.3.1.jar io.fabric8.kubernetes-model-discovery-6.3.1.jar io.fabric8.kubernetes-model-events-6.3.1.jar io.fabric8.kubernetes-model-extensions-6.3.1.jar io.fabric8.kubernetes-model-flowcontrol-6.3.1.jar io.fabric8.kubernetes-model-gatewayapi-6.3.1.jar io.fabric8.kubernetes-model-metrics-6.3.1.jar io.fabric8.kubernetes-model-networking-6.3.1.jar io.fabric8.kubernetes-model-node-6.3.1.jar io.fabric8.kubernetes-model-policy-6.3.1.jar io.fabric8.kubernetes-model-rbac-6.3.1.jar io.fabric8.kubernetes-model-scheduling-6.3.1.jar io.fabric8.kubernetes-model-storageclass-6.3.1.jar io.fabric8.openshift-client-6.3.1.jar io.fabric8.openshift-client-api-6.3.1.jar io.fabric8.openshift-model-6.3.1.jar io.fabric8.openshift-model-clusterautoscaling-6.3.1.jar io.fabric8.openshift-model-config-6.3.1.jar io.fabric8.openshift-model-console-6.3.1.jar io.fabric8.openshift-model-hive-6.3.1.jar io.fabric8.openshift-model-installer-6.3.1.jar io.fabric8.openshift-model-machine-6.3.1.jar io.fabric8.openshift-model-machineconfig-6.3.1.jar io.fabric8.openshift-model-miscellaneous-6.3.1.jar io.fabric8.openshift-model-monitoring-6.3.1.jar io.fabric8.openshift-model-operator-6.3.1.jar io.fabric8.openshift-model-operatorhub-6.3.1.jar io.fabric8.openshift-model-storageversionmigrator-6.3.1.jar io.fabric8.openshift-model-tuned-6.3.1.jar io.fabric8.openshift-model-whereabouts-6.3.1.jar io.fabric8.zjsonpatch-0.3.0.jar io.quarkus.arc.arc-2.16.0.Final.jar io.quarkus.quarkus-arc-2.16.0.Final.jar io.quarkus.quarkus-core-2.16.0.Final.jar io.quarkus.quarkus-fs-util-0.0.9.jar io.quarkus.quarkus-jackson-2.16.0.Final.jar io.quarkus.quarkus-jsonp-2.16.0.Final.jar io.quarkus.quarkus-kubernetes-client-2.16.0.Final.jar io.quarkus.quarkus-kubernetes-client-internal-2.16.0.Final.jar io.quarkus.quarkus-logging-json-2.16.0.Final.jar io.smallrye.common.smallrye-common-annotation-1.13.2.jar io.smallrye.common.smallrye-common-classloader-1.13.2.jar io.smallrye.common.smallrye-common-constraint-1.13.2.jar io.smallrye.common.smallrye-common-expression-1.13.2.jar io.smallrye.common.smallrye-common-function-1.13.2.jar io.smallrye.config.smallrye-config-2.13.1.jar io.smallrye.config.smallrye-config-common-2.13.1.jar io.smallrye.config.smallrye-config-core-2.13.1.jar io.smallrye.config.smallrye-config-source-yaml-2.13.1.jar io.smallrye.reactive.mutiny-1.8.0.jar jakarta.annotation.jakarta.annotation-api-1.3.5.jar jakarta.el.jakarta.el-api-3.0.3.jar jakarta.enterprise.jakarta.enterprise.cdi-api-2.0.2.jar jakarta.inject.jakarta.inject-api-1.0.jar jakarta.interceptor.jakarta.interceptor-api-1.2.5.jar jakarta.transaction.jakarta.transaction-api-1.3.3.jar org.apache.camel.camel-api-3.20.1.jar org.apache.camel.camel-base-3.20.1.jar org.apache.camel.camel-base-engine-3.20.1.jar org.apache.camel.camel-bean-3.20.1.jar org.apache.camel.camel-cloud-3.20.1.jar org.apache.camel.camel-cluster-3.20.1.jar org.apache.camel.camel-componentdsl-3.20.1.jar org.apache.camel.camel-core-catalog-3.20.1.jar org.apache.camel.camel-core-engine-3.20.1.jar org.apache.camel.camel-core-languages-3.20.1.jar org.apache.camel.camel-core-model-3.20.1.jar org.apache.camel.camel-core-processor-3.20.1.jar org.apache.camel.camel-core-reifier-3.20.1.jar org.apache.camel.camel-dsl-support-3.20.1.jar org.apache.camel.camel-endpointdsl-3.20.1.jar org.apache.camel.camel-java-joor-dsl-3.20.1.jar org.apache.camel.camel-kubernetes-3.20.1.jar org.apache.camel.camel-main-3.20.1.jar org.apache.camel.camel-management-api-3.20.1.jar org.apache.camel.camel-microprofile-config-3.20.1.jar org.apache.camel.camel-support-3.20.1.jar org.apache.camel.camel-timer-3.20.1.jar org.apache.camel.camel-tooling-model-3.20.1.jar org.apache.camel.camel-util-3.20.1.jar org.apache.camel.camel-util-json-3.20.1.jar org.apache.camel.k.camel-k-core-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-core-api-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-core-support-2.16.0-SNAPSHOT.jar org.apache.camel.k.camel-k-runtime-2.16.0-SNAPSHOT.jar org.apache.camel.quarkus.camel-quarkus-bean-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-core-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-core-cloud-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-java-joor-dsl-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-kubernetes-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-support-commons-logging-2.16.0.jar org.apache.camel.quarkus.camel-quarkus-timer-2.16.0.jar org.apache.commons.commons-compress-1.22.jar org.eclipse.microprofile.config.microprofile-config-api-2.0.1.jar org.eclipse.microprofile.context-propagation.microprofile-context-propagation-api-1.2.jar org.jboss.logging.commons-logging-jboss-logging-1.0.0.Final.jar org.jboss.logging.jboss-logging-annotations-2.2.1.Final.jar org.jboss.slf4j.slf4j-jboss-logmanager-1.2.0.Final.jar org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec-2.0.0.Final.jar org.jboss.threads.jboss-threads-3.4.3.Final.jar org.jooq.joor-0.9.14.jar org.reactivestreams.reactive-streams-1.0.3.jar org.slf4j.slf4j-api-1.7.36.jar org.yaml.snakeyaml-1.33.jar generated-bytecode.jar quarkus-application.dat quarkus-app-dependencies.txt quarkus-run.jar]"}
+      {"level":"info","ts":1685541516.0513303,"logger":"camel-k.builder","msg":"base image: docker.io/eclipse-temurin:11"}
+      {"level":"info","ts":1685541516.0513332,"logger":"camel-k.builder","msg":"resolved base image: docker.io/eclipse-temurin:11"}
+    reason: Completed (0)
+    status: "True"
+    type: Container builder succeeded
+  duration: 9s
+  observedGeneration: 1
+  phase: Succeeded
+  startedAt: "2023-05-31T13:58:27Z"
