@@ -18,7 +18,7 @@
 set -e
 
 if [ "$#" -lt 1 ]; then
-    echo "usage: $0 promote-release release-version"
+    echo "usage: $0 to promote-release release-version"
     exit 1
 fi
 
