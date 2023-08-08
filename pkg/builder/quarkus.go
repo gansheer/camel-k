@@ -218,6 +218,8 @@ func buildQuarkusRunner(ctx *builderContext) error {
 	mc.SettingsSecurity = ctx.Maven.SettingsSecurity
 	mc.LocalRepository = ctx.Build.Maven.LocalRepository
 	mc.AdditionalArguments = ctx.Build.Maven.CLIOptions
+	mc.Xml = ctx.Maven.Xml
+	mc.Xsl = ctx.Maven.Xsl
 
 	if ctx.Maven.TrustStoreName != "" {
 		mc.ExtraMavenOpts = append(mc.ExtraMavenOpts,

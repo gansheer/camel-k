@@ -42,7 +42,7 @@ type Command struct {
 }
 
 func (c *Command) Do(ctx context.Context) error {
-	if err := generateProjectStructure(c.context, c.project); err != nil {
+	if err := generateProjectStructure(c.context, c.project, ctx); err != nil {
 		return err
 	}
 
@@ -159,6 +159,8 @@ type Context struct {
 	GlobalSettings      []byte
 	UserSettings        []byte
 	SettingsSecurity    []byte
+	Xml                 []byte
+	Xsl                 []byte
 	AdditionalArguments []string
 	AdditionalEntries   map[string]interface{}
 	LocalRepository     string
@@ -188,7 +190,7 @@ func (c *Context) AddSystemProperty(name string, value string) {
 	c.AddArgumentf("-D%s=%s", name, value)
 }
 
-func generateProjectStructure(context Context, project Project) error {
+func generateProjectStructure(context Context, project Project, ctx context.Context) error {
 	if err := util.WriteFileWithBytesMarshallerContent(context.Path, "pom.xml", project); err != nil {
 		return err
 	}
@@ -207,6 +209,18 @@ func generateProjectStructure(context Context, project Project) error {
 
 	if context.SettingsSecurity != nil {
 		if err := util.WriteFileWithContent(filepath.Join(context.Path, "settings-security.xml"), context.SettingsSecurity); err != nil {
+			return err
+		}
+	}
+
+	if context.Xsl != nil {
+		if err := util.WriteFileWithContent(filepath.Join(context.Path, "src/main/resources/example.xslt"), context.Xsl); err != nil {
+			return err
+		}
+	}
+
+	if context.Xml != nil {
+		if err := util.WriteFileWithContent(filepath.Join(context.Path, "src/main/resources/example.xml"), context.Xml); err != nil {
 			return err
 		}
 	}

@@ -89,6 +89,8 @@ type builderContext struct {
 		UserSettings     []byte
 		GlobalSettings   []byte
 		SettingsSecurity []byte
+		Xsl              []byte
+		Xml              []byte
 		TrustStoreName   string
 		TrustStorePass   string
 	}

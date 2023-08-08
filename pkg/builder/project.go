@@ -30,6 +30,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/log"
 	"github.com/apache/camel-k/v2/pkg/util/maven"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func init() {
@@ -120,6 +121,42 @@ func generateProjectSettings(ctx *builderContext) error {
 	}
 	if settingsSecurity != "" {
 		ctx.Maven.SettingsSecurity = []byte(settingsSecurity)
+	}
+
+	//XSL
+	cmxsl := v1.ValueSource{
+		ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: "my-test-properties",
+			},
+			Key: "example.xsl",
+		},
+	}
+	mycmxslcontent, err := kubernetes.ResolveValueSource(ctx.C, ctx.Client, ctx.Namespace, &cmxsl)
+	if err != nil {
+		return err
+	}
+	if mycmxslcontent != "" {
+		log.Info(mycmxslcontent)
+		ctx.Maven.Xsl = []byte(mycmxslcontent)
+	}
+
+	// XML
+	cmxml := v1.ValueSource{
+		ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: "my-test-properties",
+			},
+			Key: "example.xml",
+		},
+	}
+	mycmxmlcontent, err := kubernetes.ResolveValueSource(ctx.C, ctx.Client, ctx.Namespace, &cmxml)
+	if err != nil {
+		return err
+	}
+	if mycmxmlcontent != "" {
+		log.Info(mycmxmlcontent)
+		ctx.Maven.Xml = []byte(mycmxmlcontent)
 	}
 
 	return nil
