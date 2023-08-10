@@ -1,0 +1,26 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: route-2
+spec:
+  configuration:
+  - type: property
+    value: camel.kamelet.log-sink.loggerName = superlog
+  - type: property
+    value: my-expression='body' contains 'bo'
+  - type: property
+    value: 'camel.kamelet.timer-source.message = { "foo": "John"}'
+  - type: property
+    value: camel.kamelet.timer-source.period = 1000
+  flows:
+  - route:
+      from:
+        uri: kamelet:timer-source
+        steps:
+        - to:
+            uri: kamelet:simple-filter-action
+            parameters:
+              expression: "{{my-expression}}"
+        - to:
+            uri: log:info
+  traits: {}

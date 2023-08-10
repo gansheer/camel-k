@@ -1,0 +1,129 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  annotations:
+    camel.apache.org/operator.id: camel-k
+  creationTimestamp: "2023-08-09T15:59:00Z"
+  generation: 1
+  name: route
+  namespace: default
+  resourceVersion: "3911"
+  uid: 57001bcb-9f5e-44cb-b95a-e1ab34ccb804
+spec:
+  flows:
+  - route:
+      from:
+        parameters:
+          message: '{ "foo": "John"}'
+          period: 1000
+        steps:
+        - to:
+            parameters:
+              expression: ${body} contains 'not_in'
+            uri: kamelet:simple-filter-action
+        - to:
+            uri: log:info
+        uri: kamelet:timer-source
+  traits: {}
+status:
+  conditions:
+  - firstTruthyTime: "2023-08-09T15:59:00Z"
+    lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: default/camel-k
+    reason: IntegrationPlatformAvailable
+    status: "True"
+    type: IntegrationPlatformAvailable
+  - firstTruthyTime: "2023-08-09T15:59:00Z"
+    lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: 'kamelets [simple-filter-action,timer-source] found in repositories:
+      (Kubernetes[namespace=default], Empty[])'
+    reason: KameletsAvailable
+    status: "True"
+    type: KameletsAvailable
+  - firstTruthyTime: "2023-08-09T15:59:00Z"
+    lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: kit-cj9rd3qf06va4u8b2apg
+    reason: IntegrationKitAvailable
+    status: "True"
+    type: IntegrationKitAvailable
+  - lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: different controller strategy used (deployment)
+    reason: CronJobNotAvailableReason
+    status: "False"
+    type: CronJobAvailable
+  - firstTruthyTime: "2023-08-09T15:59:00Z"
+    lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: deployment name is route
+    reason: DeploymentAvailable
+    status: "True"
+    type: DeploymentAvailable
+  - lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: no http service required
+    reason: ServiceNotAvailable
+    status: "False"
+    type: ServiceAvailable
+  - lastTransitionTime: "2023-08-09T15:59:00Z"
+    lastUpdateTime: "2023-08-09T15:59:00Z"
+    message: no service defined
+    reason: IngressNotAvailable
+    status: "False"
+    type: ExposureAvailable
+  - firstTruthyTime: "2023-08-09T15:59:02Z"
+    lastTransitionTime: "2023-08-09T15:59:02Z"
+    lastUpdateTime: "2023-08-09T15:59:02Z"
+    message: 1/1 ready replicas
+    reason: DeploymentReady
+    status: "True"
+    type: Ready
+  dependencies:
+  - camel:core
+  - camel:kamelet
+  - camel:log
+  - camel:timer
+  - mvn:org.apache.camel.k:camel-k-runtime
+  - mvn:org.apache.camel.quarkus:camel-quarkus-yaml-dsl
+  digest: vgs7YHig7DlMsb10OIk_DICbLgZRfjYGQXGxuIccaL1Q
+  generatedSources:
+  - content: |
+      - route:
+          from:
+            parameters:
+              message: '{ "foo": "John"}'
+              period: 1000
+            steps:
+            - to:
+                parameters:
+                  expression: ${body} contains 'not_in'
+                uri: kamelet:simple-filter-action
+            - to:
+                uri: log:info
+            uri: kamelet:timer-source
+    name: camel-k-embedded-flow.yaml
+  - contentKey: content
+    contentRef: route-kamelet-simple-filter-action-template
+    language: yaml
+    name: simple-filter-action.yaml
+  - contentKey: content
+    contentRef: route-kamelet-timer-source-template
+    language: yaml
+    name: timer-source.yaml
+  image: 10.97.209.3/default/camel-k-kit-cj9rd3qf06va4u8b2apg@sha256:d6b6042d1edd1028bf7f4585983943441fcbc744632a43cbbf81b546b34d0034
+  integrationKit:
+    name: kit-cj9rd3qf06va4u8b2apg
+    namespace: default
+  lastInitTimestamp: "2023-08-09T15:59:00Z"
+  observedGeneration: 1
+  phase: Running
+  platform: camel-k
+  profile: Kubernetes
+  replicas: 1
+  runtimeProvider: quarkus
+  runtimeVersion: 2.16.0
+  selector: camel.apache.org/integration=route
+  version: 2.1.0-SNAPSHOT
