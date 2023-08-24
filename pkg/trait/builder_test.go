@@ -290,5 +290,7 @@ func TestInvalidMavenProfilesBuilderTrait(t *testing.T) {
 	err := builderTrait.Apply(env)
 
 	assert.NotNil(t, err)
-
+	assert.Equal(t, env.IntegrationKit.Status.Phase, v1.IntegrationKitPhaseError)
+	assert.Equal(t, env.IntegrationKit.Status.Conditions[0].Status, corev1.ConditionFalse)
+	assert.Contains(t, env.IntegrationKit.Status.Conditions[0].Message, "fakeprofile")
 }

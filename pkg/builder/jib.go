@@ -102,6 +102,7 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 	mavenArgs := make([]string, 0)
 	mavenArgs = append(mavenArgs, jib.JibMavenGoal)
 	mavenArgs = append(mavenArgs, strings.Split(string(mavenCommand), " ")...)
+	mavenArgs = append(mavenArgs, "-P", "jib")
 	mavenArgs = append(mavenArgs, jib.JibMavenToImageParam+t.task.Image)
 	mavenArgs = append(mavenArgs, jib.JibMavenFromImageParam+baseImage)
 	if t.task.Registry.Insecure {
@@ -120,7 +121,7 @@ func (t *jibTask) Do(ctx context.Context) v1.BuildStatus {
 		log.Errorf(myerror, "jib integration image containerization did not run successfully")
 		return status.Failed(myerror)
 	} else {
-		log.Info("jib integration image containerization did run successfully")
+		log.Debug("jib integration image containerization did run successfully")
 		status.Image = t.task.Image
 
 		// retrieve image digest
