@@ -42,7 +42,6 @@ import (
 	"github.com/apache/camel-k/v2/pkg/resources"
 	"github.com/apache/camel-k/v2/pkg/util/envvar"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
-	"github.com/apache/camel-k/v2/pkg/util/minikube"
 	"github.com/apache/camel-k/v2/pkg/util/openshift"
 	"github.com/apache/camel-k/v2/pkg/util/patch"
 	image "github.com/apache/camel-k/v2/pkg/util/registry"
@@ -627,17 +626,17 @@ func NewPlatform(
 		if !isOpenShift && registry.Address == "" {
 			// This operation should be done here in the installer
 			// because the operator is not allowed to look into the "kube-system" namespace
-			address, err := minikube.FindRegistry(ctx, c)
+			/*address, err := minikube.FindRegistry(ctx, c)
+			if err != nil {
+				return nil, err
+			}*/
+			//if address == nil {
+			// try KEP-1755
+			address, err := image.GetRegistryAddress(ctx, c)
 			if err != nil {
 				return nil, err
 			}
-			if address == nil {
-				// try KEP-1755
-				address, err = image.GetRegistryAddress(ctx, c)
-				if err != nil {
-					return nil, err
-				}
-			}
+			//}
 
 			if address == nil || *address == "" {
 				return nil, errors.New("cannot find a registry where to push images")
