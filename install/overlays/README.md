@@ -45,7 +45,6 @@ data:
     host: "${MINIKUBE_REGISTRY_IP}"
     hostFromClusterNetwork: "${MINIKUBE_REGISTRY_IP}"
 EOF
-}
 ```
 
 Then patch registry:
