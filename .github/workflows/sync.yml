@@ -14,19 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ---------------------------------------------------------------------------
-
 name: sync
-
 on:
   schedule:
     - cron: "22 22 * * *"
   workflow_dispatch:
-
 jobs:
   sync:
     strategy:
       matrix:
-        branch: ["release-1.10.x", "release-2.0.x"]
+        branch: ["release-1.10.x", "release-2.0.x", "release-2.2.x"]
     runs-on: ubuntu-20.04
     steps:
       - name: Set up JDK 11
