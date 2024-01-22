@@ -15,12 +15,12 @@ The following env variable are expected
 
 To run from local folder :
 ```sh
-kubectl kustomize kustomize/overlays/kubernetes | kubectl create -f -
+kubectl kustomize kustomize/overlays/kubernetes/namespaced | kubectl create -f -
 ```
 
 To run from remote github repository:
 ```sh
-kubectl kustomize https://github.com/apache/camel-k/kustomize/overlays/kubernetes?ref=main | kubectl create -f -
+kubectl kustomize https://github.com/apache/camel-k/kustomize/overlays/kubernetes/namespaced?ref=main | kubectl create -f -
 ```
 
 NOTE: to use a different branch add the parameter "ref" to the github repository URL.

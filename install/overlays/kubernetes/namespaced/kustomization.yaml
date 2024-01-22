@@ -25,10 +25,10 @@ sortOptions:
   order: fifo
 
 resources:
-- ../../config/crd/
-- ../../config/rbac/
-- ../../config/rbac/namespaced/
-- ../../config/manager/
+- ../../../config/crd/
+- ../../../config/rbac/
+- ../../../config/rbac/namespaced/
+- ../../../config/manager/
 
 
 configurations:
