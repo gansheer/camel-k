@@ -30,6 +30,8 @@ resources:
 - ../../../config/rbac/namespaced/
 - ../../../config/manager/
 
+transformers:
+- kube-public-transformer.yaml
 
 configurations:
 - namespace.yaml
