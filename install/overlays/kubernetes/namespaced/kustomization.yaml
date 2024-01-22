@@ -33,5 +33,5 @@ resources:
 transformers:
 - kube-public-transformer.yaml
 
-configurations:
-- namespace.yaml
+#configurations:
+#- namespace.yaml
