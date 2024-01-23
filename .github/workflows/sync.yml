@@ -23,7 +23,7 @@ jobs:
   sync:
     strategy:
       matrix:
-        branch: ["release-1.10.x", "release-2.0.x", "release-2.2.x"]
+        branch: ["release-1.10.x", "release-2.2.x"]
     runs-on: ubuntu-20.04
     steps:
       - name: Set up JDK 17
