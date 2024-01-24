@@ -169,7 +169,7 @@ func TestCronFromURI(t *testing.T) {
 
 		// Mixed scenarios
 		{
-			uri:        "cron:tab?schedule=0/2 * * * ?",
+			uri:        "cron:tab?schedule=0/2 * * * ?", //valid
 			uri2:       "timer:tick?period=120000",
 			cron:       "0/2 * * * ?",
 			components: "cron,timer",
