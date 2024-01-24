@@ -124,6 +124,11 @@ func TestCronFromURI(t *testing.T) {
 			components: "quartz",
 		},
 		{
+			uri:        "quartz://Scheduler_Trigger?cron=*+*+*+*+*",
+			cron:       "* * * * *",
+			components: "quartz",
+		},
+		{
 			uri: "quartz:trigger?cron=*+0+0/4+*+*+?", // invalid
 		},
 		{
@@ -145,6 +150,11 @@ func TestCronFromURI(t *testing.T) {
 		{
 			uri:        "cron:tab?schedule=0 0 0/4 * * ?",
 			cron:       "0 0/4 * * ?",
+			components: "cron",
+		},
+		{
+			uri:        "cron:tab?schedule=0 * * * * ?",
+			cron:       "* * * * ?",
 			components: "cron",
 		},
 		{
@@ -192,6 +202,50 @@ func TestCronFromURI(t *testing.T) {
 			uri2: "timer:tick?period=10800000",
 			uri3: "quartz:trigger?cron=0 0 0/2 * * ? ?",
 			// invalid
+		},
+	}
+
+	for _, test := range tests {
+		thetest := test
+		t.Run(thetest.uri, func(t *testing.T) {
+			uris := []string{thetest.uri, thetest.uri2, thetest.uri3}
+			filtered := make([]string, 0, len(uris))
+			for _, uri := range uris {
+				if uri != "" {
+					filtered = append(filtered, uri)
+				}
+			}
+
+			res := getCronForURIs(filtered)
+			gotCron := ""
+			if res != nil {
+				gotCron = res.schedule
+			}
+			passert.Equal(t, gotCron, thetest.cron)
+
+			gotComponents := ""
+			if res != nil {
+				gotComponents = strings.Join(res.components, ",")
+			}
+			passert.Equal(t, gotComponents, thetest.components)
+		})
+	}
+}
+
+func TestCronFromURIBkp(t *testing.T) {
+	tests := []struct {
+		uri        string
+		uri2       string
+		uri3       string
+		cron       string
+		components string
+	}{
+
+		// Quartz only
+		{
+			uri:        "quartz:trigger?cron=*+*+*+*+*",
+			cron:       "* * * * *",
+			components: "quartz",
 		},
 	}
 

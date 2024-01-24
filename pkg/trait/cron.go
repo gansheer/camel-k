@@ -73,6 +73,7 @@ func newCronTrait() Trait {
 	}
 }
 
+// TODO gansheer understand extraction
 func (t *cronTrait) Configure(e *Environment) (bool, *TraitCondition, error) {
 	if e.Integration == nil {
 		return false, nil, nil
