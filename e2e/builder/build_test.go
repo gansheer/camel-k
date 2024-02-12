@@ -32,6 +32,7 @@ import (
 
 	. "github.com/apache/camel-k/v2/e2e/support"
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type kitOptions struct {
@@ -111,6 +112,15 @@ func TestKitMaxBuildLimit(t *testing.T) {
 					},
 				}, v1.BuildPhaseScheduling, v1.IntegrationKitPhaseNone)
 
+				// verify that last build is waiting
+				Eventually(BuildConditions(ns2, buildC), TestTimeoutMedium).ShouldNot(BeNil())
+				Eventually(
+					Build(ns2, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+					TestTimeoutShort).Should(Equal(corev1.ConditionFalse))
+				Eventually(
+					Build(ns2, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+					TestTimeoutShort).Should(Equal(v1.BuildConditionWaitingReason))
+
 				var notExceedsMaxBuildLimit = func(runningBuilds int) bool {
 					return runningBuilds <= 2
 				}
@@ -131,10 +141,21 @@ func TestKitMaxBuildLimit(t *testing.T) {
 				// verify that all builds are successful
 				Eventually(BuildPhase(ns, buildA), TestTimeoutLong).Should(Equal(v1.BuildPhaseSucceeded))
 				Eventually(KitPhase(ns, buildA), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
+
 				Eventually(BuildPhase(ns1, buildB), TestTimeoutLong).Should(Equal(v1.BuildPhaseSucceeded))
 				Eventually(KitPhase(ns1, buildB), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
+
 				Eventually(BuildPhase(ns2, buildC), TestTimeoutLong).Should(Equal(v1.BuildPhaseSucceeded))
 				Eventually(KitPhase(ns2, buildC), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
+
+				// verify that last build is scheduled
+				Eventually(BuildConditions(ns2, buildC), TestTimeoutMedium).ShouldNot(BeNil())
+				Eventually(
+					Build(ns2, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+					TestTimeoutShort).Should(Equal(corev1.ConditionTrue))
+				Eventually(
+					Build(ns2, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+					TestTimeoutShort).Should(Equal(v1.BuildConditionReadyReason))
 			})
 		})
 	})
@@ -187,6 +208,15 @@ func TestKitMaxBuildLimitFIFOStrategy(t *testing.T) {
 			},
 		}, v1.BuildPhaseScheduling, v1.IntegrationKitPhaseNone)
 
+		// verify that last build is waiting
+		Eventually(BuildConditions(ns, buildC), TestTimeoutMedium).ShouldNot(BeNil())
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+			TestTimeoutShort).Should(Equal(corev1.ConditionFalse))
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+			TestTimeoutShort).Should(Equal(v1.BuildConditionWaitingReason))
+
 		var notExceedsMaxBuildLimit = func(runningBuilds int) bool {
 			return runningBuilds <= 2
 		}
@@ -211,6 +241,15 @@ func TestKitMaxBuildLimitFIFOStrategy(t *testing.T) {
 		Eventually(KitPhase(ns, buildB), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
 		Eventually(BuildPhase(ns, buildC), TestTimeoutLong).Should(Equal(v1.BuildPhaseSucceeded))
 		Eventually(KitPhase(ns, buildC), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
+
+		// verify that last build is scheduled
+		Eventually(BuildConditions(ns, buildC), TestTimeoutLong).ShouldNot(BeNil())
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+			TestTimeoutShort).Should(Equal(corev1.ConditionTrue))
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+			TestTimeoutShort).Should(Equal(v1.BuildConditionReadyReason))
 	})
 }
 
@@ -261,6 +300,15 @@ func TestKitMaxBuildLimitDependencyMatchingStrategy(t *testing.T) {
 			},
 		}, v1.BuildPhaseScheduling, v1.IntegrationKitPhaseNone)
 
+		// verify that last build is waiting
+		Eventually(BuildConditions(ns, buildC), TestTimeoutMedium).ShouldNot(BeNil())
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+			TestTimeoutShort).Should(Equal(corev1.ConditionFalse))
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+			TestTimeoutShort).Should(Equal(v1.BuildConditionWaitingReason))
+
 		var notExceedsMaxBuildLimit = func(runningBuilds int) bool {
 			return runningBuilds <= 2
 		}
@@ -285,6 +333,15 @@ func TestKitMaxBuildLimitDependencyMatchingStrategy(t *testing.T) {
 		Eventually(KitPhase(ns, buildB), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
 		Eventually(BuildPhase(ns, buildC), TestTimeoutLong).Should(Equal(v1.BuildPhaseSucceeded))
 		Eventually(KitPhase(ns, buildC), TestTimeoutLong).Should(Equal(v1.IntegrationKitPhaseReady))
+
+		// verify that last build is scheduled
+		Eventually(BuildConditions(ns, buildC), TestTimeoutLong).ShouldNot(BeNil())
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Status,
+			TestTimeoutShort).Should(Equal(corev1.ConditionTrue))
+		Eventually(
+			Build(ns, buildC)().Status.GetCondition(v1.BuildConditionScheduled).Reason,
+			TestTimeoutShort).Should(Equal(v1.BuildConditionReadyReason))
 	})
 }
 
