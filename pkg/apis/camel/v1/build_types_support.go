@@ -194,6 +194,16 @@ func (in *BuildStatus) SetConditions(conditions ...BuildCondition) {
 	}
 }
 
+func (in *BuildStatus) ConditionChanged(condition BuildCondition) bool {
+
+	currentCond := in.GetCondition(condition.Type)
+
+	if currentCond != nil && currentCond.Status == condition.Status && currentCond.Reason == condition.Reason {
+		return false
+	}
+	return true
+}
+
 // RemoveCondition removes the resource condition with the provided type.
 func (in *BuildStatus) RemoveCondition(condType BuildConditionType) {
 	newConditions := in.Conditions[:0]

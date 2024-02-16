@@ -76,15 +76,18 @@ func (action *scheduleAction) Handle(ctx context.Context, build *v1.Build) (*v1.
 }
 
 func (action *scheduleAction) toUpdatedCondition(ctx context.Context, build *v1.Build, condition *v1.BuildCondition) error {
-	return action.patchBuildStatus(ctx, build, func(b *v1.Build) {
-		b.Status = v1.BuildStatus{
-			Phase:      b.Status.Phase,
-			StartedAt:  b.Status.StartedAt,
-			Failure:    b.Status.Failure,
-			Conditions: b.Status.Conditions,
-		}
-		b.Status.SetConditions(*condition)
-	})
+	if build.Status.ConditionChanged(*condition) {
+		return action.patchBuildStatus(ctx, build, func(b *v1.Build) {
+			b.Status = v1.BuildStatus{
+				Phase:      b.Status.Phase,
+				StartedAt:  b.Status.StartedAt,
+				Failure:    b.Status.Failure,
+				Conditions: b.Status.Conditions,
+			}
+			b.Status.SetConditions(*condition)
+		})
+	}
+	return nil
 
 }
 
