@@ -225,6 +225,7 @@ func TestBuilderTrait(t *testing.T) {
 		// Check containers conditions
 		Eventually(Build(integrationKitNamespace, integrationKitName), TestTimeoutLong).ShouldNot(BeNil())
 		Eventually(BuildConditions(integrationKitNamespace, integrationKitName), TestTimeoutLong).ShouldNot(BeNil())
+		Eventually(BuildCondition(integrationKitNamespace, integrationKitName, v1.BuildConditionType("Container custom1 succeeded")), TestTimeoutMedium).ShouldNot(BeNil())
 		Eventually(
 			Build(integrationKitNamespace, integrationKitName)().Status.GetCondition(v1.BuildConditionType("Container custom1 succeeded")).Status,
 			TestTimeoutShort).Should(Equal(corev1.ConditionFalse))
@@ -233,6 +234,7 @@ func TestBuilderTrait(t *testing.T) {
 			TestTimeoutShort).Should(ContainSubstring("No such file or directory"))
 
 		Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+		Expect(Kamel("reset", "-n", ns).Execute()).To(Succeed())
 	})
 
 	t.Run("Run maven profile", func(t *testing.T) {
