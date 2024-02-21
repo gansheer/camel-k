@@ -334,8 +334,16 @@ func KamelRunWithID(operatorID string, namespace string, args ...string) *cobra.
 	return KamelRunWithContext(TestContext, operatorID, namespace, args...)
 }
 
+func CamelKRunWithID(operatorID string, namespace string, args ...string) *cobra.Command {
+	return CamelKRunWithContext(TestContext, operatorID, namespace, args...)
+}
+
 func KamelRunWithContext(ctx context.Context, operatorID string, namespace string, args ...string) *cobra.Command {
 	return KamelCommandWithContext(ctx, "run", operatorID, namespace, args...)
+}
+
+func CamelKRunWithContext(ctx context.Context, operatorID string, namespace string, args ...string) *cobra.Command {
+	return CamelKCommandWithContext(ctx, "run", operatorID, namespace, args...)
 }
 
 func KamelBind(namespace string, args ...string) *cobra.Command {
@@ -372,6 +380,30 @@ func KamelCommandWithContext(ctx context.Context, command string, operatorID str
 
 	cmdArgs = append(cmdArgs, args...)
 	return KamelWithContext(ctx, cmdArgs...)
+}
+
+func CamelKCommandWithContext(ctx context.Context, command string, operatorID string, namespace string, args ...string) *cobra.Command {
+	// This line prevents controller-runtime from complaining about log.SetLogger never being called
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+	var cmdArgs []string
+
+	globalTest := os.Getenv("CAMEL_K_FORCE_GLOBAL_TEST") == "true"
+	if globalTest {
+		fmt.Printf("Running as globally managed resource\n")
+
+		if err := verifyGlobalOperator(); err != nil {
+			failTest(err)
+		}
+
+		// Have a global operator reconciling the integration
+		cmdArgs = []string{command, "-n", namespace}
+	} else {
+		// NOT global so proceed with local namespaced operator reconciling the integration
+		cmdArgs = []string{command, "-n", namespace, "--operator-id", operatorID}
+	}
+
+	cmdArgs = append(cmdArgs, args...)
+	return CamelKWithContext(ctx, cmdArgs...)
 }
 
 func verifyGlobalOperator() error {
@@ -443,6 +475,72 @@ func KamelWithContext(ctx context.Context, args ...string) *cobra.Command {
 	} else {
 		// Use modeline CLI as it's closer to the real usage
 		c, args, err = cmd.NewKamelWithModelineCommand(ctx, append([]string{"kamel"}, args...))
+	}
+	if err != nil {
+		failTest(err)
+	}
+	for _, hook := range KamelHooks {
+		args = hook(args)
+	}
+	c.SetArgs(args)
+	return c
+}
+
+func CamelKWithContext(ctx context.Context, args ...string) *cobra.Command {
+	var c *cobra.Command
+	var err error
+
+	if os.Getenv("CAMEL_K_TEST_LOG_LEVEL") == "debug" {
+		fmt.Printf("Executing camel k with command %+q\n", args)
+		fmt.Println("Printing stack for KamelWithContext")
+		debug.PrintStack()
+	}
+
+	camelKArgs := os.Getenv("CAMELK_ARGS")
+	camelKDefaultArgs := strings.Fields(camelKArgs)
+	args = append(camelKDefaultArgs, args...)
+
+	camelKBin := os.Getenv("CAMELK_BIN")
+	if camelKBin != "" {
+		if _, e := os.Stat(camelKBin); e != nil && os.IsNotExist(e) {
+			failTest(e)
+		}
+		fmt.Printf("Using external camel k binary on path %s\n", camelKBin)
+		c = &cobra.Command{
+			DisableFlagParsing: true,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				externalBin := exec.CommandContext(ctx, camelKBin, args...)
+				var stdout, stderr io.Reader
+				stdout, err = externalBin.StdoutPipe()
+				if err != nil {
+					failTest(err)
+				}
+				stderr, err = externalBin.StderrPipe()
+				if err != nil {
+					failTest(err)
+				}
+				err := externalBin.Start()
+				if err != nil {
+					return err
+				}
+				_, err = io.Copy(c.OutOrStdout(), stdout)
+				if err != nil {
+					return err
+				}
+				_, err = io.Copy(c.ErrOrStderr(), stderr)
+				if err != nil {
+					return err
+				}
+				err = externalBin.Wait()
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		}
+	} else {
+		// Use modeline CLI as it's closer to the real usage
+		c, args, err = cmd.NewKamelWithModelineCommand(ctx, append([]string{"camel", "k"}, args...))
 	}
 	if err != nil {
 		failTest(err)
