@@ -72,12 +72,53 @@ func NewKamelCommand(ctx context.Context) (*cobra.Command, error) {
 	return cmd, err
 }
 
+// NewCamelKCommand --.
+func NewCamelKCommand(ctx context.Context) (*cobra.Command, error) {
+	childCtx, childCancel := context.WithCancel(ctx)
+	options := RootCmdOptions{
+		RootContext:   ctx,
+		Context:       childCtx,
+		ContextCancel: childCancel,
+	}
+
+	cmd := kamelPreAddCommandInit(&options)
+	addKamelSubcommands(cmd, &options)
+
+	if err := addHelpSubCommands(cmd); err != nil {
+		return cmd, err
+	}
+
+	err := kamelPostAddCommandInit(cmd)
+
+	return cmd, err
+}
+
 func kamelPreAddCommandInit(options *RootCmdOptions) *cobra.Command {
 	cmd := cobra.Command{
 		BashCompletionFunction: bashCompletionFunction,
 		PersistentPreRunE:      options.preRun,
 		Use:                    "kamel",
 		Short:                  "Kamel is a awesome client tool for running Apache Camel integrations natively on Kubernetes",
+		Long:                   kamelCommandLongDescription,
+		SilenceUsage:           true,
+	}
+
+	cmd.PersistentFlags().StringVar(&options.KubeConfig, "kube-config", os.Getenv("KUBECONFIG"), "Path to the kube config file to use for CLI requests")
+	cmd.PersistentFlags().StringVarP(&options.Namespace, "namespace", "n", "", "Namespace to use for all operations")
+	cmd.PersistentFlags().BoolVarP(&options.Verbose, "verbose", "V", false, "Verbose logging")
+
+	cobra.AddTemplateFunc("wrappedFlagUsages", wrappedFlagUsages)
+	cmd.SetUsageTemplate(usageTemplate)
+
+	return &cmd
+}
+
+func CamelKPreAddCommandInit(options *RootCmdOptions) *cobra.Command {
+	cmd := cobra.Command{
+		BashCompletionFunction: bashCompletionFunction,
+		PersistentPreRunE:      options.preRun,
+		Use:                    "camel k",
+		Short:                  "Camel k is a awesome client tool for running Apache Camel integrations natively on Kubernetes",
 		Long:                   kamelCommandLongDescription,
 		SilenceUsage:           true,
 	}

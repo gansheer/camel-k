@@ -87,6 +87,26 @@ func NewKamelWithModelineCommand(ctx context.Context, osArgs []string) (*cobra.C
 	return rootCmd, flags, nil
 }
 
+// NewCamelKWithModelineCommand ---.
+func NewCamelKWithModelineCommand(ctx context.Context, osArgs []string) (*cobra.Command, []string, error) {
+	originalFlags := osArgs[2:]
+	rootCmd, flags, err := createKamelWithModelineCommand(ctx, originalFlags)
+	if err != nil {
+		fmt.Fprintln(rootCmd.ErrOrStderr(), "Error:", err.Error())
+		return rootCmd, flags, err
+	}
+	if len(originalFlags) != len(flags) {
+		// Give a feedback about the actual command that is run
+		fmt.Fprintln(rootCmd.ErrOrStderr(), "Modeline options have been loaded from source files")
+		fmt.Fprint(rootCmd.ErrOrStderr(), "Full command: camel k ")
+		for _, a := range flags {
+			fmt.Fprintf(rootCmd.ErrOrStderr(), "%s ", a)
+		}
+		fmt.Fprintln(rootCmd.ErrOrStderr())
+	}
+	return rootCmd, flags, nil
+}
+
 func createKamelWithModelineCommand(ctx context.Context, args []string) (*cobra.Command, []string, error) {
 	rootCmd, err := NewKamelCommand(ctx)
 	if err != nil {

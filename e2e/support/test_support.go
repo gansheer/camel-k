@@ -540,7 +540,7 @@ func CamelKWithContext(ctx context.Context, args ...string) *cobra.Command {
 		}
 	} else {
 		// Use modeline CLI as it's closer to the real usage
-		c, args, err = cmd.NewKamelWithModelineCommand(ctx, append([]string{"camel", "k"}, args...))
+		c, args, err = cmd.NewCamelKWithModelineCommand(ctx, append([]string{"camel", "k"}, args...))
 	}
 	if err != nil {
 		failTest(err)
