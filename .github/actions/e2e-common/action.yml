@@ -79,7 +79,7 @@ runs:
     uses: ./.github/actions/setup-camel-jbang
     with:
       jbangVersion: '0.114.0'
-      camelVersion: '4.0.2'
+      camelVersion: '4.4.0'
 
   - id: install-kamel-cluster-setup
     name: Install Kamel Cluster Setup
@@ -118,6 +118,12 @@ runs:
     uses: ./.github/actions/kamel-report-problematic
     with:
       test-suite: global/common
+
+  - id: camel-k-plugin-check
+    name: Check Camel K plugin runs (TO REMOVE)
+    shell: bash
+    run: |
+      jbang run --deps=org.apache.camel:camel-jbang-plugin-k:4.4.0 camel@apache/camel k run ./e2e/common/cli/files/yaml.yaml
 
   - id: run-it
     name: Run IT
