@@ -37,11 +37,11 @@ func TestRunSimpleKotlinExamples(t *testing.T) {
 	RegisterTestingT(t)
 
 	t.Run("run kotlin", func(t *testing.T) {
-		Expect(KamelRunWithID(operatorID, ns, "files/kotlin.kts").Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/kotlin.kts").Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, "kotlin"), TestTimeoutLong).Should(Equal(v1.PodRunning))
 		Eventually(IntegrationConditionStatus(ns, "kotlin", camelv1.IntegrationConditionReady), TestTimeoutShort).Should(Equal(v1.ConditionTrue))
 		Eventually(IntegrationLogs(ns, "kotlin"), TestTimeoutShort).Should(ContainSubstring("Magicstring!"))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

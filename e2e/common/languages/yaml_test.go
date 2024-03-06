@@ -37,11 +37,11 @@ func TestRunSimpleYamlExamples(t *testing.T) {
 	RegisterTestingT(t)
 
 	t.Run("run yaml", func(t *testing.T) {
-		Expect(KamelRunWithID(operatorID, ns, "files/yaml.yaml").Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/yaml.yaml").Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, "yaml"), TestTimeoutLong).Should(Equal(v1.PodRunning))
 		Eventually(IntegrationConditionStatus(ns, "yaml", camelv1.IntegrationConditionReady), TestTimeoutShort).Should(Equal(v1.ConditionTrue))
 		Eventually(IntegrationLogs(ns, "yaml"), TestTimeoutShort).Should(ContainSubstring("Magicstring!"))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

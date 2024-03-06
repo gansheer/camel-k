@@ -54,7 +54,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 		pom, err := filepath.Abs("files/registry/sample-decryption-1.0.pom")
 		assert.Nil(t, err)
 
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/FoobarDecryption.java",
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/FoobarDecryption.java",
 			"--name", name,
 			"-d", fmt.Sprintf("file://%s", jar),
 			"-d", fmt.Sprintf("file://%s", pom),
@@ -68,7 +68,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 	t.Run("local files are mounted in the integration container at the default path", func(t *testing.T) {
 		name := RandomizedSuffixName("laughing-route-default-path")
 
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
 			"--name", name,
 			"-p", "location=/deployments/?filename=laugh.txt",
 			"-d", "file://files/registry/laugh.txt",
@@ -83,7 +83,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 		name := RandomizedSuffixName("laughing-route-custom-path")
 		customPath := "this/is/a/custom/path/"
 
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
 			"--name", name,
 			"-p", fmt.Sprintf("location=%s", customPath),
 			"-d", fmt.Sprintf("file://files/registry/laugh.txt?targetPath=%slaugh.txt", customPath),
@@ -97,7 +97,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 	t.Run("local directory is mounted in the integration container", func(t *testing.T) {
 		name := RandomizedSuffixName("laughing-route-directory")
 
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/LaughingRoute.java",
 			"--name", name,
 			"-p", "location=files/registry/",
 			"-d", fmt.Sprintf("file://files/registry/laughs/?targetPath=files/registry/"),
@@ -115,7 +115,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 		jar, err := filepath.Abs("files/registry/sample-decryption-1.0.jar")
 		assert.Nil(t, err)
 
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/FoobarDecryption.java",
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/FoobarDecryption.java",
 			"--name", name,
 			"-d", fmt.Sprintf("file://%s", jar),
 		).Execute()).To(Succeed())
@@ -127,7 +127,7 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 	t.Run("dependency can be used at build time", func(t *testing.T) {
 		// Create integration that should run an Xslt transformation whose template needs to be present at build time
 		name := RandomizedSuffixName("xslt")
-		Expect(KamelRunWithID(operatorID, ns, "files/registry/classpath/Xslt.java", "--name", name,
+		Expect(CamelKRunWithID(operatorID, ns, "files/registry/classpath/Xslt.java", "--name", name,
 			"-d", "file://files/registry/classpath/cheese.xsl?targetPath=xslt/cheese.xsl&classpath=true",
 		).Execute()).To(Succeed())
 
@@ -137,5 +137,5 @@ func TestImageRegistryIsAMavenRepository(t *testing.T) {
 	})
 
 	// Clean up
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

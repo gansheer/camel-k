@@ -116,7 +116,7 @@ func TestPipe(t *testing.T) {
 			)))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }
 
 func createErrorProducerKamelet(ns string, name string) func() error {

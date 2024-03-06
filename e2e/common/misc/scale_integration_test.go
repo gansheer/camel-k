@@ -42,7 +42,7 @@ func TestIntegrationScale(t *testing.T) {
 	RegisterTestingT(t)
 
 	name := RandomizedSuffixName("java")
-	Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
+	Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
 	Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 	Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).Should(Equal(corev1.ConditionTrue))
 	Eventually(IntegrationLogs(ns, name), TestTimeoutShort).Should(ContainSubstring("Magicstring!"))
@@ -113,9 +113,9 @@ func TestIntegrationScale(t *testing.T) {
 		image := IntegrationPodImage(ns, name)()
 		Expect(image).NotTo(BeEmpty())
 		// Save resources by deleting the integration
-		Expect(Kamel("delete", name, "-n", ns).Execute()).To(Succeed())
+		Expect(CamelK("delete", name, "-n", ns).Execute()).To(Succeed())
 
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", "pre-built", "-t", fmt.Sprintf("container.image=%s", image)).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", "pre-built", "-t", fmt.Sprintf("container.image=%s", image)).Execute()).To(Succeed())
 		Eventually(IntegrationPhase(ns, "pre-built"), TestTimeoutShort).Should(Equal(v1.IntegrationPhaseRunning))
 		Eventually(IntegrationPodPhase(ns, "pre-built"), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Expect(ScaleIntegration(ns, "pre-built", 0)).To(Succeed())
@@ -124,8 +124,8 @@ func TestIntegrationScale(t *testing.T) {
 		Eventually(IntegrationPhase(ns, "pre-built"), TestTimeoutShort).Should(Equal(v1.IntegrationPhaseRunning))
 		Eventually(IntegrationPodPhase(ns, "pre-built"), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 
-		Expect(Kamel("delete", "pre-built", "-n", ns).Execute()).To(Succeed())
+		Expect(CamelK("delete", "pre-built", "-n", ns).Execute()).To(Succeed())
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

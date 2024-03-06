@@ -128,5 +128,5 @@ func TestPipeScale(t *testing.T) {
 			Should(gstruct.PointTo(BeNumerically("==", 1)))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

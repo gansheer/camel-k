@@ -112,7 +112,7 @@ spec:
 
 	// Basic
 	t.Run("test basic case", func(t *testing.T) {
-		Expect(KamelRunWithID(operatorID, ns, "files/TimerKameletIntegration.java", "-t", "kamelets.enabled=false",
+		Expect(CamelKRunWithID(operatorID, ns, "files/TimerKameletIntegration.java", "-t", "kamelets.enabled=false",
 			"--resource", "configmap:my-kamelet-cm@/kamelets",
 			"-p camel.component.kamelet.location=file:/kamelets",
 			"-d", "camel:yaml-dsl",
@@ -130,5 +130,5 @@ spec:
 		Expect(kameletsTrait["enabled"]).To(Equal(false))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

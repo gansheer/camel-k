@@ -38,7 +38,7 @@ func TestStructuredLogs(t *testing.T) {
 	RegisterTestingT(t)
 
 	name := RandomizedSuffixName("java")
-	Expect(KamelRunWithID(operatorID, ns, "files/Java.java",
+	Expect(CamelKRunWithID(operatorID, ns, "files/Java.java",
 		"--name", name,
 		"-t", "logging.format=json").Execute()).To(Succeed())
 	Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
@@ -61,5 +61,5 @@ func TestStructuredLogs(t *testing.T) {
 	build := Build(IntegrationKitNamespace(ns, name)(), IntegrationKit(ns, name)())()
 	Expect(build).NotTo(BeNil())
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

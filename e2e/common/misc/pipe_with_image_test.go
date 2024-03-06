@@ -93,5 +93,5 @@ func TestPipeWithImage(t *testing.T) {
 			Should(Equal(expectedImage))
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }

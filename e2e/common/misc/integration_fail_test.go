@@ -39,7 +39,7 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	t.Run("run bad java route", func(t *testing.T) {
 		name := RandomizedSuffixName("bad-route")
-		Expect(KamelRunWithID(operatorID, ns, "files/BadRoute.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/BadRoute.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Eventually(IntegrationPhase(ns, name), TestTimeoutShort).Should(Equal(v1.IntegrationPhaseError))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
@@ -63,7 +63,7 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	t.Run("run missing dependency java route", func(t *testing.T) {
 		name := RandomizedSuffixName("java-route")
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name,
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name,
 			"-d", "mvn:com.example:nonexistent:1.0").Execute()).To(Succeed())
 		// Integration in error
 		Eventually(IntegrationPhase(ns, name), TestTimeoutLong).Should(Equal(v1.IntegrationPhaseError))
@@ -82,7 +82,7 @@ func TestBadRouteIntegration(t *testing.T) {
 		Eventually(build.Status.Failure.Recovery.Attempt, TestTimeoutShort).Should(Equal(5))
 
 		// Fixing the route should reconcile the Integration
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPhase(ns, name), TestTimeoutLong).Should(Equal(v1.IntegrationPhaseRunning))
 		// New Kit success
 		kitRecoveryName := IntegrationKit(ns, name)()
@@ -97,7 +97,7 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	t.Run("run invalid dependency java route", func(t *testing.T) {
 		name := RandomizedSuffixName("invalid-dependency")
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name,
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name,
 			"-d", "camel:non-existent").Execute()).To(Succeed())
 		// Integration in error with Initialization Failed condition
 		Eventually(IntegrationPhase(ns, name), TestTimeoutLong).Should(Equal(v1.IntegrationPhaseError))
@@ -111,7 +111,7 @@ func TestBadRouteIntegration(t *testing.T) {
 		Consistently(IntegrationKit(ns, name), 10*time.Second).Should(BeEmpty())
 
 		// Fixing the route should reconcile the Integration in Initialization Failed condition to Running
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
 			Should(Equal(corev1.ConditionTrue))
@@ -127,7 +127,7 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	t.Run("run unresolvable component java route", func(t *testing.T) {
 		name := RandomizedSuffixName("unresolvable-route")
-		Expect(KamelRunWithID(operatorID, ns, "files/Unresolvable.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Unresolvable.java", "--name", name).Execute()).To(Succeed())
 		// Integration in error with Initialization Failed condition
 		Eventually(IntegrationPhase(ns, name), TestTimeoutShort).Should(Equal(v1.IntegrationPhaseError))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
@@ -140,7 +140,7 @@ func TestBadRouteIntegration(t *testing.T) {
 		Consistently(IntegrationKit(ns, name), 10*time.Second).Should(BeEmpty())
 
 		// Fixing the route should reconcile the Integration in Initialization Failed condition to Running
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
 			Should(Equal(corev1.ConditionTrue))
@@ -156,7 +156,7 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	t.Run("run invalid java route", func(t *testing.T) {
 		name := RandomizedSuffixName("invalid-java-route")
-		Expect(KamelRunWithID(operatorID, ns, "files/InvalidJava.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/InvalidJava.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Eventually(IntegrationPhase(ns, name), TestTimeoutShort).Should(Equal(v1.IntegrationPhaseError))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
@@ -169,7 +169,7 @@ func TestBadRouteIntegration(t *testing.T) {
 		Eventually(KitPhase(integrationKitNamespace, kitName), TestTimeoutShort).Should(Equal(v1.IntegrationKitPhaseReady))
 
 		// Fixing the route should reconcile the Integration in Initialization Failed condition to Running
-		Expect(KamelRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
+		Expect(CamelKRunWithID(operatorID, ns, "files/Java.java", "--name", name).Execute()).To(Succeed())
 		Eventually(IntegrationPodPhase(ns, name), TestTimeoutLong).Should(Equal(corev1.PodRunning))
 		Eventually(IntegrationConditionStatus(ns, name, v1.IntegrationConditionReady), TestTimeoutShort).
 			Should(Equal(corev1.ConditionTrue))
@@ -181,5 +181,5 @@ func TestBadRouteIntegration(t *testing.T) {
 
 	})
 
-	Expect(Kamel("delete", "--all", "-n", ns).Execute()).To(Succeed())
+	Expect(CamelK("delete", "--all", "-n", ns).Execute()).To(Succeed())
 }
