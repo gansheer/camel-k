@@ -52,6 +52,7 @@ import (
 	zapctrl "sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 
@@ -201,12 +202,15 @@ func Run(healthPort, monitoringPort int32, leaderElection bool, leaderElectionID
 		}
 	}
 
+	defaultNamespaces := map[string]cache.Config{
+		operatorNamespace: {},
+	}
+
 	options := cache.Options{
-		ByObject: selectors,
+		DefaultNamespaces: defaultNamespaces,
 	}
 
 	mgr, err := manager.New(cfg, manager.Options{
-		Namespace:                     watchNamespace,
 		EventBroadcaster:              broadcaster,
 		LeaderElection:                leaderElection,
 		LeaderElectionNamespace:       operatorNamespace,
@@ -214,9 +218,10 @@ func Run(healthPort, monitoringPort int32, leaderElection bool, leaderElectionID
 		LeaderElectionResourceLock:    resourcelock.LeasesResourceLock,
 		LeaderElectionReleaseOnCancel: true,
 		HealthProbeBindAddress:        ":" + strconv.Itoa(int(healthPort)),
-		MetricsBindAddress:            ":" + strconv.Itoa(int(monitoringPort)),
+		Metrics:                       metricsserver.Options{BindAddress: ":" + strconv.Itoa(int(monitoringPort))},
 		Cache:                         options,
 	})
+
 	exitOnError(err, "")
 
 	log.Info("Configuring manager")
