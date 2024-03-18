@@ -45,7 +45,7 @@ func (s sinkLessBroadcaster) StartStructuredLogging(verbosity klog.Level) watch.
 	return s.broadcaster.StartStructuredLogging(verbosity)
 }
 
-func (s sinkLessBroadcaster) NewRecorder(scheme *runtime.Scheme, source corev1.EventSource) record.EventRecorder {
+func (s sinkLessBroadcaster) NewRecorder(scheme *runtime.Scheme, source corev1.EventSource) record.EventRecorderLogger {
 	return s.broadcaster.NewRecorder(scheme, source)
 }
 
