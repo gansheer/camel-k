@@ -31,9 +31,10 @@ import (
 var (
 	BasePath                  = "/etc/camel"
 	ConfDPath                 = filepath.Join(BasePath, "conf.d")
+	ResourcesDPath            = filepath.Join(BasePath, "resources.d")
 	SourcesMountPath          = filepath.Join(BasePath, "sources")
 	ResourcesDefaultMountPath = filepath.Join(BasePath, "resources")
-	ConfigResourcesMountPath  = filepath.Join(ConfDPath, "_resources")
+	ConfigResourcesMountPath  = filepath.Join(ResourcesDPath, "_resources")
 	ConfigConfigmapsMountPath = filepath.Join(ConfDPath, "_configmaps")
 	ConfigSecretsMountPath    = filepath.Join(ConfDPath, "_secrets")
 	ServiceBindingsMountPath  = filepath.Join(ConfDPath, "_servicebindings")

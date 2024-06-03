@@ -203,6 +203,7 @@ func (t *containerTrait) configureContainer(e *Environment) error {
 	envvar.SetVal(&container.Env, digest.IntegrationDigestEnvVar, e.Integration.Status.Digest)
 	envvar.SetVal(&container.Env, "CAMEL_K_CONF", filepath.Join(camel.BasePath, "application.properties"))
 	envvar.SetVal(&container.Env, "CAMEL_K_CONF_D", camel.ConfDPath)
+	envvar.SetVal(&container.Env, "CAMEL_K_RES_D", camel.ResourcesDPath)
 
 	var containers *[]corev1.Container
 	visited := false
