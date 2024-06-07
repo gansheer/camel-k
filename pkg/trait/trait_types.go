@@ -671,7 +671,7 @@ func getMountPoint(resourceName string, mountPoint string, storagetype, resource
 		return mountPoint
 	}
 	if resourceType == "data" {
-		return filepath.Join(camel.ResourcesDefaultMountPath, resourceName)
+		return filepath.Join(camel.ResourcesMountPath, resourceName)
 	}
 	defaultMountPoint := camel.ConfigConfigmapsMountPath
 	if storagetype == "secret" {

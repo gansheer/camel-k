@@ -206,8 +206,7 @@ func (t *jvmTrait) enableDebug(e *Environment) string {
 func (t *jvmTrait) prepareClasspathItems(container *corev1.Container) []string {
 	classpath := sets.NewSet()
 	classpath.Add("./resources")
-	classpath.Add(filepath.ToSlash(camel.ConfigResourcesMountPath))
-	classpath.Add(filepath.ToSlash(camel.ResourcesDefaultMountPath))
+	classpath.Add(filepath.ToSlash(camel.ResourcesMountPath))
 	if t.Classpath != "" {
 		classpath.Add(strings.Split(t.Classpath, ":")...)
 	}
