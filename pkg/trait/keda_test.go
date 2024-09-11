@@ -15,27 +15,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package keda
+package trait
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/apache/camel-k/v2/addons/keda/duck/v1alpha1"
-	camelv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
-	"github.com/apache/camel-k/v2/pkg/controller/pipe"
-	"github.com/apache/camel-k/v2/pkg/trait"
+	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
+	traitv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
 	"github.com/apache/camel-k/v2/pkg/util/camel"
 	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/test"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/utils/ptr"
 )
 
@@ -47,7 +45,7 @@ func TestManualConfig(t *testing.T) {
 		"prop":      "val",
 		"camelCase": "VAL",
 	}
-	keda.Triggers = append(keda.Triggers, kedaTrigger{
+	keda.Triggers = append(keda.Triggers, traitv1.KedaTrigger{
 		Type:     "mytype",
 		Metadata: meta,
 	})
@@ -76,8 +74,9 @@ func TestConfigFromSecret(t *testing.T) {
 		"prop":      "val",
 		"camelCase": "VAL",
 	}
-	keda.Triggers = append(keda.Triggers, kedaTrigger{
-		Type:                 "mytype",
+	keda.Triggers = append(keda.Triggers, traitv1.KedaTrigger{
+		Type: "mytype",
+		//require.NoError(t, err)
 		Metadata:             meta,
 		AuthenticationSecret: "my-secret",
 	})
@@ -120,7 +119,7 @@ func TestKameletAutoDetection(t *testing.T) {
 	keda, _ := NewKedaTrait().(*kedaTrait)
 	keda.Enabled = ptr.To(true)
 	env := createBasicTestEnvironment(
-		&camelv1.Kamelet{
+		&v1.Kamelet{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-kamelet",
@@ -128,10 +127,10 @@ func TestKameletAutoDetection(t *testing.T) {
 					"camel.apache.org/keda.type": "my-scaler",
 				},
 			},
-			Spec: camelv1.KameletSpec{
-				KameletSpecBase: camelv1.KameletSpecBase{
-					Definition: &camelv1.JSONSchemaProps{
-						Properties: map[string]camelv1.JSONSchemaProp{
+			Spec: v1.KameletSpec{
+				KameletSpecBase: v1.KameletSpecBase{
+					Definition: &v1.JSONSchemaProps{
+						Properties: map[string]v1.JSONSchemaProp{
 							"a": {
 								XDescriptors: []string{
 									"urn:keda:metadata:a",
@@ -152,15 +151,15 @@ func TestKameletAutoDetection(t *testing.T) {
 				},
 			},
 		},
-		&camelv1.Integration{
+		&v1.Integration{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-it",
 			},
-			Spec: camelv1.IntegrationSpec{
-				Sources: []camelv1.SourceSpec{
+			Spec: v1.IntegrationSpec{
+				Sources: []v1.SourceSpec{
 					{
-						DataSpec: camelv1.DataSpec{
+						DataSpec: v1.DataSpec{
 							Name: "my-it.yaml",
 							Content: "" +
 								"- route:\n" +
@@ -173,12 +172,12 @@ func TestKameletAutoDetection(t *testing.T) {
 								"    steps:\n" +
 								"    - to: log:sink\n",
 						},
-						Language: camelv1.LanguageYaml,
+						Language: v1.LanguageYaml,
 					},
 				},
 			},
-			Status: camelv1.IntegrationStatus{
-				Phase: camelv1.IntegrationPhaseDeploying,
+			Status: v1.IntegrationStatus{
+				Phase: v1.IntegrationPhaseDeploying,
 			},
 		})
 
@@ -213,16 +212,16 @@ func TestPipeAutoDetection(t *testing.T) {
 	keda, _ := NewKedaTrait().(*kedaTrait)
 	keda.Enabled = ptr.To(true)
 	logEndpoint := "log:info"
-	klb := camelv1.Pipe{
+	klb := v1.Pipe{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "test",
 			Name:      "my-binding",
 		},
-		Spec: camelv1.PipeSpec{
-			Source: camelv1.Endpoint{
+		Spec: v1.PipeSpec{
+			Source: v1.Endpoint{
 				Ref: &corev1.ObjectReference{
 					Kind:       "Kamelet",
-					APIVersion: camelv1.SchemeGroupVersion.String(),
+					APIVersion: v1.SchemeGroupVersion.String(),
 					Name:       "my-kamelet",
 				},
 				Properties: asEndpointProperties(map[string]string{
@@ -231,14 +230,14 @@ func TestPipeAutoDetection(t *testing.T) {
 					"c": "v3",
 				}),
 			},
-			Sink: camelv1.Endpoint{
+			Sink: v1.Endpoint{
 				URI: &logEndpoint,
 			},
 		},
 	}
 
 	env := createBasicTestEnvironment(
-		&camelv1.Kamelet{
+		&v1.Kamelet{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-kamelet",
@@ -246,10 +245,10 @@ func TestPipeAutoDetection(t *testing.T) {
 					"camel.apache.org/keda.type": "my-scaler",
 				},
 			},
-			Spec: camelv1.KameletSpec{
-				KameletSpecBase: camelv1.KameletSpecBase{
-					Definition: &camelv1.JSONSchemaProps{
-						Properties: map[string]camelv1.JSONSchemaProp{
+			Spec: v1.KameletSpec{
+				KameletSpecBase: v1.KameletSpecBase{
+					Definition: &v1.JSONSchemaProps{
+						Properties: map[string]v1.JSONSchemaProp{
 							"a": {
 								XDescriptors: []string{
 									"urn:keda:metadata:a",
@@ -271,36 +270,87 @@ func TestPipeAutoDetection(t *testing.T) {
 			},
 		},
 		&klb,
-		&camelv1.IntegrationPlatform{
+		&v1.IntegrationPlatform{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "camel-k",
 			},
-			Spec: camelv1.IntegrationPlatformSpec{
-				Cluster: camelv1.IntegrationPlatformClusterKubernetes,
-				Profile: camelv1.TraitProfileKubernetes,
+			Spec: v1.IntegrationPlatformSpec{
+				Cluster: v1.IntegrationPlatformClusterKubernetes,
+				Profile: v1.TraitProfileKubernetes,
 			},
-			Status: camelv1.IntegrationPlatformStatus{
-				Phase: camelv1.IntegrationPlatformPhaseReady,
+			Status: v1.IntegrationPlatformStatus{
+				Phase: v1.IntegrationPlatformPhaseReady,
 			},
 		})
 
-	it, err := pipe.CreateIntegrationFor(env.Ctx, env.Client, &klb)
-	require.NoError(t, err)
-	assert.NotNil(t, it)
-	env.Integration = it
-	jsonIt, err := json.Marshal(it)
-	fmt.Println(string(jsonIt))
+	// lifecycle error here on pipe
+	it := &v1.Integration{
+		TypeMeta: metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-binding",
+			Namespace: "test",
+			Labels: map[string]string{
+				"camel.apache.org/created.by.kind": "",
+				"camel.apache.org/created.by.name": "my-binding",
+			},
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion:         klb.APIVersion,
+					Kind:               klb.Kind,
+					Name:               klb.Name,
+					UID:                klb.UID,
+					Controller:         ptr.To(true),
+					BlockOwnerDeletion: ptr.To(true),
+				},
+			},
+		},
+		Spec: v1.IntegrationSpec{
+			Profile: v1.DefaultTraitProfile,
+			Configuration: []v1.ConfigurationSpec{
+				{
+					Type:  "property",
+					Value: "camel.kamelet.my-kamelet.source.a = v1",
+				},
+				{
+					Type:  "property",
+					Value: "camel.kamelet.my-kamelet.source.b = v2",
+				},
+				{
+					Type:  "property",
+					Value: "camel.kamelet.my-kamelet.source.c = v3",
+				},
+			},
+		},
+	}
 
-	it.Status.Phase = camelv1.IntegrationPhaseInitialization
-	init := trait.NewInitTrait()
+	flowRoute := map[string]interface{}{
+		"route": map[string]interface{}{
+			"id": "binding",
+			"from": map[string]interface{}{
+				"uri": "kamelet:my-kamelet/source",
+				"steps": []interface{}{map[string]string{
+					"to": "log:info",
+				}},
+			},
+		},
+	}
+	encodedRoute, err := json.Marshal(flowRoute)
+	require.NoError(t, err)
+	it.Spec.Flows = append(it.Spec.Flows, v1.Flow{RawMessage: encodedRoute})
+	//it, err := pipe.CreateIntegrationFor(env.Ctx, env.Client, &klb)
+	//assert.NotNil(t, it)
+	env.Integration = it
+
+	it.Status.Phase = v1.IntegrationPhaseInitialization
+	init := NewInitTrait()
 	ok, condition, err := init.Configure(env)
 	require.NoError(t, err)
 	assert.True(t, ok)
 	assert.Nil(t, condition)
 	require.NoError(t, init.Apply(env))
 
-	it.Status.Phase = camelv1.IntegrationPhaseDeploying
+	it.Status.Phase = v1.IntegrationPhaseDeploying
 	res, condition, err := keda.Configure(env)
 	require.NoError(t, err)
 	assert.True(t, res)
@@ -332,7 +382,7 @@ func TestHackReplicas(t *testing.T) {
 	keda, _ := NewKedaTrait().(*kedaTrait)
 	keda.Enabled = ptr.To(true)
 	keda.Auto = ptr.To(false)
-	keda.Triggers = append(keda.Triggers, kedaTrigger{
+	keda.Triggers = append(keda.Triggers, traitv1.KedaTrigger{
 		Type: "custom",
 		Metadata: map[string]string{
 			"a": "b",
@@ -340,13 +390,13 @@ func TestHackReplicas(t *testing.T) {
 	})
 	keda.HackControllerReplicas = ptr.To(true)
 	env := createBasicTestEnvironment(
-		&camelv1.Integration{
+		&v1.Integration{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-it",
 			},
-			Status: camelv1.IntegrationStatus{
-				Phase: camelv1.IntegrationPhaseInitialization,
+			Status: v1.IntegrationStatus{
+				Phase: v1.IntegrationPhaseInitialization,
 			},
 		},
 	)
@@ -358,7 +408,7 @@ func TestHackReplicas(t *testing.T) {
 	require.NoError(t, keda.Apply(env))
 	scalesClient, err := env.Client.ScalesClient()
 	require.NoError(t, err)
-	sc, err := scalesClient.Scales("test").Get(env.Ctx, camelv1.SchemeGroupVersion.WithResource("integrations").GroupResource(), "my-it", metav1.GetOptions{})
+	sc, err := scalesClient.Scales("test").Get(env.Ctx, v1.SchemeGroupVersion.WithResource("integrations").GroupResource(), "my-it", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, int32(1), sc.Spec.Replicas)
 }
@@ -367,7 +417,7 @@ func TestHackKLBReplicas(t *testing.T) {
 	keda, _ := NewKedaTrait().(*kedaTrait)
 	keda.Enabled = ptr.To(true)
 	keda.Auto = ptr.To(false)
-	keda.Triggers = append(keda.Triggers, kedaTrigger{
+	keda.Triggers = append(keda.Triggers, traitv1.KedaTrigger{
 		Type: "custom",
 		Metadata: map[string]string{
 			"a": "b",
@@ -375,26 +425,26 @@ func TestHackKLBReplicas(t *testing.T) {
 	})
 	keda.HackControllerReplicas = ptr.To(true)
 	env := createBasicTestEnvironment(
-		&camelv1.Pipe{
+		&v1.Pipe{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-klb",
 			},
 		},
-		&camelv1.Integration{
+		&v1.Integration{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "my-it",
 				OwnerReferences: []metav1.OwnerReference{
 					{
-						APIVersion: camelv1.SchemeGroupVersion.String(),
+						APIVersion: v1.SchemeGroupVersion.String(),
 						Kind:       "Pipe",
 						Name:       "my-klb",
 					},
 				},
 			},
-			Status: camelv1.IntegrationStatus{
-				Phase: camelv1.IntegrationPhaseInitialization,
+			Status: v1.IntegrationStatus{
+				Phase: v1.IntegrationPhaseInitialization,
 			},
 		},
 	)
@@ -406,12 +456,12 @@ func TestHackKLBReplicas(t *testing.T) {
 	require.NoError(t, keda.Apply(env))
 	scalesClient, err := env.Client.ScalesClient()
 	require.NoError(t, err)
-	sc, err := scalesClient.Scales("test").Get(env.Ctx, camelv1.SchemeGroupVersion.WithResource("pipes").GroupResource(), "my-klb", metav1.GetOptions{})
+	sc, err := scalesClient.Scales("test").Get(env.Ctx, v1.SchemeGroupVersion.WithResource("pipes").GroupResource(), "my-klb", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, int32(1), sc.Spec.Replicas)
 }
 
-func getScaledObject(e *trait.Environment) *v1alpha1.ScaledObject {
+func getScaledObject(e *Environment) *v1alpha1.ScaledObject {
 	var res *v1alpha1.ScaledObject
 	for _, o := range e.Resources.Items() {
 		if so, ok := o.(*v1alpha1.ScaledObject); ok {
@@ -424,7 +474,7 @@ func getScaledObject(e *trait.Environment) *v1alpha1.ScaledObject {
 	return res
 }
 
-func getTriggerAuthentication(e *trait.Environment) *v1alpha1.TriggerAuthentication {
+func getTriggerAuthentication(e *Environment) *v1alpha1.TriggerAuthentication {
 	var res *v1alpha1.TriggerAuthentication
 	for _, o := range e.Resources.Items() {
 		if so, ok := o.(*v1alpha1.TriggerAuthentication); ok {
@@ -437,7 +487,7 @@ func getTriggerAuthentication(e *trait.Environment) *v1alpha1.TriggerAuthenticat
 	return res
 }
 
-func getSecret(e *trait.Environment) *corev1.Secret {
+func getSecret(e *Environment) *corev1.Secret {
 	var res *corev1.Secret
 	for _, o := range e.Resources.Items() {
 		if so, ok := o.(*corev1.Secret); ok {
@@ -450,53 +500,53 @@ func getSecret(e *trait.Environment) *corev1.Secret {
 	return res
 }
 
-func createBasicTestEnvironment(resources ...runtime.Object) *trait.Environment {
+func createBasicTestEnvironment(resources ...runtime.Object) *Environment {
 	fakeClient, err := test.NewFakeClient(resources...)
 	if err != nil {
 		panic(fmt.Errorf("could not create fake client: %w", err))
 	}
 
-	var it *camelv1.Integration
+	var it *v1.Integration
 	for _, res := range resources {
-		if integration, ok := res.(*camelv1.Integration); ok {
+		if integration, ok := res.(*v1.Integration); ok {
 			it = integration
 		}
 	}
 	if it == nil {
-		it = &camelv1.Integration{
+		it = &v1.Integration{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "integration-name",
 			},
-			Status: camelv1.IntegrationStatus{
-				Phase: camelv1.IntegrationPhaseDeploying,
+			Status: v1.IntegrationStatus{
+				Phase: v1.IntegrationPhaseDeploying,
 			},
 		}
 	}
 
-	var pl *camelv1.IntegrationPlatform
+	var pl *v1.IntegrationPlatform
 	for _, res := range resources {
-		if platform, ok := res.(*camelv1.IntegrationPlatform); ok {
+		if platform, ok := res.(*v1.IntegrationPlatform); ok {
 			pl = platform
 		}
 	}
 	if pl == nil {
-		pl = &camelv1.IntegrationPlatform{
+		pl = &v1.IntegrationPlatform{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: "test",
 				Name:      "camel-k",
 			},
-			Spec: camelv1.IntegrationPlatformSpec{
-				Cluster: camelv1.IntegrationPlatformClusterKubernetes,
-				Profile: camelv1.TraitProfileKubernetes,
+			Spec: v1.IntegrationPlatformSpec{
+				Cluster: v1.IntegrationPlatformClusterKubernetes,
+				Profile: v1.TraitProfileKubernetes,
 			},
 		}
 	}
 
 	camelCatalog, _ := camel.DefaultCatalog()
 
-	return &trait.Environment{
-		Catalog:               trait.NewCatalog(nil),
+	return &Environment{
+		Catalog:               NewCatalog(nil),
 		Ctx:                   context.Background(),
 		Client:                fakeClient,
 		Integration:           it,
@@ -507,12 +557,12 @@ func createBasicTestEnvironment(resources ...runtime.Object) *trait.Environment 
 	}
 }
 
-func asEndpointProperties(props map[string]string) *camelv1.EndpointProperties {
+func asEndpointProperties(props map[string]string) *v1.EndpointProperties {
 	serialized, err := json.Marshal(props)
 	if err != nil {
 		panic(err)
 	}
-	return &camelv1.EndpointProperties{
+	return &v1.EndpointProperties{
 		RawMessage: serialized,
 	}
 }

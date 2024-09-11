@@ -64,6 +64,7 @@
 ** xref:traits:jvm.adoc[Jvm]
 ** xref:traits:kamelets.adoc[Kamelets]
 ** xref:traits:keda.adoc[Keda]
+** xref:traits:keda.adoc[Keda]
 ** xref:traits:knative-service.adoc[Knative Service]
 ** xref:traits:knative.adoc[Knative]
 ** xref:traits:logging.adoc[Logging]
