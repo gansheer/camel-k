@@ -19,12 +19,13 @@
 
 name: Nightly check against ARM64 architecture and JDK21
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#env:
+#  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
-  schedule:
-    - cron: "10 4 * * *"
+  push:
+    branches:
+      - test-arm64-workflow
   workflow_dispatch:
 
 jobs:
@@ -32,9 +33,9 @@ jobs:
     strategy:
       matrix:
         # We want to check this on latest development branch only
-        ref-branch: [main]
+        ref-branch: [test-arm64-workflow]
 
-    if: github.repository == 'apache/camel-k'
+    if: github.repository == 'gansheer/camel-k'
     runs-on: ubuntu-24.04-arm
     steps:
 
