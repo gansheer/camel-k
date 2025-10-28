@@ -23,6 +23,7 @@ on:
       - "release-*"
     paths:
       - '**.adoc'
+      - 'pkg/apis/**'
       - '!**/README.adoc'
 
 concurrency:
