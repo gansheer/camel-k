@@ -30,6 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/utils/ptr"
 	eventingv1 "knative.dev/eventing/pkg/apis/eventing/v1"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
@@ -162,6 +163,10 @@ func TestGarbageCollectPreserveResourcesWithSameGeneration(t *testing.T) {
 func TestGarbageCollectUndeploying(t *testing.T) {
 	gcTrait, environment := createNominalGCTest()
 	environment.Integration.Status.Phase = v1.IntegrationPhaseBuildComplete
+
+	// Simulate undeploy scenario: DeploymentTimestamp set means integration was previously deployed
+	now := metav1.Now()
+	environment.Integration.Status.DeploymentTimestamp = &now
 
 	deployment := getIntegrationDeployment(environment.Integration)
 	gcTrait.Client, _ = internal.NewFakeClient(deployment)
@@ -348,4 +353,117 @@ func createNominalGCTest() (*gcTrait, *Environment) {
 	}
 
 	return trait, environment
+}
+
+func TestCanResourceBeDeleted(t *testing.T) {
+	it := &v1.Integration{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "my-it",
+		},
+	}
+
+	resNoOwner := unstructured.Unstructured{}
+	resNoOwner.SetOwnerReferences(
+		[]metav1.OwnerReference{},
+	)
+	assert.False(t, canBeDeleted(it, resNoOwner))
+
+	resNotThisItOwner := unstructured.Unstructured{}
+	resNotThisItOwner.SetOwnerReferences(
+		[]metav1.OwnerReference{
+			metav1.OwnerReference{
+				APIVersion: v1.SchemeGroupVersion.String(),
+				Kind:       "Integration",
+				Name:       "another-it",
+			},
+		},
+	)
+	assert.False(t, canBeDeleted(it, resNotThisItOwner))
+
+	resThisItOwner := unstructured.Unstructured{}
+	resThisItOwner.SetOwnerReferences(
+		[]metav1.OwnerReference{
+			metav1.OwnerReference{
+				APIVersion: v1.SchemeGroupVersion.String(),
+				Kind:       "Integration",
+				Name:       "my-it",
+			},
+		},
+	)
+	assert.True(t, canBeDeleted(it, resThisItOwner))
+}
+
+func TestHasNeverDeployed(t *testing.T) {
+	tests := []struct {
+		name                string
+		deploymentTimestamp *metav1.Time
+		readyCondition      *v1.IntegrationCondition
+		expected            bool
+	}{
+		{
+			name:                "never deployed - both checks nil",
+			deploymentTimestamp: nil,
+			readyCondition:      nil,
+			expected:            true,
+		},
+		{
+			name:                "deployed - DeploymentTimestamp set",
+			deploymentTimestamp: ptr.To(metav1.Now()),
+			readyCondition:      nil,
+			expected:            false,
+		},
+		{
+			name:                "deployed - Ready FirstTruthyTime set",
+			deploymentTimestamp: nil,
+			readyCondition: &v1.IntegrationCondition{
+				Type:            v1.IntegrationConditionReady,
+				Status:          corev1.ConditionTrue,
+				FirstTruthyTime: ptr.To(metav1.Now()),
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			integration := &v1.Integration{
+				Status: v1.IntegrationStatus{
+					DeploymentTimestamp: tt.deploymentTimestamp,
+				},
+			}
+			if tt.readyCondition != nil {
+				integration.Status.Conditions = []v1.IntegrationCondition{*tt.readyCondition}
+			}
+
+			result := hasNeverDeployed(integration)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestGarbageCollectDryBuildSkipsGC(t *testing.T) {
+	gcTrait, environment := createNominalGCTest()
+	environment.Integration.Status.Phase = v1.IntegrationPhaseBuildComplete
+
+	environment.Integration.Status.DeploymentTimestamp = nil
+	environment.Integration.Status.Conditions = nil
+
+	deployment := getIntegrationDeployment(environment.Integration)
+	gcTrait.Client, _ = internal.NewFakeClient(deployment)
+
+	environment.Client = gcTrait.Client
+	resourceDeleted := false
+	fakeClient := gcTrait.Client.(*internal.FakeClient)
+	fakeClient.Intercept(&interceptor.Funcs{
+		Delete: func(ctx context.Context, client ctrl.WithWatch, obj ctrl.Object, opts ...ctrl.DeleteOption) error {
+			resourceDeleted = true
+			return nil
+		},
+	})
+
+	err := gcTrait.Apply(environment)
+
+	require.NoError(t, err)
+	assert.Len(t, environment.PostActions, 0)
+	assert.False(t, resourceDeleted)
 }

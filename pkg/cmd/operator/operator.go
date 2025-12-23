@@ -19,6 +19,7 @@ package operator
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -69,7 +70,7 @@ import (
 var log = logutil.Log.WithName("cmd")
 
 func printVersion() {
-	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
+	log.Info("Go Version: " + runtime.Version())
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("Camel K Operator Version: %v", defaults.Version))
 	log.Info(fmt.Sprintf("Camel K Default Runtime Version: %v", defaults.DefaultRuntimeVersion))
@@ -82,7 +83,6 @@ func printVersion() {
 
 // Run starts the Camel K operator.
 func Run(healthPort, monitoringPort int32, leaderElection bool, leaderElectionID string) {
-
 	flag.Parse()
 
 	// The logger instantiated here can be changed to any logger
@@ -243,6 +243,7 @@ func getNamespacesSelector(operatorNamespace string, watchNamespace string) map[
 	if operatorNamespace != watchNamespace {
 		namespacesSelector[watchNamespace] = cache.Config{}
 	}
+
 	return namespacesSelector
 }
 
@@ -252,6 +253,7 @@ func getWatchNamespace() (string, error) {
 	if !found {
 		return "", fmt.Errorf("%s must be set", platform.OperatorWatchNamespaceEnvVariable)
 	}
+
 	return ns, nil
 }
 
@@ -270,8 +272,9 @@ func getOperatorImage(ctx context.Context, c ctrl.Reader) (string, error) {
 		return "", err
 	}
 	if len(pod.Spec.Containers) == 0 {
-		return "", fmt.Errorf("no containers found in operator pod")
+		return "", errors.New("no containers found in operator pod")
 	}
+
 	return pod.Spec.Containers[0].Image, nil
 }
 

@@ -42,6 +42,7 @@ type containerTask struct {
 	image     string
 	command   string
 	isSidecar bool
+	env       []corev1.EnvVar
 }
 
 type initContainersTrait struct {
@@ -90,6 +91,23 @@ func (t *initContainersTrait) Configure(e *Environment) (bool, *TraitCondition, 
 			}
 			t.tasks = append(t.tasks, agentDownloadTask)
 		}
+		// Set the CA cert truststore init container if configured
+		if ok && jvm.hasCACert() {
+			if err := jvm.validateCACertConfig(); err != nil {
+				return false, nil, err
+			}
+			// keytool reads password from file using -storepass:file
+			keytoolCmd := fmt.Sprintf(
+				"keytool -importcert -noprompt -alias custom-ca -storepass:file %s -keystore %s -file %s",
+				jvm.getCACertPasswordPath(), jvm.getTrustStorePath(), jvm.getCACertPath(),
+			)
+			caCertTask := containerTask{
+				name:    "generate-truststore",
+				image:   defaults.BaseImage(),
+				command: keytoolCmd,
+			}
+			t.tasks = append(t.tasks, caCertTask)
+		}
 	}
 
 	return len(t.tasks) > 0, nil, nil
@@ -101,18 +119,21 @@ func (t *initContainersTrait) Apply(e *Environment) error {
 	if err := e.Resources.VisitDeploymentE(func(deployment *appsv1.Deployment) error {
 		// Deployment
 		initContainers = &deployment.Spec.Template.Spec.InitContainers
+
 		return nil
 	}); err != nil {
 		return err
 	} else if err := e.Resources.VisitKnativeServiceE(func(service *serving.Service) error {
 		// Knative Service
 		initContainers = &service.Spec.Template.Spec.InitContainers
+
 		return nil
 	}); err != nil {
 		return err
 	} else if err := e.Resources.VisitCronJobE(func(cron *batchv1.CronJob) error {
 		// CronJob
 		initContainers = &cron.Spec.JobTemplate.Spec.Template.Spec.InitContainers
+
 		return nil
 	}); err != nil {
 		return err
@@ -132,6 +153,7 @@ func (t *initContainersTrait) configureContainers(containers *[]corev1.Container
 			Name:    task.name,
 			Image:   task.image,
 			Command: splitContainerCommand(task.command),
+			Env:     task.env,
 		}
 		if task.isSidecar {
 			initCont.RestartPolicy = ptr.To(corev1.ContainerRestartPolicyAlways)

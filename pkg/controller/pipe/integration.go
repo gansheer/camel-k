@@ -20,6 +20,7 @@ package pipe
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 
@@ -110,11 +111,12 @@ func CreateIntegrationFor(ctx context.Context, c client.Client, pipe *v1.Pipe) (
 	}
 
 	bindingContext := bindings.BindingContext{
-		Ctx:       ctx,
-		Client:    c,
-		Namespace: it.Namespace,
-		Profile:   profile,
-		Metadata:  it.Annotations,
+		Ctx:                ctx,
+		Client:             c,
+		Namespace:          it.Namespace,
+		Profile:            profile,
+		Metadata:           it.Annotations,
+		ServiceAccountName: it.Spec.ServiceAccountName,
 	}
 
 	from, err := bindings.Translate(bindingContext, endpointTypeSourceContext, pipe.Spec.Source)
@@ -145,10 +147,10 @@ func CreateIntegrationFor(ctx context.Context, c client.Client, pipe *v1.Pipe) (
 	}
 
 	if to.Step == nil && to.URI == "" {
-		return nil, fmt.Errorf("illegal step definition for sink step: either Step or URI should be provided")
+		return nil, errors.New("illegal step definition for sink step: either Step or URI should be provided")
 	}
 	if from.URI == "" {
-		return nil, fmt.Errorf("illegal step definition for source step: URI should be provided")
+		return nil, errors.New("illegal step definition for source step: URI should be provided")
 	}
 	for index, step := range steps {
 		if step.Step == nil && step.URI == "" {
@@ -253,7 +255,6 @@ func configureBinding(integration *v1.Integration, bindings ...*bindings.Binding
 
 			integration.Spec.AddConfigurationProperty(entry)
 		}
-
 	}
 
 	return nil
@@ -284,5 +285,6 @@ func determineTraitProfile(ctx context.Context, c client.Client, binding *v1.Pip
 			return plProfile, nil
 		}
 	}
+
 	return v1.DefaultTraitProfile, nil
 }

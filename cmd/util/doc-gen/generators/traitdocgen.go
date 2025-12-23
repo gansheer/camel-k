@@ -61,8 +61,8 @@ const (
 	adocNavMarkerEnd   = adocCommonMarkerEnd + " (trait-nav)"
 )
 
-var tagTraitRegex = regexp.MustCompile(fmt.Sprintf("%s=([a-z0-9-]+)", regexp.QuoteMeta(tagTrait)))
-var tagDeprecatedRegex = regexp.MustCompile(fmt.Sprintf("%s=(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)", regexp.QuoteMeta(tagDeprecated)))
+var tagTraitRegex = regexp.MustCompile(regexp.QuoteMeta(tagTrait) + "=([a-z0-9-]+)")
+var tagDeprecatedRegex = regexp.MustCompile(regexp.QuoteMeta(tagDeprecated) + "=(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)")
 
 // traitDocGen produces documentation about traits.
 type traitDocGen struct {
@@ -89,6 +89,7 @@ func (g *traitDocGen) Filename() string {
 func (g *traitDocGen) Filter(context *generator.Context, t *types.Type) bool {
 	comments := strings.Join(t.CommentLines, " ")
 	match := strings.Contains(comments, tagTrait) && !strings.Contains(comments, tagInternal)
+
 	return match
 }
 
@@ -115,8 +116,10 @@ func (g *traitDocGen) GenerateType(context *generator.Context, t *types.Type, ou
 
 			return writeFile(file, content)
 		})
+
 		return err
 	}
+
 	return nil
 }
 
@@ -158,6 +161,7 @@ func traitNameFromFile(file string) string {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = strings.Trim(name, " ")
 	name = cases.Title(language.English).String(name)
+
 	return name
 }
 
@@ -266,10 +270,11 @@ func getTraitID(t *types.Type) string {
 			if len(matches) < 2 {
 				panic(fmt.Sprintf("unable to extract trait ID from tag line `%s`", s))
 			}
+
 			return matches[1]
 		}
 	}
-	panic(fmt.Sprintf("trait ID not found in type %s", t.Name.Name))
+	panic("trait ID not found in type " + t.Name.Name)
 }
 
 func getDeprecatedVersion(t *types.Type) string {
@@ -281,6 +286,7 @@ func getDeprecatedVersion(t *types.Type) string {
 			}
 		}
 	}
+
 	return ""
 }
 
@@ -293,6 +299,7 @@ func filterOutTagsAndComments(comments []string) []string {
 			res = append(res, l)
 		}
 	}
+
 	return res
 }
 
@@ -309,6 +316,7 @@ func split(doc []string, startMarker, endMarker string) ([]string, []string) {
 	for i, s := range doc {
 		if s == startMarker {
 			idx = i
+
 			break
 		}
 	}
@@ -316,6 +324,7 @@ func split(doc []string, startMarker, endMarker string) ([]string, []string) {
 	for j, s := range doc {
 		if j > idx && s == endMarker {
 			idy = j
+
 			break
 		}
 	}
@@ -324,6 +333,7 @@ func split(doc []string, startMarker, endMarker string) ([]string, []string) {
 	if idy < len(doc) {
 		post = doc[idy+1:]
 	}
+
 	return pre, post
 }
 
@@ -344,12 +354,14 @@ func writeFile(file *os.File, content []string) error {
 			}
 		}
 	}
+
 	return nil
 }
 
 func isPlatformTrait(traitID string) bool {
 	catalog := trait.NewCatalog(nil)
 	t := catalog.GetTrait(traitID)
+
 	return t.IsPlatformTrait()
 }
 
@@ -364,5 +376,6 @@ func determineProfiles(traitID string) []string {
 			}
 		}
 	}
+
 	return profiles
 }

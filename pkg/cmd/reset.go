@@ -43,6 +43,7 @@ func newCmdReset(rootCmdOptions *RootCmdOptions) (*cobra.Command, *resetCmdOptio
 	cmd.Flags().Bool("skip-kits", false, "Do not delete the integration kits")
 	cmd.Flags().Bool("skip-integrations", false, "Do not delete the integrations")
 	cmd.Flags().Bool("skip-bindings", false, "Do not delete the bindings/pipes")
+	cmd.Flags().Bool("force", false, "Force reset without confirmation")
 
 	return &cmd, &options
 }
@@ -53,12 +54,31 @@ type resetCmdOptions struct {
 	SkipKits         bool `mapstructure:"skip-kits"`
 	SkipIntegrations bool `mapstructure:"skip-integrations"`
 	SkipBindings     bool `mapstructure:"skip-bindings"`
+	Force            bool `mapstructure:"force"`
 }
 
 func (o *resetCmdOptions) reset(cmd *cobra.Command, _ []string) {
+	if !o.Force {
+		fmt.Fprintf(cmd.OutOrStdout(), "Reset will delete Camel K resources in namespace '%s'.\n", o.Namespace)
+		fmt.Fprint(cmd.OutOrStdout(), "Type the namespace to confirm: ")
+
+		var input string
+		if _, err := fmt.Fscan(cmd.InOrStdin(), &input); err != nil {
+			fmt.Fprint(cmd.ErrOrStderr(), err)
+
+			return
+		}
+		if input != o.Namespace {
+			fmt.Fprintln(cmd.OutOrStdout(), "confirmation failed. aborting.")
+
+			return
+		}
+	}
+
 	c, err := o.GetCmdClient()
 	if err != nil {
 		fmt.Fprint(cmd.ErrOrStderr(), err)
+
 		return
 	}
 
@@ -66,6 +86,7 @@ func (o *resetCmdOptions) reset(cmd *cobra.Command, _ []string) {
 	if !o.SkipBindings {
 		if n, err = o.deleteAllPipes(c); err != nil {
 			fmt.Fprint(cmd.ErrOrStderr(), err)
+
 			return
 		}
 		fmt.Fprintln(cmd.OutOrStdout(), n, "pipes deleted from namespace", o.Namespace)
@@ -74,6 +95,7 @@ func (o *resetCmdOptions) reset(cmd *cobra.Command, _ []string) {
 	if !o.SkipIntegrations {
 		if n, err = o.deleteAllIntegrations(c); err != nil {
 			fmt.Fprint(cmd.ErrOrStderr(), err)
+
 			return
 		}
 		fmt.Fprintln(cmd.OutOrStdout(), n, "integrations deleted from namespace", o.Namespace)
@@ -82,6 +104,7 @@ func (o *resetCmdOptions) reset(cmd *cobra.Command, _ []string) {
 	if !o.SkipKits {
 		if n, err = o.deleteAllIntegrationKits(c); err != nil {
 			fmt.Fprint(cmd.ErrOrStderr(), err)
+
 			return
 		}
 		fmt.Fprintln(cmd.OutOrStdout(), n, "integration kits deleted from namespace", o.Namespace)
@@ -103,6 +126,7 @@ func (o *resetCmdOptions) deleteAllIntegrations(c client.Client) (int, error) {
 			return 0, fmt.Errorf("could not delete integration %s from namespace %s: %w", it.Name, it.Namespace, err)
 		}
 	}
+
 	return len(list.Items), nil
 }
 
@@ -117,6 +141,7 @@ func (o *resetCmdOptions) deleteAllIntegrationKits(c client.Client) (int, error)
 			return 0, fmt.Errorf("could not delete integration kit %s from namespace %s: %w", kit.Name, kit.Namespace, err)
 		}
 	}
+
 	return len(list.Items), nil
 }
 
@@ -131,6 +156,7 @@ func (o *resetCmdOptions) deleteAllPipes(c client.Client) (int, error) {
 			return 0, fmt.Errorf("could not delete Pipe %s from namespace %s: %w", klb.Name, klb.Namespace, err)
 		}
 	}
+
 	return len(list.Items), nil
 }
 
@@ -144,5 +170,6 @@ func isIntegrationOwned(it v1.Integration) bool {
 			return true
 		}
 	}
+
 	return false
 }

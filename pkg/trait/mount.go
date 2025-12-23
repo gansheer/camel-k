@@ -26,7 +26,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	serving "knative.dev/serving/pkg/apis/serving/v1"
@@ -39,7 +38,6 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util/log"
 	"github.com/apache/camel-k/v2/pkg/util/property"
 	utilResource "github.com/apache/camel-k/v2/pkg/util/resource"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -94,6 +92,7 @@ func (t *mountTrait) Apply(e *Environment) error {
 		volumes = &deployment.Spec.Template.Spec.Volumes
 		initContainers = &deployment.Spec.Template.Spec.InitContainers
 		visited = true
+
 		return nil
 	}); err != nil {
 		return err
@@ -104,6 +103,7 @@ func (t *mountTrait) Apply(e *Environment) error {
 		volumes = &service.Spec.Template.Spec.Volumes
 		initContainers = &service.Spec.Template.Spec.InitContainers
 		visited = true
+
 		return nil
 	}); err != nil {
 		return err
@@ -114,6 +114,7 @@ func (t *mountTrait) Apply(e *Environment) error {
 		volumes = &cron.Spec.JobTemplate.Spec.Template.Spec.Volumes
 		initContainers = &cron.Spec.JobTemplate.Spec.Template.Spec.InitContainers
 		visited = true
+
 		return nil
 	}); err != nil {
 		return err
@@ -152,7 +153,7 @@ func (t *mountTrait) configureVolumesAndMounts(
 	for _, c := range t.Configs {
 		if conf, parseErr := utilResource.ParseConfig(c); parseErr == nil {
 			// Let Camel parse these resources as properties
-			destFilePath := t.mountResource(vols, mnts, conf)
+			destFilePath := t.mountResource(vols, mnts, icnts, conf)
 			e.appendCloudPropertiesLocation(destFilePath)
 		} else {
 			return parseErr
@@ -160,7 +161,7 @@ func (t *mountTrait) configureVolumesAndMounts(
 	}
 	for _, r := range t.Resources {
 		if res, parseErr := utilResource.ParseResource(r); parseErr == nil {
-			t.mountResource(vols, mnts, res)
+			t.mountResource(vols, mnts, icnts, res)
 		} else {
 			return parseErr
 		}
@@ -200,6 +201,37 @@ func (t *mountTrait) configureVolumesAndMounts(
 			*mnts = append(*mnts, *volumeMount)
 			for i := range *icnts {
 				(*icnts)[i].VolumeMounts = append((*icnts)[i].VolumeMounts, *volumeMount)
+			}
+		}
+
+		// Mount CA cert truststore volume if configured
+		if ok && jvm.hasCACert() {
+			mountPath := jvm.getCACertMountPath()
+
+			// EmptyDir volume for truststore output
+			trustStoreVolume := corev1.Volume{
+				Name: caCertVolumeName,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{},
+				},
+			}
+			*vols = append(*vols, trustStoreVolume)
+
+			// Mount truststore to main container
+			*mnts = append(*mnts, corev1.VolumeMount{
+				Name:      caCertVolumeName,
+				MountPath: mountPath,
+				ReadOnly:  true,
+			})
+
+			// Mount truststore volume to init containers
+			for i := range *icnts {
+				(*icnts)[i].VolumeMounts = append((*icnts)[i].VolumeMounts,
+					corev1.VolumeMount{
+						Name:      caCertVolumeName,
+						MountPath: mountPath,
+					},
+				)
 			}
 		}
 	}
@@ -283,8 +315,8 @@ func (t *mountTrait) configureCamelVolumesAndMounts(e *Environment, vols *[]core
 }
 
 // mountResource add the resource to volumes and mounts and return the final path where the resource is mounted.
-func (t *mountTrait) mountResource(vols *[]corev1.Volume, mnts *[]corev1.VolumeMount, conf *utilResource.Config) string {
-	refName := kubernetes.SanitizeLabel(conf.Name())
+func (t *mountTrait) mountResource(vols *[]corev1.Volume, mnts *[]corev1.VolumeMount, icnts *[]corev1.Container, conf *utilResource.Config) string {
+	refName := sanitizeVolumeName(conf.Name(), vols)
 	dstDir := conf.DestinationPath()
 	dstFile := ""
 	if conf.DestinationPath() != "" {
@@ -294,8 +326,8 @@ func (t *mountTrait) mountResource(vols *[]corev1.Volume, mnts *[]corev1.VolumeM
 			dstFile = conf.Key()
 		}
 	}
-	vol := getVolume(refName, string(conf.StorageType()), conf.Name(), conf.Key(), dstFile)
-	mntPath := getMountPoint(conf.Name(), dstDir, string(conf.StorageType()), string(conf.ContentType()))
+	vol := getVolume(refName, string(conf.StorageType()), refName, conf.Key(), dstFile)
+	mntPath := getMountPoint(refName, dstDir, string(conf.StorageType()), string(conf.ContentType()))
 	readOnly := (conf.StorageType() != utilResource.StorageTypePVC)
 
 	mnt := getMount(refName, mntPath, dstFile, readOnly)
@@ -303,121 +335,11 @@ func (t *mountTrait) mountResource(vols *[]corev1.Volume, mnts *[]corev1.VolumeM
 	*vols = append(*vols, *vol)
 	*mnts = append(*mnts, *mnt)
 
+	for i := range *icnts {
+		(*icnts)[i].VolumeMounts = append((*icnts)[i].VolumeMounts, *mnt)
+	}
+
 	return mnt.MountPath
-}
-
-// ParseEmptyDirVolume will parse and return an empty-dir volume.
-func ParseEmptyDirVolume(item string) (*corev1.Volume, *corev1.VolumeMount, error) {
-	volumeParts := strings.Split(item, ":")
-
-	if len(volumeParts) != 2 && len(volumeParts) != 3 {
-		return nil, nil, fmt.Errorf("could not match emptyDir volume as %s", item)
-	}
-
-	refName := kubernetes.SanitizeLabel(volumeParts[0])
-	sizeLimit := "500Mi"
-	if len(volumeParts) == 3 {
-		sizeLimit = volumeParts[2]
-	}
-
-	parsed, err := resource.ParseQuantity(sizeLimit)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not parse sizeLimit from emptyDir volume: %s", volumeParts[2])
-	}
-
-	volume := &corev1.Volume{
-		Name: refName,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{
-				SizeLimit: &parsed,
-			},
-		},
-	}
-
-	volumeMount := getMount(refName, volumeParts[1], "", false)
-	return volume, volumeMount, nil
-}
-
-// ParseAndCreateVolume will parse a volume configuration. If the volume does not exist it tries to create one based on the storage
-// class configuration provided or default.
-// item is expected to be as: name:path/to/mount<:size:accessMode<:storageClassName>>.
-func ParseAndCreateVolume(e *Environment, item string) (*corev1.Volume, *corev1.VolumeMount, error) {
-	volumeParts := strings.Split(item, ":")
-	volumeName := volumeParts[0]
-	pvc, err := kubernetes.LookupPersistentVolumeClaim(e.Ctx, e.Client, e.Integration.Namespace, volumeName)
-	if err != nil {
-		return nil, nil, err
-	}
-	var volume *corev1.Volume
-	if pvc == nil {
-		if len(volumeParts) == 2 {
-			return nil, nil, fmt.Errorf("volume %s does not exist. "+
-				"Make sure to provide one or configure a dynamic PVC as trait volume configuration pvcName:path/to/mount:size:accessMode<:storageClassName>",
-				volumeName,
-			)
-		}
-		if err = createPVC(e, volumeParts); err != nil {
-			return nil, nil, err
-		}
-	}
-
-	volume = &corev1.Volume{
-		Name: kubernetes.SanitizeLabel(volumeName),
-		VolumeSource: corev1.VolumeSource{
-			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-				ClaimName: volumeName,
-			},
-		},
-	}
-
-	volumeMount := getMount(volumeName, volumeParts[1], "", false)
-	return volume, volumeMount, nil
-}
-
-// createPVC is in charge to create a PersistentVolumeClaim based on the configuration provided. Or it fail within the intent.
-// volumeParts is expected to be as: name, path/to/mount, size, accessMode, <storageClassName>.
-func createPVC(e *Environment, volumeParts []string) error {
-	if len(volumeParts) < 4 || len(volumeParts) > 5 {
-		return fmt.Errorf(
-			"volume mount syntax error, must be name:path/to/mount:size:accessMode<:storageClassName> was %s",
-			strings.Join(volumeParts, ":"),
-		)
-	}
-	volumeName := volumeParts[0]
-	size := volumeParts[2]
-	accessMode := volumeParts[3]
-	sizeQty, err := resource.ParseQuantity(size)
-	if err != nil {
-		return fmt.Errorf("could not parse size %s, %s", size, err.Error())
-	}
-
-	var sc *storagev1.StorageClass
-	//nolint: nestif
-	if len(volumeParts) == 5 {
-		scName := volumeParts[4]
-		sc, err = kubernetes.LookupStorageClass(e.Ctx, e.Client, e.Integration.Namespace, scName)
-		if err != nil {
-			return fmt.Errorf("error looking up for StorageClass %s, %w", scName, err)
-		}
-		if sc == nil {
-			return fmt.Errorf("could not find any %s StorageClass", scName)
-		}
-	} else {
-		sc, err = kubernetes.LookupDefaultStorageClass(e.Ctx, e.Client)
-		if err != nil {
-			return fmt.Errorf("error looking up for default StorageClass, %w", err)
-		}
-		if sc == nil {
-			return fmt.Errorf("could not find any default StorageClass")
-		}
-	}
-
-	pvc := kubernetes.NewPersistentVolumeClaim(e.Integration.Namespace, volumeName, sc.Name, sizeQty, corev1.PersistentVolumeAccessMode(accessMode))
-	if err := e.Client.Create(e.Ctx, pvc); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // computeApplicationProperties is in charge to configure the configmap containing Camel application.properties.
@@ -467,6 +389,7 @@ func (t *mountTrait) addSourcesProperties(e *Environment) {
 				continue
 			}
 			sourceLocationEnabled = true
+
 			break
 		}
 		if sourceLocationEnabled {
@@ -509,6 +432,5 @@ func (t *mountTrait) addSourcesProperties(e *Environment) {
 
 			idx++
 		}
-
 	}
 }

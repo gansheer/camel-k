@@ -33,6 +33,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime/debug"
@@ -43,7 +44,6 @@ import (
 	"time"
 
 	consoleV1 "github.com/openshift/api/console/v1"
-	"github.com/stretchr/testify/require"
 
 	"github.com/google/uuid"
 	"github.com/onsi/gomega"
@@ -75,9 +75,9 @@ import (
 	"github.com/apache/camel-k/v2/e2e/support/util"
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	traitv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
+	kedav1alpha1 "github.com/apache/camel-k/v2/pkg/apis/duck/keda/v1alpha1"
 	"github.com/apache/camel-k/v2/pkg/client"
 	"github.com/apache/camel-k/v2/pkg/cmd"
-	"github.com/apache/camel-k/v2/pkg/install"
 	"github.com/apache/camel-k/v2/pkg/platform"
 	v2util "github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/defaults"
@@ -193,6 +193,7 @@ func init() {
 	client.FastMapperAllowedAPIGroups["operators.coreos.com"] = true
 	client.FastMapperAllowedAPIGroups["config.openshift.io"] = true
 	client.FastMapperAllowedAPIGroups["policy"] = true
+	client.FastMapperAllowedAPIGroups["keda.sh"] = true
 
 	var err error
 
@@ -1597,6 +1598,16 @@ func CreatePlainTextConfigmap(t *testing.T, ctx context.Context, ns string, name
 	return CreatePlainTextConfigmapWithLabels(t, ctx, ns, name, data, map[string]string{})
 }
 
+func CreateFromFileConfigmap(t *testing.T, ctx context.Context, ns string, name string, pathToFile string) error {
+	content, _ := os.ReadFile(pathToFile)
+	filename := filepath.Base(pathToFile)
+
+	var data = make(map[string]string)
+	data[filename] = string(content)
+
+	return CreatePlainTextConfigmapWithLabels(t, ctx, ns, name, data, map[string]string{})
+}
+
 func CreatePlainTextConfigmapWithLabels(t *testing.T, ctx context.Context, ns string, name string, data map[string]string, labels map[string]string) error {
 	cm := corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
@@ -2546,50 +2557,6 @@ func ClusterDomainName(t *testing.T, ctx context.Context) (string, error) {
 	return dns.Spec.BaseDomain, nil
 }
 
-/*
-	Tekton
-*/
-
-func CreateOperatorServiceAccount(t *testing.T, ctx context.Context, ns string) error {
-	return install.Resource(ctx, TestClient(t), ns, true, install.IdentityResourceCustomizer, "/config/manager/operator-service-account.yaml")
-}
-
-func CreateOperatorRole(t *testing.T, ctx context.Context, ns string) (err error) {
-	oc, err := openshift.IsOpenShift(TestClient(t))
-	if err != nil {
-		failTest(t, err)
-	}
-	customizer := install.IdentityResourceCustomizer
-	if oc {
-		// Remove Ingress permissions as it's not needed on OpenShift
-		// This should ideally be removed from the common RBAC manifest.
-		customizer = install.RemoveIngressRoleCustomizer
-	}
-	err = install.Resource(ctx, TestClient(t), ns, true, customizer, "/config/rbac/namespaced/operator-role.yaml")
-	if err != nil {
-		return err
-	}
-	if oc {
-		return install.Resource(ctx, TestClient(t), ns, true, install.IdentityResourceCustomizer, "/config/rbac/openshift/namespaced/operator-role-openshift.yaml")
-	}
-	return nil
-}
-
-func CreateOperatorRoleBinding(t *testing.T, ctx context.Context, ns string) error {
-	oc, err := openshift.IsOpenShift(TestClient(t))
-	if err != nil {
-		failTest(t, err)
-	}
-	err = install.Resource(ctx, TestClient(t), ns, true, install.IdentityResourceCustomizer, "/config/rbac/namespaced/operator-role-binding.yaml")
-	if err != nil {
-		return err
-	}
-	if oc {
-		return install.Resource(ctx, TestClient(t), ns, true, install.IdentityResourceCustomizer, "/config/rbac/openshift/namespaced/operator-role-binding-openshift.yaml")
-	}
-	return nil
-}
-
 // CreateKamelPodWithIntegrationSource generates and deploy a Pod from current Camel K controller image that will run a `kamel xxxx` command.
 // The integration parameter represent an Integration source file contained in a ConfigMap or Secret defined and mounted on the as a Volume.
 func CreateKamelPodWithIntegrationSource(t *testing.T, ctx context.Context, ns string, name string, integration v1.ValueSource, command ...string) error {
@@ -2816,18 +2783,6 @@ func WithNewTestNamespace(t *testing.T, doRun func(context.Context, *gomega.With
 	invokeUserTestCode(t, testContext, ns.GetName(), doRun)
 }
 
-func WithGlobalOperatorNamespace(t *testing.T, test func(context.Context, *gomega.WithT, string)) {
-	ocp, err := openshift.IsOpenShift(TestClient(t))
-	require.NoError(t, err)
-	if ocp {
-		// global operators are always installed in the openshift-operators namespace
-		invokeUserTestCode(t, testContext, "openshift-operators", test)
-	} else {
-		// create new namespace for the global operator
-		WithNewTestNamespace(t, test)
-	}
-}
-
 func WithNewTestNamespaceWithKnativeBroker(t *testing.T, doRun func(context.Context, *gomega.WithT, string)) {
 	ns := NewTestNamespace(t, testContext, true)
 	defer deleteTestNamespace(t, testContext, ns)
@@ -2856,6 +2811,8 @@ func userCleanup(t *testing.T) {
 func invokeUserTestCode(t *testing.T, ctx context.Context, ns string, doRun func(context.Context, *gomega.WithT, string)) {
 	defer func() {
 		DumpNamespace(t, ctx, ns)
+		// Also dump the operator namespace in case it's common
+		DumpNamespace(t, ctx, "camel-k")
 	}()
 
 	g := gomega.NewWithT(t)
@@ -3154,4 +3111,20 @@ func DefaultOperatorSecurityContext() *corev1.SecurityContext {
 	}
 
 	return &sc
+}
+
+// ScaledObject retrieves a KEDA ScaledObject by name from a namespace.
+func ScaledObject(t *testing.T, ctx context.Context, ns, name string) func() *kedav1alpha1.ScaledObject {
+	return func() *kedav1alpha1.ScaledObject {
+		scaledObject := kedav1alpha1.ScaledObject{}
+		key := ctrl.ObjectKey{
+			Namespace: ns,
+			Name:      name,
+		}
+		if err := TestClient(t).Get(ctx, key, &scaledObject); err != nil {
+			log.Error(err, "Error while retrieving ScaledObject "+name)
+			return nil
+		}
+		return &scaledObject
+	}
 }

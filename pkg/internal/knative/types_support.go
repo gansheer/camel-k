@@ -26,7 +26,6 @@ import (
 // BuildCamelServiceDefinition creates a CamelServiceDefinition from a given URL.
 func BuildCamelServiceDefinition(name string, endpointKind CamelEndpointKind, serviceType CamelServiceType,
 	serviceURL url.URL, apiVersion, kind string) (CamelServiceDefinition, error) {
-
 	definition := CamelServiceDefinition{
 		Name:        name,
 		URL:         serviceURL.String(),
@@ -61,23 +60,24 @@ func (env *CamelEnvironment) ToCamelProperties() map[string]string {
 	mappedServices := make(map[string]string)
 	for i, service := range env.Services {
 		resource := fmt.Sprintf("camel.component.knative.environment.resources[%d]", i)
-		mappedServices[fmt.Sprintf("%s.name", resource)] = service.Name
-		mappedServices[fmt.Sprintf("%s.type", resource)] = string(service.ServiceType)
-		mappedServices[fmt.Sprintf("%s.objectKind", resource)] = service.Metadata[CamelMetaKnativeKind]
-		mappedServices[fmt.Sprintf("%s.objectApiVersion", resource)] = service.Metadata[CamelMetaKnativeAPIVersion]
-		mappedServices[fmt.Sprintf("%s.endpointKind", resource)] = service.Metadata[CamelMetaEndpointKind]
-		mappedServices[fmt.Sprintf("%s.reply", resource)] = service.Metadata[CamelMetaKnativeReply]
+		mappedServices[resource+".name"] = service.Name
+		mappedServices[resource+".type"] = string(service.ServiceType)
+		mappedServices[resource+".objectKind"] = service.Metadata[CamelMetaKnativeKind]
+		mappedServices[resource+".objectApiVersion"] = service.Metadata[CamelMetaKnativeAPIVersion]
+		mappedServices[resource+".endpointKind"] = service.Metadata[CamelMetaEndpointKind]
+		mappedServices[resource+".reply"] = service.Metadata[CamelMetaKnativeReply]
 		if service.ServiceType == CamelServiceTypeEvent {
-			mappedServices[fmt.Sprintf("%s.objectName", resource)] = service.Metadata[CamelMetaKnativeName]
+			mappedServices[resource+".objectName"] = service.Metadata[CamelMetaKnativeName]
 		}
 		if service.SinkBinding {
-			mappedServices[fmt.Sprintf("%s.url", resource)] = "${K_SINK}"
-			mappedServices[fmt.Sprintf("%s.ceOverrides", resource)] = "${K_CE_OVERRIDES}"
+			mappedServices[resource+".url"] = "${K_SINK}"
+			mappedServices[resource+".ceOverrides"] = "${K_CE_OVERRIDES}"
 		} else {
-			mappedServices[fmt.Sprintf("%s.url", resource)] = service.URL
-			mappedServices[fmt.Sprintf("%s.path", resource)] = service.Path
+			mappedServices[resource+".url"] = service.URL
+			mappedServices[resource+".path"] = service.Path
 		}
 	}
+
 	return mappedServices
 }
 
@@ -87,6 +87,7 @@ func (env *CamelEnvironment) Serialize() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(res), nil
 }
 
@@ -95,6 +96,7 @@ func (env *CamelEnvironment) Deserialize(str string) error {
 	if err := json.Unmarshal([]byte(str), env); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -114,5 +116,6 @@ func (env *CamelEnvironment) FindService(name string, endpointKind CamelEndpoint
 			return &svc
 		}
 	}
+
 	return nil
 }

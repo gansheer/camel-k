@@ -15,26 +15,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package scalers
 
 import (
-	"github.com/spf13/cobra"
+	keda "github.com/apache/camel-k/v2/pkg/trait/keda"
 )
 
-func newCmdCompletion(root *cobra.Command) *cobra.Command {
-	completion := cobra.Command{
-		Use:        "completion",
-		Short:      "Generate completion scripts",
-		Deprecated: "no longer supported.",
+type KafkaScaler struct{}
+
+func init() {
+	keda.Register(&KafkaScaler{})
+}
+func (k *KafkaScaler) Component() string {
+	return "kafka"
+}
+func (k *KafkaScaler) Map(pathValue string, params map[string]string) (string, map[string]string) {
+	metadata := make(map[string]string)
+	if pathValue != "" {
+		metadata["topic"] = pathValue
+	}
+	if v, ok := params["brokers"]; ok {
+		metadata["bootstrapServers"] = v
+	}
+	if v, ok := params["groupId"]; ok {
+		metadata["consumerGroup"] = v
 	}
 
-	completion.AddCommand(newCmdCompletionBash(root))
-	completion.AddCommand(newCmdCompletionZsh(root))
-
-	return &completion
-}
-
-func configureKnownCompletions(command *cobra.Command) {
-	configureKnownBashCompletions(command)
-	configureKnownZshCompletions(command)
+	return "kafka", metadata
 }

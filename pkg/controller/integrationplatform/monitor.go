@@ -112,7 +112,7 @@ func (action *monitorAction) Handle(ctx context.Context, platform *v1.Integratio
 				v1.IntegrationPlatformConditionTypeRegistryAvailable,
 				corev1.ConditionTrue,
 				v1.IntegrationPlatformConditionTypeRegistryAvailableReason,
-				fmt.Sprintf("registry available at %s", platform.Status.Build.Registry.Address))
+				"registry available at "+platform.Status.Build.Registry.Address)
 			// Warn if insecure registry
 			if platform.Status.Build.Registry.Insecure {
 				platform.Status.SetCondition(
@@ -155,6 +155,7 @@ func (action *monitorAction) checkTraitAnnotationsDeprecatedNotice(platform *v1.
 					"WARN: annotation traits configuration is deprecated and will be removed soon. Use .spec.traits configuration for %s platform instead.",
 					platform.Name,
 				)
+
 				return
 			}
 		}
@@ -204,6 +205,7 @@ func specOrDefault(runtimeVersionSpec string) string {
 	if runtimeVersionSpec == "" {
 		return defaults.DefaultRuntimeVersion
 	}
+
 	return runtimeVersionSpec
 }
 

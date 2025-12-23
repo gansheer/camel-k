@@ -19,7 +19,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -42,6 +41,7 @@ func (c *knativeServiceController) checkReadyCondition(ctx context.Context) (boo
 		ready.GetReason() == "RevisionFailed" {
 		c.integration.Status.Phase = v1.IntegrationPhaseError
 		c.integration.SetReadyConditionError(ready.Message)
+
 		return true, nil
 	}
 
@@ -53,6 +53,7 @@ func (c *knativeServiceController) updateReadyCondition(readyPods int32) bool {
 	if ready.IsTrue() {
 		c.integration.SetReadyCondition(corev1.ConditionTrue,
 			v1.IntegrationConditionKnativeServiceReadyReason, "")
+
 		return true
 	}
 	c.integration.SetReadyCondition(corev1.ConditionFalse,
@@ -66,5 +67,5 @@ func (c *knativeServiceController) hasTemplateIntegrationLabel() bool {
 }
 
 func (c *knativeServiceController) getControllerName() string {
-	return fmt.Sprintf("KnativeService/%s", c.obj.Name)
+	return "KnativeService/" + c.obj.Name
 }

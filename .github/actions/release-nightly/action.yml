@@ -60,20 +60,27 @@ runs:
     - name: Set up QEMU (required by multi platform build)
       uses: docker/setup-qemu-action@v3
 
-    - name: Infra setting
-      uses: ./.github/actions/infra-setting
+    # 
+    # IMPORTANT:
+    # Do we really want to run smoke test?
+    # We can skip unless we see the usage of the nightly is widespread and it makes sense to run some smoke
+    # test before releasing
+    #
+    
+    # - name: Infra setting
+    #   uses: ./.github/actions/infra-setting
 
-    - name: Install operator
-      shell: bash
-      run: |
-        kubectl create ns camel-k
-        make install-k8s-global
-        kubectl wait --for=jsonpath='{.status.phase}'=Ready itp camel-k -n camel-k --timeout=60s
+    # - name: Install operator
+    #   shell: bash
+    #   run: |
+    #     kubectl create ns camel-k
+    #     make install-k8s-global
+    #     kubectl wait --for=jsonpath='{.status.phase}'=Ready itp camel-k -n camel-k --timeout=60s
 
-    - name: Run test
-      shell: bash
-      run: |
-        DO_TEST_PREBUILD=false GOTESTFMT="-json 2>&1 | gotestfmt" make test-common
+    # - name: Run test
+    #   shell: bash
+    #   run: |
+    #     DO_TEST_PREBUILD=false GOTESTFMT="-json 2>&1 | gotestfmt" make test-common
 
     - name: Get nightly version and update date
       shell: bash
@@ -81,6 +88,7 @@ runs:
         V="$(make get-version | sed s/-SNAPSHOT//)-nightly"
         D=$(date)
         echo "VERSION=$V" >> $GITHUB_ENV
+        echo "TAG=v$V" >> $GITHUB_ENV
         echo "UPD_DATE=$D" >> $GITHUB_ENV
         IMAGE_NAME=docker.io/${TEST_DOCKER_HUB_USERNAME:-testcamelk}/camel-k
         echo "Using IMAGE_NAME=$IMAGE_NAME"
@@ -95,12 +103,12 @@ runs:
     - name: Build and release containers
       shell: bash
       run: |
-        make VERSION=${{ env.VERSION }} IMAGE_NAME=${{ env.IMAGE_NAME }} bundle release-helm images-nightly release-nightly
+        NOTEST=1 make VERSION=${{ env.VERSION }} IMAGE_NAME=${{ env.IMAGE_NAME }} bundle release-helm images-nightly release-nightly
 
     - name: Build and push OLM bundle
       shell: bash
       run: |
-        make VERSION=${{ env.VERSION }} IMAGE_NAME=${{ env.IMAGE_NAME }} BUNDLE_IMAGE_NAME=docker.io/testcamelk/camel-k-bundle bundle-push
+        NOTEST=1 make VERSION=${{ env.VERSION }} IMAGE_NAME=${{ env.IMAGE_NAME }} BUNDLE_IMAGE_NAME=docker.io/testcamelk/camel-k-bundle bundle-push
 
     - name: Generate SBOM
       uses: ./.github/actions/gh-go-mod-generate-sbom
@@ -118,39 +126,126 @@ runs:
         git config --local user.email "$CI_EMAIL"
         git config --local user.name "$CI_USER"
         git add docs/charts/
-        git commit -am 'chore(ci): v${{ env.VERSION }} release updates' || echo "No nightly release updates changes to commit"
+        git commit -am 'chore(ci): ${{ env.TAG }} release updates' || echo "No nightly release updates changes to commit"
         echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
-        git tag v${{ env.VERSION }} $(git rev-parse HEAD)
-        git push "https://$CI_USER:$CI_TOKEN@github.com/$GITHUB_REPOSITORY.git" tag v${{ env.VERSION }} -f || echo "No nightly release updates changes to push"
+        git tag ${{ env.TAG }} $(git rev-parse HEAD)
+        git push "https://$CI_USER:$CI_TOKEN@github.com/$GITHUB_REPOSITORY.git" tag ${{ env.TAG }} -f || echo "No nightly release updates changes to push"
 
-    - name: Create Release
-      id: create_release
-      uses: ncipollo/release-action@1e3e9c6637e5566e185b7ab66f187539c5a76da7
-      with:
-        artifacts: "./camel-k-client*.tar.gz,sbom.json"
-        body: |
-          ```
-          NOTE: last updated on ${{ env.UPD_DATE }}
-          ```
-          Apache Camel K ${{ env.VERSION }} build for testing purposese only (unstable). This nightly release is using an **unsupported** operator image published as `${{ env.IMAGE_NAME }}:${{ env.VERSION }}`. The available platforms are AMD64 and ARM64.
+    - name: Create release first time
+      shell: bash
+      env:
+        CI_USER: "github-actions[bot]"
+        CI_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+        CI_TOKEN: ${{ inputs.secretGithubToken }}
+      run: |
+        echo "Checking existing release for tag ${{ env.TAG }}..."
 
-          ## Kubectl
-          ```
-          kubectl apply -k github.com/apache/camel-k/install/overlays/kubernetes/descoped?ref=v${{ env.VERSION }}
-          ```
-          ## Helm
-          ```
-          helm install camel-k https://github.com/apache/camel-k/raw/v${{ env.VERSION }}/docs/charts/camel-k-${{ env.VERSION }}.tgz
-          ```
-          ## OLM
-          Use the `operator-sdk` tool and run the bundle via:
-          ```
-          operator-sdk run bundle docker.io/testcamelk/camel-k-bundle:${{ env.VERSION }}
-          ```
-        token: ${{ inputs.secretGithubToken }}
-        draft: false
-        prerelease: true
-        allowUpdates: true
-        replacesArtifacts: true
-        tag: v${{ env.VERSION }}
-        commit: ${{ env.COMMIT_ID }}
+        RELEASE_RESPONSE=$(curl -s -H "Authorization: token $CI_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${{ env.TAG }}")
+
+        RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id // empty')
+        echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
+
+        if [ -z "$RELEASE_ID" ]; then
+          echo "Not found. Creating a new release for ${{ env.TAG }}..."
+          RELEASE_DATA=$(jq -n \
+            --arg tag "${{ env.TAG }}" \
+            --arg name "${{ env.TAG }}" \
+            --arg commit "$COMMIT_ID" \
+            --arg body "PLACEHOLDER" \
+            '{ tag_name: $tag, target_commitish: $commit, name: $name, body: $body, draft: true, prerelease: true }')
+
+          RELEASE_RESPONSE=$(curl -s -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/releases \
+            -d "$RELEASE_DATA")
+
+          RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id')
+          echo "Created release ID: $RELEASE_ID"
+          echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
+        fi
+
+    - name: Update release metadata
+      shell: bash
+      run: |
+        RELEASE_ID=${{ env.RELEASE_ID }}
+        RELEASE_NOTES=$(cat << 'EOF'
+        ```
+        NOTE: last update on ${{ env.UPD_DATE }}
+        ```
+        Apache Camel K ${{ env.VERSION }} build for testing purposes only (unstable). This nightly release is using an **unsupported** operator image published as `${{ env.IMAGE_NAME }}:${{ env.VERSION }}`. The available platforms are AMD64 and ARM64.
+        ## Kubectl
+        ```
+        kubectl apply -k github.com/apache/camel-k/install/overlays/kubernetes/descoped?ref=${{ env.TAG }}
+        ```
+        ## Helm
+        ```
+        helm install camel-k https://github.com/apache/camel-k/raw/${{ env.TAG }}/docs/charts/camel-k-${{ env.VERSION }}.tgz
+        ```
+        ## OLM
+        Use the `operator-sdk` tool and run the bundle via:
+        ```
+        operator-sdk run bundle docker.io/testcamelk/camel-k-bundle:${{ env.VERSION }}
+        ```
+        EOF
+        )
+
+        echo "Updating release $RELEASE_ID..."
+
+        RELEASE_DATA=$(jq -n \
+          --arg tag "${{ env.TAG }}" \
+          --arg name "${{ env.TAG }}" \
+          --arg commit "$COMMIT_ID" \
+          --arg body "$RELEASE_NOTES" \
+          '{ tag_name: $tag, target_commitish: $commit, name: $name, body: $body, draft: false, prerelease: true }')
+
+        curl -s -X PATCH \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/$RELEASE_ID \
+          -d "$RELEASE_DATA"
+
+    - name: Delete old assets
+      shell: bash
+      run: |
+        RELEASE_ID=${{ env.RELEASE_ID }}
+
+        ASSETS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/$RELEASE_ID | jq -r '.assets? // [] | .[] | .id')
+
+        if [ -n "$ASSETS" ]; then
+          for ASSET_ID in $ASSETS; do
+            echo "Deleting asset $ASSET_ID"
+            curl -s -X DELETE \
+                 -H "Authorization: token $GITHUB_TOKEN" \
+                 -H "Accept: application/vnd.github+json" \
+                 "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/$ASSET_ID"
+          done
+        else
+          echo "No assets to delete."
+        fi
+
+    - name: Upload new assets
+      shell: bash
+      run: |
+        RELEASE_ID=${{ env.RELEASE_ID }}
+        FILES="./camel-k-client*.tar.gz sbom.json"
+
+        for FILE in $FILES; do
+          if [ -f "$FILE" ]; then
+            FILE_NAME=$(basename "$FILE")
+            echo "Uploading $FILE_NAME..."
+            curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$FILE" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/$RELEASE_ID/assets?name=$(basename $FILE)"
+          else
+            echo "File $FILE not found, skipping."
+          fi
+        done
+
+        echo "Release ${{ env.TAG }} created successfully with artifacts."

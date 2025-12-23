@@ -20,19 +20,28 @@ package trait
 // The Logging trait is used to configure Integration runtime logging options (such as color and format).
 // The logging backend is provided by Quarkus, whose configuration is documented at https://quarkus.io/guides/logging.
 //
+// WARNING: The Logging trait is **deprecated** and will be removed in future release versions:
+// use Quarkus logging properties directly instead.
+//
+// Migration example:
+//
+//	Before: traits.logging.level=DEBUG
+//	After:  -p quarkus.log.level=DEBUG
+//
 // +camel-k:trait=logging.
+// +camel-k:deprecated=2.9.0.
 type LoggingTrait struct {
-	Trait `property:",squash" json:",inline"`
+	Trait `json:",inline" property:",squash"`
 
 	// Colorize the log output
-	Color *bool `property:"color" json:"color,omitempty"`
+	Color *bool `json:"color,omitempty" property:"color"`
 	// Logs message format
-	Format string `property:"format" json:"format,omitempty"`
+	Format string `json:"format,omitempty" property:"format"`
 	// Adjust the logging level (defaults to `INFO`)
 	// +kubebuilder:validation:Enum=FATAL;WARN;INFO;DEBUG;TRACE
-	Level string `property:"level" json:"level,omitempty"`
+	Level string `json:"level,omitempty" property:"level"`
 	// Output the logs in JSON
-	JSON *bool `property:"json" json:"json,omitempty"`
+	JSON *bool `json:"json,omitempty" property:"json"`
 	// Enable "pretty printing" of the JSON logs
-	JSONPrettyPrint *bool `property:"json-pretty-print" json:"jsonPrettyPrint,omitempty"`
+	JSONPrettyPrint *bool `json:"jsonPrettyPrint,omitempty" property:"json-pretty-print"`
 }

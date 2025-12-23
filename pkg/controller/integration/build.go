@@ -74,6 +74,7 @@ func (action *buildAction) handleBuildSubmitted(ctx context.Context, it *v1.Inte
 	// If build is running we need to wait for it to complete or we need to schedule it for interruption
 	if build != nil && build.Status.Phase == v1.BuildPhaseRunning {
 		action.L.Infof("build %s is still running. Integration %s needs to wait for it to complete", build.Name, it.Name)
+
 		return nil, nil
 	}
 
@@ -84,6 +85,7 @@ func (action *buildAction) handleBuildSubmitted(ctx context.Context, it *v1.Inte
 	// We assume the previously initialized build is running. Future reconciliation
 	// will take care of any build status drift.
 	it.Status.Phase = v1.IntegrationPhaseBuildRunning
+
 	return it, nil
 }
 
@@ -229,6 +231,8 @@ func (action *buildAction) handleBuildRunning(ctx context.Context, it *v1.Integr
 		if it.Annotations[v1.IntegrationDontRunAfterBuildAnnotation] == v1.IntegrationDontRunAfterBuildAnnotationTrueValue {
 			it.Status.Phase = v1.IntegrationPhaseBuildComplete
 		} else {
+			now := metav1.Now().Rfc3339Copy()
+			it.Status.DeploymentTimestamp = &now
 			it.Status.Phase = v1.IntegrationPhaseDeploying
 		}
 	case v1.BuildPhaseError, v1.BuildPhaseInterrupted, v1.BuildPhaseFailed:

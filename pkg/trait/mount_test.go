@@ -581,11 +581,29 @@ func TestMountVolumesInitContainers(t *testing.T) {
 	assert.NotNil(t, s)
 	spec := s.Spec.Template.Spec
 
-	assert.Len(t, spec.InitContainers[0].VolumeMounts, 1)
+	assert.Len(t, spec.InitContainers[0].VolumeMounts, 3)
 
 	assert.Condition(t, func() bool {
 		for _, v := range spec.InitContainers[0].VolumeMounts {
 			if v.Name == "my-pvc" {
+				return true
+			}
+		}
+		return false
+	})
+
+	assert.Condition(t, func() bool {
+		for _, v := range spec.InitContainers[0].VolumeMounts {
+			if v.Name == "my-cm" {
+				return true
+			}
+		}
+		return false
+	})
+
+	assert.Condition(t, func() bool {
+		for _, v := range spec.InitContainers[0].VolumeMounts {
+			if v.Name == "my-secret" {
 				return true
 			}
 		}
@@ -635,6 +653,120 @@ func TestAgentVolume(t *testing.T) {
 				for _, volumeMount := range container.VolumeMounts {
 					if volumeMount.Name == defaultAgentVolume {
 						return true
+					}
+				}
+			}
+		}
+		return false
+	})
+}
+
+func TestMountMultipleKeysSameSecret(t *testing.T) {
+	traitCatalog := NewCatalog(nil)
+	environment := getNominalEnv(t, traitCatalog)
+	environment.Integration.Spec.Traits.Mount = &traitv1.MountTrait{
+		Configs: []string{
+			"secret:my-secret/truststore.p12",
+			"secret:my-secret/truststore.password",
+		},
+	}
+	environment.Platform.ResyncStatusFullConfig()
+
+	conditions, traits, err := traitCatalog.apply(environment)
+
+	require.NoError(t, err)
+	assert.NotEmpty(t, traits)
+	assert.NotEmpty(t, conditions)
+	assert.NotEmpty(t, environment.ExecutedTraits)
+	assert.NotNil(t, environment.GetTrait("mount"))
+
+	s := environment.Resources.GetDeployment(func(service *appsv1.Deployment) bool {
+		return service.Name == "hello"
+	})
+	assert.NotNil(t, s)
+	spec := s.Spec.Template.Spec
+
+	assert.Len(t, spec.Containers[0].VolumeMounts, 4)
+	assert.Len(t, spec.Volumes, 4)
+
+	found := 0
+	for _, v := range spec.Volumes {
+		if v.Name == "my-secret" {
+			found++
+		}
+	}
+	assert.Equal(t, 1, found, "Expected exactly 1 volume named my-secret")
+
+	found = 0
+	for _, v := range spec.Volumes {
+		if v.Name == "my-secret-1" {
+			found++
+		}
+	}
+	assert.Equal(t, 1, found, "Expected exactly 1 volume named my-secret-1")
+
+	found = 0
+	for _, v := range spec.Containers[0].VolumeMounts {
+		if v.MountPath == "/etc/camel/conf.d/_secrets/my-secret" {
+			found++
+		}
+	}
+	assert.Equal(t, 1, found, "Expected exactly 1 volume mounted at my-secret")
+
+	found = 0
+	for _, v := range spec.Containers[0].VolumeMounts {
+		if v.MountPath == "/etc/camel/conf.d/_secrets/my-secret-1" {
+			found++
+		}
+	}
+	assert.Equal(t, 1, found, "Expected exactly 1 volume mounted at my-secret-1")
+}
+
+func TestCACertVolume(t *testing.T) {
+	traitCatalog := NewCatalog(nil)
+
+	environment := getNominalEnv(t, traitCatalog)
+
+	environment.Integration.Spec.Traits.Mount = &traitv1.MountTrait{}
+	environment.Integration.Spec.Traits.JVM = &traitv1.JVMTrait{
+		CACert:         "/etc/camel/conf.d/_secrets/my-ca/ca.crt",
+		CACertPassword: "/etc/camel/conf.d/_secrets/truststore-pass/password",
+	}
+	environment.Platform.ResyncStatusFullConfig()
+	conditions, traits, err := traitCatalog.apply(environment)
+
+	require.NoError(t, err)
+	assert.NotEmpty(t, traits)
+	assert.NotEmpty(t, conditions)
+	assert.NotEmpty(t, environment.ExecutedTraits)
+	assert.NotNil(t, environment.GetTrait("mount"))
+
+	deployment := environment.Resources.GetDeployment(func(service *appsv1.Deployment) bool {
+		return service.Name == "hello"
+	})
+	assert.NotNil(t, deployment)
+	spec := deployment.Spec.Template.Spec
+
+	// Should have: 2 base volumes + emptyDir volume for truststore = 3
+	assert.Len(t, spec.Volumes, 3)
+
+	// Check emptyDir volume exists for truststore
+	var emptyDirVolume *corev1.Volume
+	for _, v := range spec.Volumes {
+		if v.Name == caCertVolumeName {
+			emptyDirVolume = &v
+			break
+		}
+	}
+	assert.NotNil(t, emptyDirVolume, "Expected emptyDir volume for truststore")
+	assert.NotNil(t, emptyDirVolume.EmptyDir)
+
+	assert.Condition(t, func() bool {
+		for _, container := range spec.Containers {
+			if container.Name == "integration" {
+				for _, volumeMount := range container.VolumeMounts {
+					if volumeMount.Name == caCertVolumeName {
+						return volumeMount.MountPath == defaultCACertMountPath
 					}
 				}
 			}

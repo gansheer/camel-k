@@ -20,6 +20,7 @@ package knative
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -82,6 +83,7 @@ func CreateServiceTrigger(brokerReference corev1.ObjectReference, serviceName st
 		Kind:       "Service",
 		Name:       serviceName,
 	}
+
 	return CreateTrigger(brokerReference, subscriberRef, eventType, path, attributes)
 }
 
@@ -92,6 +94,7 @@ func CreateKnativeServiceTrigger(brokerReference corev1.ObjectReference, service
 		Kind:       "Service",
 		Name:       serviceName,
 	}
+
 	return CreateTrigger(brokerReference, subscriberRef, eventType, path, attributes)
 }
 
@@ -128,7 +131,7 @@ func CreateTrigger(brokerReference corev1.ObjectReference, subscriberRef duckv1.
 func GetTriggerName(brokerName string, subscriberName string, eventType string) string {
 	nameSuffix := ""
 	if eventType != "" {
-		nameSuffix = fmt.Sprintf("-%s", util.SanitizeLabel(eventType))
+		nameSuffix = "-" + util.SanitizeLabel(eventType)
 	}
 
 	return brokerName + "-" + subscriberName + nameSuffix
@@ -168,7 +171,6 @@ func CreateSinkBinding(source corev1.ObjectReference, target corev1.ObjectRefere
 // GetAddressableReference looks up the resource among all given types and returns an object reference to it.
 func GetAddressableReference(ctx context.Context, c client.Client,
 	possibleReferences []corev1.ObjectReference, namespace string, name string) (*corev1.ObjectReference, error) {
-
 	for _, ref := range possibleReferences {
 		sink := ref.DeepCopy()
 		sink.Namespace = namespace
@@ -181,6 +183,7 @@ func GetAddressableReference(ctx context.Context, c client.Client,
 
 		return sink, nil
 	}
+
 	return nil, k8serrors.NewNotFound(schema.GroupResource{}, name)
 }
 
@@ -190,6 +193,7 @@ func GetSinkURL(ctx context.Context, c client.Client, sink *corev1.ObjectReferen
 	if err != nil {
 		return nil, err
 	}
+
 	return url.Parse(res)
 }
 
@@ -198,7 +202,7 @@ func GetSinkURL(ctx context.Context, c client.Client, sink *corev1.ObjectReferen
 // Method taken from https://github.com/knative/eventing-contrib/blob/master/pkg/controller/sinks/sinks.go
 func getSinkURI(ctx context.Context, c client.Client, sink *corev1.ObjectReference, namespace string) (string, error) {
 	if sink == nil {
-		return "", fmt.Errorf("sink ref is nil")
+		return "", errors.New("sink ref is nil")
 	}
 
 	u := &unstructured.Unstructured{}
@@ -228,6 +232,7 @@ func getSinkURI(ctx context.Context, c client.Client, sink *corev1.ObjectReferen
 	if addressURL.Host == "" {
 		return "", fmt.Errorf("sink %s contains an empty hostname", objIdentifier)
 	}
+
 	return addressURL.String(), nil
 }
 
@@ -260,5 +265,6 @@ func EnableKnativeBindInNamespace(ctx context.Context, client client.Client, nam
 	if err != nil {
 		return false, err
 	}
+
 	return true, nil
 }

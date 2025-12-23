@@ -244,6 +244,7 @@ func FindAllDistinctStringSubmatch(data string, regexps ...*regexp.Regexp) []str
 			}
 		}
 	}
+
 	return submatchs.List()
 }
 
@@ -255,6 +256,7 @@ func FindNamedMatches(expr string, str string) map[string]string {
 	for i, name := range match {
 		results[regex.SubexpNames()[i]] = name
 	}
+
 	return results
 }
 
@@ -310,6 +312,7 @@ func SortedMapKeys(m map[string]interface{}) []string {
 		i++
 	}
 	sort.Strings(res)
+
 	return res
 }
 
@@ -321,6 +324,7 @@ func SortedStringMapKeys(m map[string]string) []string {
 		i++
 	}
 	sort.Strings(res)
+
 	return res
 }
 
@@ -333,6 +337,7 @@ func CopyMap(source map[string]string) map[string]string {
 	for k, v := range source {
 		dest[k] = v
 	}
+
 	return dest
 }
 
@@ -495,6 +500,7 @@ func ConfigTreePropertySplit(property string) []string {
 			res = append(res, tmp[i])
 		}
 	}
+
 	return res
 }
 
@@ -504,6 +510,7 @@ func trimQuotes(s string) string {
 			return s[1 : len(s)-1]
 		}
 	}
+
 	return s
 }
 
@@ -517,13 +524,16 @@ func NavigateConfigTree(current interface{}, nodes []string) (interface{}, error
 		if idx >= len(nodes) {
 			return false
 		}
+
 		return strings.HasPrefix(nodes[idx], "[") && strings.HasSuffix(nodes[idx], "]")
 	}
 	makeNext := func() interface{} {
 		if isSlice(1) {
 			slice := make([]interface{}, 0)
+
 			return &slice
 		}
+
 		return make(map[string]interface{})
 	}
 	switch c := current.(type) {
@@ -535,6 +545,7 @@ func NavigateConfigTree(current interface{}, nodes []string) (interface{}, error
 			next = makeNext()
 			c[nodes[0]] = next
 		}
+
 		return NavigateConfigTree(next, nodes[1:])
 	case *[]interface{}:
 		if !isSlice(0) {
@@ -554,6 +565,7 @@ func NavigateConfigTree(current interface{}, nodes []string) (interface{}, error
 			}
 			(*c)[pos] = next
 		}
+
 		return NavigateConfigTree(next, nodes[1:])
 	default:
 		return nil, errors.New("invalid node type in configuration")
@@ -563,7 +575,7 @@ func NavigateConfigTree(current interface{}, nodes []string) (interface{}, error
 // IToInt32 attempts to convert safely an int to an int32.
 func IToInt32(x int) (*int32, error) {
 	if x < math.MinInt32 || x > math.MaxInt32 {
-		return nil, fmt.Errorf("integer overflow casting to int32 type")
+		return nil, errors.New("integer overflow casting to int32 type")
 	}
 	casted := int32(x)
 
@@ -573,7 +585,7 @@ func IToInt32(x int) (*int32, error) {
 // IToInt8 attempts to convert safely an int to an int8.
 func IToInt8(x int) (*int8, error) {
 	if x < math.MinInt8 || x > math.MaxInt8 {
-		return nil, fmt.Errorf("integer overflow casting to int8 type")
+		return nil, errors.New("integer overflow casting to int8 type")
 	}
 	casted := int8(x)
 

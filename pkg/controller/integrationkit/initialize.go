@@ -79,11 +79,11 @@ func (action *initializeAction) Handle(ctx context.Context, kit *v1.IntegrationK
 }
 
 func (action *initializeAction) image(ctx context.Context, env *trait.Environment, kit *v1.IntegrationKit) error {
-	catalogName := fmt.Sprintf("camel-catalog-%s", strings.ToLower(env.CamelCatalog.GetRuntimeVersion()))
+	catalogName := "camel-catalog-" + strings.ToLower(env.CamelCatalog.GetRuntimeVersion())
 	if env.CamelCatalog.GetRuntimeProvider() == v1.RuntimeProviderPlainQuarkus {
 		// We need this workaround to load the last existing catalog
 		// TODO: this part will be subject to future refactoring
-		catalogName = fmt.Sprintf("camel-catalog-quarkus-%s", strings.ToLower(defaults.DefaultRuntimeVersion))
+		catalogName = "camel-catalog-quarkus-" + strings.ToLower(defaults.DefaultRuntimeVersion)
 	}
 	// Wait for CamelCatalog to be ready
 	catalog, err := kubernetes.GetCamelCatalog(
@@ -98,6 +98,7 @@ func (action *initializeAction) image(ctx context.Context, env *trait.Environmen
 			// If the catalog is not available, likely it was required to be created
 			// by Integration trait, so we'll need to wait for it to be available
 			kit.Status.Phase = v1.IntegrationKitPhaseWaitingForCatalog
+
 			return nil
 		}
 
@@ -125,6 +126,7 @@ func (action *initializeAction) image(ctx context.Context, env *trait.Environmen
 
 	if catalog.Status.Phase != v1.CamelCatalogPhaseReady {
 		kit.Status.Phase = v1.IntegrationKitPhaseWaitingForCatalog
+
 		return nil
 	}
 

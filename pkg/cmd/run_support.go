@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -46,7 +47,7 @@ func parseConfig(ctx context.Context, cmd *cobra.Command, c client.Client, confi
 		if cm == nil {
 			fmt.Fprintln(cmd.ErrOrStderr(), "Warn:", config.Name(), "Configmap not found in", integration.Namespace, "namespace, make sure to provide it before the Integration can run")
 		} else if config.ContentType() != resource.ContentTypeData && cm.BinaryData != nil {
-			return fmt.Errorf("you cannot provide a binary config, use a text file instead")
+			return errors.New("you cannot provide a binary config, use a text file instead")
 		}
 	case resource.StorageTypeSecret:
 		secret := kubernetes.LookupSecret(ctx, c, integration.Namespace, config.Name())
@@ -69,6 +70,7 @@ func filterFileLocation(maybeFileLocations []string) []string {
 			filteredOptions = append(filteredOptions, localPath)
 		}
 	}
+
 	return filteredOptions
 }
 
@@ -79,12 +81,13 @@ func keyValueProps(value string) (*properties.Properties, error) {
 // Deprecated: won't be supported in future releases.
 func loadPropertiesFromSecret(ctx context.Context, c client.Client, ns string, name string) (*properties.Properties, error) {
 	if c == nil {
-		return nil, fmt.Errorf("cannot inspect Secrets in offline mode")
+		return nil, errors.New("cannot inspect Secrets in offline mode")
 	}
 	secret := kubernetes.LookupSecret(ctx, c, ns, name)
 	if secret == nil {
 		return nil, fmt.Errorf("%s secret not found in %s namespace, make sure to provide it before the Integration can run", name, ns)
 	}
+
 	return fromMapToProperties(secret.Data,
 		func(v reflect.Value) string { return string(v.Bytes()) },
 		func(v reflect.Value) (*properties.Properties, error) {
@@ -95,12 +98,13 @@ func loadPropertiesFromSecret(ctx context.Context, c client.Client, ns string, n
 // Deprecated: won't be supported in future releases.
 func loadPropertiesFromConfigMap(ctx context.Context, c client.Client, ns string, name string) (*properties.Properties, error) {
 	if c == nil {
-		return nil, fmt.Errorf("cannot inspect Configmaps in offline mode")
+		return nil, errors.New("cannot inspect Configmaps in offline mode")
 	}
 	cm := kubernetes.LookupConfigmap(ctx, c, ns, name)
 	if cm == nil {
 		return nil, fmt.Errorf("%s configmap not found in %s namespace, make sure to provide it before the Integration can run", name, ns)
 	}
+
 	return fromMapToProperties(cm.Data,
 		func(v reflect.Value) string { return v.String() },
 		func(v reflect.Value) (*properties.Properties, error) { return keyValueProps(v.String()) })
@@ -124,6 +128,7 @@ func fromMapToProperties(data interface{}, toString func(reflect.Value) string, 
 			return nil, fmt.Errorf("cannot assign %s to %s", value, key)
 		}
 	}
+
 	return result, nil
 }
 
@@ -167,5 +172,6 @@ func extractTraitNames(traitProps []string) []string {
 		splits := strings.Split(tp, ".")
 		traitNameProps[i] = splits[0]
 	}
+
 	return traitNameProps
 }

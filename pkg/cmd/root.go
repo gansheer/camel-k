@@ -50,7 +50,7 @@ type RootCmdOptions struct {
 	Flags         *viper.Viper       `mapstructure:"-"`
 	KubeConfig    string             `mapstructure:"kube-config"`
 	Namespace     string             `mapstructure:"namespace"`
-	Verbose       bool               `mapstructure:"verbose" yaml:",omitempty"`
+	Verbose       bool               `mapstructure:"verbose"     yaml:",omitempty"`
 }
 
 // NewKamelCommand --.
@@ -77,12 +77,11 @@ func NewKamelCommand(ctx context.Context) (*cobra.Command, error) {
 
 func kamelPreAddCommandInit(options *RootCmdOptions) *cobra.Command {
 	cmd := cobra.Command{
-		BashCompletionFunction: bashCompletionFunction,
-		PersistentPreRunE:      options.preRun,
-		Use:                    "kamel",
-		Short:                  "Kamel is a awesome client tool for running Apache Camel integrations natively on Kubernetes",
-		Long:                   kamelCommandLongDescription,
-		SilenceUsage:           true,
+		PersistentPreRunE: options.preRun,
+		Use:               "kamel",
+		Short:             "Kamel is a awesome client tool for running Apache Camel integrations natively on Kubernetes",
+		Long:              kamelCommandLongDescription,
+		SilenceUsage:      true,
 	}
 
 	cmd.PersistentFlags().StringVar(&options.KubeConfig, "kube-config", os.Getenv("KUBECONFIG"), "Path to the kube config file to use for CLI requests")
@@ -134,7 +133,6 @@ func kamelPostAddCommandInit(cmd *cobra.Command, v *viper.Viper) error {
 }
 
 func addKamelSubcommands(cmd *cobra.Command, options *RootCmdOptions) {
-	cmd.AddCommand(newCmdCompletion(cmd))
 	cmd.AddCommand(cmdOnly(newCmdVersion(options)))
 	cmd.AddCommand(cmdOnly(newCmdRun(options)))
 	cmd.AddCommand(cmdOnly(newCmdDeploy(options)))
@@ -160,6 +158,7 @@ func addHelpSubCommands(cmd *cobra.Command) error {
 	for _, c := range cmd.Commands() {
 		if c.Name() == "help" {
 			helpCmd = c
+
 			break
 		}
 	}
@@ -229,6 +228,7 @@ func (command *RootCmdOptions) GetCmdClient() (client.Client, error) {
 	}
 	var err error
 	command._client, err = command.NewCmdClient()
+
 	return command._client, err
 }
 
@@ -238,6 +238,7 @@ func (command *RootCmdOptions) GetCamelCmdClient() (*v1.CamelV1Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return v1.NewForConfig(c.GetConfig())
 }
 
@@ -268,6 +269,7 @@ func wrappedFlagUsages(cmd *cobra.Command) string {
 	if w, _, err := term.GetSize(0); err == nil {
 		width = w
 	}
+
 	return cmd.Flags().FlagUsagesWrapped(width - 1)
 }
 

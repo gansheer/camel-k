@@ -54,17 +54,14 @@ func newCmdDebug(rootCmdOptions *RootCmdOptions) (*cobra.Command, *debugCmdOptio
 	cmd.Flags().Uint("port", 5005, "Local port to use for port-forwarding")
 	cmd.Flags().Uint("remote-port", 5005, "Remote port to use for port-forwarding")
 
-	// completion support
-	configureKnownCompletions(&cmd)
-
 	return &cmd, &options
 }
 
 type debugCmdOptions struct {
 	*RootCmdOptions `json:"-"`
 
-	Suspend    bool `mapstructure:"suspend" yaml:",omitempty"`
-	Port       uint `mapstructure:"port" yaml:",omitempty"`
+	Suspend    bool `mapstructure:"suspend"     yaml:",omitempty"`
+	Port       uint `mapstructure:"port"        yaml:",omitempty"`
 	RemotePort uint `mapstructure:"remote-port" yaml:",omitempty"`
 }
 
@@ -72,6 +69,7 @@ func (o *debugCmdOptions) validateArgs(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("run expects 1 argument, received 0")
 	}
+
 	return nil
 }
 
@@ -122,7 +120,7 @@ func (o *debugCmdOptions) run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	selector := fmt.Sprintf("camel.apache.org/debug=true,camel.apache.org/integration=%s", name)
+	selector := "camel.apache.org/debug=true,camel.apache.org/integration=" + name
 
 	go func() {
 		err = k8slog.PrintUsingSelector(o.Context, cmd, cmdClient, o.Namespace, "integration", selector, nil, cmd.OutOrStdout())
@@ -136,6 +134,7 @@ func (o *debugCmdOptions) run(cmd *cobra.Command, args []string) error {
 
 func (o *debugCmdOptions) toggleDebug(c camelv1.IntegrationsGetter, it *v1.Integration, active bool) (*v1.Integration, error) {
 	it = o.toggle(it, active)
+
 	return c.Integrations(it.Namespace).Update(o.Context, it, metav1.UpdateOptions{})
 }
 

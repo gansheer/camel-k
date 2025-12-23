@@ -19,7 +19,6 @@ package platform
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 
@@ -50,10 +49,12 @@ var OperatorImage string
 func IsCurrentOperatorGlobal() bool {
 	if watchNamespace, envSet := os.LookupEnv(OperatorWatchNamespaceEnvVariable); !envSet || strings.TrimSpace(watchNamespace) == "" {
 		log.Debug("Operator is global to all namespaces")
+
 		return true
 	}
 
 	log.Debug("Operator is local to namespace")
+
 	return false
 }
 
@@ -75,6 +76,7 @@ func GetOperatorPod(ctx context.Context, c ctrl.Reader, ns string) *corev1.Pod {
 	if len(lst.Items) == 0 {
 		return nil
 	}
+
 	return &lst.Items[0]
 }
 
@@ -83,6 +85,7 @@ func GetOperatorWatchNamespace() string {
 	if namespace, envSet := os.LookupEnv(OperatorWatchNamespaceEnvVariable); envSet {
 		return namespace
 	}
+
 	return ""
 }
 
@@ -91,6 +94,7 @@ func GetOperatorNamespace() string {
 	if podNamespace, envSet := os.LookupEnv(operatorNamespaceEnvVariable); envSet {
 		return podNamespace
 	}
+
 	return ""
 }
 
@@ -99,12 +103,13 @@ func GetOperatorPodName() string {
 	if podName, envSet := os.LookupEnv(operatorPodNameEnvVariable); envSet {
 		return podName
 	}
+
 	return ""
 }
 
 // GetOperatorLockName returns the name of the lock lease that is electing a leader on the particular namespace.
 func GetOperatorLockName(operatorID string) string {
-	return fmt.Sprintf("%s-lock", operatorID)
+	return operatorID + "-lock"
 }
 
 // IsNamespaceLocked tells if the namespace contains a lock indicating that an operator owns it.
@@ -146,6 +151,7 @@ func IsOperatorAllowedOnNamespace(ctx context.Context, c ctrl.Reader, namespace 
 	// allow global operators that use a proper operator id
 	if defaults.OperatorID() != "" {
 		log.Debugf("Operator ID: %s", defaults.OperatorID())
+
 		return true, nil
 	}
 
@@ -157,10 +163,12 @@ func IsOperatorAllowedOnNamespace(ctx context.Context, c ctrl.Reader, namespace 
 	alreadyOwned, err := IsNamespaceLocked(ctx, c, namespace)
 	if err != nil {
 		log.Debugf("Error occurred while testing whether namespace is locked: %v", err)
+
 		return false, err
 	}
 
 	log.Debugf("Lock status of namespace %s: %t", namespace, alreadyOwned)
+
 	return !alreadyOwned, nil
 }
 
@@ -248,6 +256,7 @@ func (f FilteringFuncs[T]) Create(e event.TypedCreateEvent[T]) bool {
 	if f.CreateFunc != nil {
 		return f.CreateFunc(e)
 	}
+
 	return true
 }
 
@@ -258,6 +267,7 @@ func (f FilteringFuncs[T]) Delete(e event.TypedDeleteEvent[T]) bool {
 	if f.DeleteFunc != nil {
 		return f.DeleteFunc(e)
 	}
+
 	return true
 }
 
@@ -280,6 +290,7 @@ func (f FilteringFuncs[T]) Update(e event.TypedUpdateEvent[T]) bool {
 	if f.UpdateFunc != nil {
 		return f.UpdateFunc(e)
 	}
+
 	return true
 }
 
@@ -290,6 +301,7 @@ func (f FilteringFuncs[T]) Generic(e event.TypedGenericEvent[T]) bool {
 	if f.GenericFunc != nil {
 		return f.GenericFunc(e)
 	}
+
 	return true
 }
 

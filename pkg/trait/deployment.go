@@ -18,8 +18,6 @@ limitations under the License.
 package trait
 
 import (
-	"fmt"
-
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -58,6 +56,7 @@ func (t *deploymentTrait) Configure(e *Environment) (bool, *TraitCondition, erro
 
 	if e.IntegrationInPhase(v1.IntegrationPhaseRunning, v1.IntegrationPhaseError) {
 		condition := e.Integration.Status.GetCondition(v1.IntegrationConditionDeploymentAvailable)
+
 		return condition != nil && condition.Status == corev1.ConditionTrue, nil, nil
 	}
 
@@ -88,6 +87,7 @@ func (t *deploymentTrait) Configure(e *Environment) (bool, *TraitCondition, erro
 
 func (t *deploymentTrait) SelectControllerStrategy(e *Environment) (*ControllerStrategy, error) {
 	deploymentStrategy := ControllerStrategyDeployment
+
 	return &deploymentStrategy, nil
 }
 
@@ -103,7 +103,7 @@ func (t *deploymentTrait) Apply(e *Environment) error {
 		v1.IntegrationConditionDeploymentAvailable,
 		corev1.ConditionTrue,
 		v1.IntegrationConditionDeploymentAvailableReason,
-		fmt.Sprintf("deployment name is %s", deployment.Name),
+		"deployment name is "+deployment.Name,
 	)
 
 	return nil
@@ -117,6 +117,9 @@ func (t *deploymentTrait) getDeploymentFor(e *Environment) *appsv1.Deployment {
 			annotations[k] = v
 		}
 	}
+
+	// Set the default container annotation for kubectl commands
+	annotations[defaultContainerAnnotation] = defaultContainerName
 
 	deadline := defaultProgressDeadline
 	if t.ProgressDeadlineSeconds != nil {

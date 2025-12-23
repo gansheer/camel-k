@@ -73,6 +73,7 @@ func NewKamelWithModelineCommand(ctx context.Context, osArgs []string) (*cobra.C
 	rootCmd, flags, err := createKamelWithModelineCommand(ctx, originalFlags)
 	if err != nil {
 		fmt.Fprintln(rootCmd.ErrOrStderr(), "Error:", err.Error())
+
 		return rootCmd, flags, err
 	}
 	if len(originalFlags) != len(flags) {
@@ -84,6 +85,7 @@ func NewKamelWithModelineCommand(ctx context.Context, osArgs []string) (*cobra.C
 		}
 		fmt.Fprintln(rootCmd.ErrOrStderr())
 	}
+
 	return rootCmd, flags, nil
 }
 
@@ -155,6 +157,7 @@ func createKamelWithModelineCommand(ctx context.Context, args []string) (*cobra.
 			for _, paramName := range cliParamNames {
 				if paramName == paramComponents[0] {
 					paramAlreadySpecifiedByUser = true
+
 					break
 				}
 			}
@@ -253,13 +256,15 @@ func getRefPathOrProperty(pathOrProperty string) string {
 	if strings.HasPrefix(pathOrProperty, "file:") {
 		return strings.Replace(pathOrProperty, "file:", "", 1)
 	}
+
 	return pathOrProperty
 }
 
 func getFullPathOrProperty(pathOrProperty string, fullPath string) string {
 	if strings.HasPrefix(pathOrProperty, "file:") {
-		return fmt.Sprintf("file:%s", fullPath)
+		return "file:" + fullPath
 	}
+
 	return pathOrProperty
 }
 

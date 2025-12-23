@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	traitv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
@@ -36,6 +35,7 @@ import (
 	"github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/camel"
 	"github.com/apache/camel-k/v2/pkg/util/envvar"
+	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/sets"
 )
 
@@ -66,6 +66,7 @@ func (t *jvmTrait) Configure(e *Environment) (bool, *TraitCondition, error) {
 	// Deprecated: the JVM has to be a platform trait and the user should not be able to disable it
 	if !ptr.Deref(t.Enabled, true) {
 		notice := userDisabledMessage + "; this configuration is deprecated and may be removed within next releases"
+
 		return false, NewIntegrationCondition("JVM", v1.IntegrationConditionTraitInfo, corev1.ConditionTrue, TraitConfigurationReason, notice), nil
 	}
 
@@ -157,6 +158,10 @@ func (t *jvmTrait) Apply(e *Environment) error {
 		args = append(args, httpProxyArgs...)
 	}
 
+	if caCertArgs := t.configureCaCert(); caCertArgs != nil {
+		args = append(args, caCertArgs...)
+	}
+
 	return t.feedContainer(container, args, e)
 }
 
@@ -225,10 +230,11 @@ func (t *jvmTrait) getIntegrationKit(e *Environment) (*v1.IntegrationKit, error)
 	if kit == nil && e.Integration.Status.IntegrationKit != nil {
 		name := e.Integration.Status.IntegrationKit.Name
 		ns := e.Integration.GetIntegrationKitNamespace(e.Platform)
-		kit = v1.NewIntegrationKit(ns, name)
-		if err := t.Client.Get(e.Ctx, ctrl.ObjectKeyFromObject(kit), kit); err != nil {
+		k, err := kubernetes.GetIntegrationKit(e.Ctx, t.Client, name, ns)
+		if err != nil {
 			return nil, fmt.Errorf("unable to find integration kit %s/%s: %w", ns, name, err)
 		}
+		kit = k
 	}
 
 	return kit, nil
@@ -275,6 +281,7 @@ func (t *jvmTrait) prepareClasspathItems(container *corev1.Container) string {
 
 	if existingClasspaths != nil {
 		existingClasspaths = append(existingClasspaths, items...)
+
 		return strings.Join(existingClasspaths, ":")
 	}
 
@@ -365,4 +372,16 @@ func getLegacyCamelQuarkusDependenciesPaths() *sets.Set {
 	s.Add("dependencies/quarkus/*")
 
 	return s
+}
+
+// configureCACert configures the CA certificate truststore and returns the JVM arguments.
+func (t *jvmTrait) configureCaCert() []string {
+	if t.CACert == "" {
+		return nil
+	}
+
+	return []string{
+		"-Djavax.net.ssl.trustStore=" + t.getTrustStorePath(),
+		fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=$(%s)", truststorePasswordEnvVar),
+	}
 }

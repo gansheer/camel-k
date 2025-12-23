@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -73,6 +74,7 @@ func (t *masterTrait) Configure(e *Environment) (bool, *TraitCondition, error) {
 		for _, endpoint := range meta.FromURIs {
 			if uri.GetComponent(endpoint) == masterComponent {
 				found = true
+
 				break loop
 			}
 		}
@@ -99,7 +101,21 @@ func (t *masterTrait) Configure(e *Environment) (bool, *TraitCondition, error) {
 		}
 	}
 
-	return enabled, nil, nil
+	// Add deprecation warning condition when the trait is enabled
+	var condition *TraitCondition
+	if enabled {
+		condition = NewIntegrationCondition(
+			"Master",
+			v1.IntegrationConditionTraitInfo,
+			corev1.ConditionTrue,
+			TraitConfigurationReason,
+			"The master trait is deprecated and will be removed in a future release. "+
+				"Please manually create the required Role and RoleBinding, then configure Quarkus properties directly. "+
+				"See documentation for migration guide.",
+		)
+	}
+
+	return enabled, condition, nil
 }
 
 func (t *masterTrait) Apply(e *Environment) error {
@@ -171,11 +187,12 @@ func findAdditionalDependencies(e *Environment, meta metadata.IntegrationMetadat
 			}
 		}
 	}
+
 	return dependencies
 }
 
 func loadResource(cli client.Client, name string, params interface{}) (ctrl.Object, error) {
-	data, err := resources.TemplateResource(fmt.Sprintf("resources/addons/master/%s", name), params)
+	data, err := resources.TemplateResource("resources/addons/master/"+name, params)
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +200,7 @@ func loadResource(cli client.Client, name string, params interface{}) (ctrl.Obje
 	if err != nil {
 		return nil, err
 	}
+
 	return obj, nil
 }
 
@@ -198,7 +216,7 @@ func (t *masterTrait) prepareRBAC(cli client.Client, serviceAccount, itName, itN
 		ServiceAccount string
 	}{
 		Namespace:      itNamespace,
-		Name:           fmt.Sprintf("%s-master", itName),
+		Name:           itName + "-master",
 		ServiceAccount: serviceAccount,
 	}
 
@@ -218,5 +236,6 @@ func (t *masterTrait) prepareRBAC(cli client.Client, serviceAccount, itName, itN
 		return nil, err
 	}
 	objs = append(objs, roleBinding)
+
 	return objs, nil
 }

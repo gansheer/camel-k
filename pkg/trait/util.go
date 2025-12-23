@@ -26,12 +26,11 @@ import (
 	"regexp"
 	"strings"
 
-	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
-
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	"github.com/apache/camel-k/v2/pkg/client"
 	"github.com/apache/camel-k/v2/pkg/util"
 	"github.com/apache/camel-k/v2/pkg/util/camel"
+	"github.com/apache/camel-k/v2/pkg/util/kubernetes"
 	"github.com/apache/camel-k/v2/pkg/util/property"
 	"github.com/apache/camel-k/v2/pkg/util/sets"
 )
@@ -53,9 +52,8 @@ func getIntegrationKit(ctx context.Context, c client.Client, integration *v1.Int
 	if integration.Status.IntegrationKit == nil {
 		return nil, nil
 	}
-	kit := v1.NewIntegrationKit(integration.Status.IntegrationKit.Namespace, integration.Status.IntegrationKit.Name)
-	err := c.Get(ctx, ctrl.ObjectKeyFromObject(kit), kit)
-	return kit, err
+
+	return kubernetes.GetIntegrationKit(ctx, c, integration.Status.IntegrationKit.Name, integration.Status.IntegrationKit.Namespace)
 }
 
 func collectConfigurationPairs(configurationType string, configurable ...v1.Configurable) []variable {
@@ -83,6 +81,7 @@ func collectConfigurationPairs(configurationType string, configurable ...v1.Conf
 					if variable.Name == k {
 						result[i].Value = v
 						ok = true
+
 						break
 					}
 				}
@@ -122,6 +121,7 @@ func filterTransferableAnnotations(annotations map[string]string) map[string]str
 		}
 		res[k] = v
 	}
+
 	return res
 }
 
@@ -233,6 +233,7 @@ func getBuilderTask(tasks []v1.Task) *v1.BuilderTask {
 			return tasks[i].Builder
 		}
 	}
+
 	return nil
 }
 
@@ -242,6 +243,7 @@ func getPackageTask(tasks []v1.Task) *v1.BuilderTask {
 			return tasks[i].Package
 		}
 	}
+
 	return nil
 }
 
@@ -368,6 +370,7 @@ func extractAsArray(value string) []string {
 			}
 			arrayValue = append(arrayValue, prop)
 		}
+
 		return arrayValue
 	}
 

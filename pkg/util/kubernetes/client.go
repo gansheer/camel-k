@@ -19,6 +19,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
@@ -38,6 +39,7 @@ func GetIntegrationPlatform(context context.Context, client ctrl.Reader, name st
 	log.Debugf("Integration Platform [name: %s], [namespace: %s], [objectkey: %s]", name, namespace, ctrl.ObjectKeyFromObject(&platform))
 	if err := client.Get(context, ctrl.ObjectKeyFromObject(&platform), &platform); err != nil {
 		log.Debugf("Integration platform Error: %v", err)
+
 		return nil, err
 	}
 
@@ -49,6 +51,7 @@ func GetIntegrationProfile(context context.Context, client ctrl.Reader, name str
 	log.Debugf("Integration Profile [name: %s], [namespace: %s], [objectkey: %s]", name, namespace, ctrl.ObjectKeyFromObject(&integrationProfile))
 	if err := client.Get(context, ctrl.ObjectKeyFromObject(&integrationProfile), &integrationProfile); err != nil {
 		log.Debugf("Integration profile Error: %v", err)
+
 		return nil, err
 	}
 
@@ -60,6 +63,7 @@ func GetCamelCatalog(context context.Context, client ctrl.Reader, name string, n
 	log.Debugf("Camel Catalog [name: %s], [namespace: %s], [objectkey: %s]", name, namespace, ctrl.ObjectKeyFromObject(&catalog))
 	if err := client.Get(context, ctrl.ObjectKeyFromObject(&catalog), &catalog); err != nil {
 		log.Debugf("Camel catalog Error: %v", err)
+
 		return nil, err
 	}
 
@@ -71,6 +75,7 @@ func GetIntegrationKit(context context.Context, client ctrl.Reader, name string,
 	log.Debugf("Integration Kit [name: %s], [namespace: %s], [objectkey: %s]", name, namespace, ctrl.ObjectKeyFromObject(kit))
 	if err := client.Get(context, ctrl.ObjectKeyFromObject(kit), kit); err != nil {
 		log.Debugf("Integration kit Error: %v", err)
+
 		return nil, err
 	}
 
@@ -82,6 +87,7 @@ func GetBuild(context context.Context, client client.Client, name string, namesp
 	log.Debugf("Build [name: %s], [namespace: %s], [objectkey: %s]", name, namespace, ctrl.ObjectKeyFromObject(build))
 	if err := client.Get(context, ctrl.ObjectKeyFromObject(build), build); err != nil {
 		log.Debugf("Integration build Error: %v", err)
+
 		return nil, err
 	}
 
@@ -143,6 +149,7 @@ func GetSecretRefValue(ctx context.Context, client ctrl.Reader, namespace string
 	if err != nil {
 		return "", err
 	}
+
 	return string(data), nil
 }
 
@@ -170,6 +177,7 @@ func GetSecretsRefData(ctx context.Context, client ctrl.Reader, namespace string
 		}
 		certsData[i] = certData
 	}
+
 	return certsData, nil
 }
 
@@ -189,7 +197,7 @@ func GetConfigMapRefValue(ctx context.Context, client ctrl.Reader, namespace str
 
 func ResolveValueSource(ctx context.Context, client ctrl.Reader, namespace string, valueSource *v1.ValueSource) (string, error) {
 	if valueSource.ConfigMapKeyRef != nil && valueSource.SecretKeyRef != nil {
-		return "", fmt.Errorf("value source has bot config map and secret configured")
+		return "", errors.New("value source has bot config map and secret configured")
 	}
 	if valueSource.ConfigMapKeyRef != nil {
 		return GetConfigMapRefValue(ctx, client, namespace, valueSource.ConfigMapKeyRef)

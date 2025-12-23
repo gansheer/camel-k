@@ -60,6 +60,7 @@ func (action *initializeAction) Handle(ctx context.Context, integration *v1.Inte
 
 	if integration.Spec.Git != nil {
 		integration.Status.Phase = v1.IntegrationPhaseBuildSubmitted
+
 		return integration, nil
 	}
 
@@ -67,6 +68,7 @@ func (action *initializeAction) Handle(ctx context.Context, integration *v1.Inte
 		integration.Status.Phase = v1.IntegrationPhaseError
 		integration.SetReadyCondition(corev1.ConditionFalse,
 			v1.IntegrationConditionInitializationFailedReason, err.Error())
+
 		return integration, err
 	}
 
@@ -74,8 +76,11 @@ func (action *initializeAction) Handle(ctx context.Context, integration *v1.Inte
 		if integration.Annotations[v1.IntegrationDontRunAfterBuildAnnotation] == v1.IntegrationDontRunAfterBuildAnnotationTrueValue {
 			integration.Status.Phase = v1.IntegrationPhaseBuildComplete
 		} else {
+			now := metav1.Now().Rfc3339Copy()
+			integration.Status.DeploymentTimestamp = &now
 			integration.Status.Phase = v1.IntegrationPhaseDeploying
 		}
+
 		return integration, nil
 	}
 

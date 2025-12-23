@@ -18,6 +18,7 @@ limitations under the License.
 package trait
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -53,7 +54,7 @@ func (t *affinityTrait) Configure(e *Environment) (bool, *TraitCondition, error)
 	}
 
 	if ptr.Deref(t.PodAffinity, false) && ptr.Deref(t.PodAntiAffinity, false) {
-		return false, nil, fmt.Errorf("both pod affinity and pod anti-affinity can't be set simultaneously")
+		return false, nil, errors.New("both pod affinity and pod anti-affinity can't be set simultaneously")
 	}
 
 	return e.IntegrationInRunningPhases(), nil, nil
@@ -77,6 +78,7 @@ func (t *affinityTrait) Apply(e *Environment) error {
 	if err := t.addPodAntiAffinity(e, podSpec); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -115,6 +117,7 @@ func (t *affinityTrait) addNodeAffinity(_ *Environment, podSpec *corev1.PodSpec)
 	}
 
 	podSpec.Affinity.NodeAffinity = nodeAffinity
+
 	return nil
 }
 
@@ -167,6 +170,7 @@ func (t *affinityTrait) addPodAffinity(e *Environment, podSpec *corev1.PodSpec) 
 	}
 
 	podSpec.Affinity.PodAffinity = podAffinity
+
 	return nil
 }
 
@@ -219,6 +223,7 @@ func (t *affinityTrait) addPodAntiAffinity(e *Environment, podSpec *corev1.PodSp
 	}
 
 	podSpec.Affinity.PodAntiAffinity = podAntiAffinity
+
 	return nil
 }
 
@@ -237,6 +242,7 @@ func operatorToNodeSelectorOperator(operator selection.Operator) (corev1.NodeSel
 	case selection.LessThan:
 		return corev1.NodeSelectorOpLt, nil
 	}
+
 	return "", fmt.Errorf("unsupported node selector operator: %s", operator)
 }
 
@@ -251,5 +257,6 @@ func operatorToLabelSelectorOperator(operator selection.Operator) (metav1.LabelS
 	case selection.DoesNotExist:
 		return metav1.LabelSelectorOpDoesNotExist, nil
 	}
+
 	return "", fmt.Errorf("unsupported label selector operator: %s", operator)
 }

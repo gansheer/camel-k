@@ -54,6 +54,7 @@ func newCmdDump(rootCmdOptions *RootCmdOptions) (*cobra.Command, *dumpCmdOptions
 
 	cmd.Flags().Int("logLines", 100, "Number of log lines to dump")
 	cmd.Flags().Bool("compressed", false, "If the log file must be compressed in a tar.")
+
 	return &cmd, &options
 }
 
@@ -80,11 +81,13 @@ func (o *dumpCmdOptions) dump(cmd *cobra.Command, args []string) error {
 				return err
 			}
 			tar.CreateTarFile([]string{file.Name()}, "dump."+file.Name()+"."+time.Now().Format(time.RFC3339)+".tar.gz", cmd.OutOrStdout())
+
 			return nil
 		})
 	} else {
 		return dumpNamespace(o.Context, c, o.Namespace, cmd.OutOrStdout(), o.LogLines)
 	}
+
 	return nil
 }
 
@@ -201,12 +204,13 @@ func dumpNamespace(ctx context.Context, c client.Client, ns string, out io.Write
 		for _, container := range allContainers {
 			pad := "    "
 			fmt.Fprintf(out, "%s%s\n", pad, container.Name)
-			err := dumpLogs(ctx, c, fmt.Sprintf("%s> ", pad), ns, pod.Name, container.Name, out, logLines)
+			err := dumpLogs(ctx, c, pad+"> ", ns, pod.Name, container.Name, out, logLines)
 			if err != nil {
 				fmt.Fprintf(out, "%sERROR while reading the logs: %v\n", pad, err)
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -235,5 +239,6 @@ func dumpLogs(ctx context.Context, c client.Client, prefix string, ns string, na
 	if !printed {
 		fmt.Fprintf(out, "%s[no logs available]\n", prefix)
 	}
+
 	return stream.Close()
 }

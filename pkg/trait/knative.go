@@ -18,6 +18,7 @@ limitations under the License.
 package trait
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -38,8 +39,8 @@ import (
 	serving "knative.dev/serving/pkg/apis/serving/v1"
 
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
-	knativeapi "github.com/apache/camel-k/v2/pkg/apis/camel/v1/knative"
 	traitv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
+	knativeapi "github.com/apache/camel-k/v2/pkg/internal/knative"
 	"github.com/apache/camel-k/v2/pkg/metadata"
 	"github.com/apache/camel-k/v2/pkg/util"
 	knativeutil "github.com/apache/camel-k/v2/pkg/util/knative"
@@ -99,6 +100,7 @@ func (t *knativeTrait) Configure(e *Environment) (bool, *TraitCondition, error) 
 		if len(t.EventSinks) == 0 {
 			t.EventSinks = filterMetaItems(meta, knativeapi.CamelServiceTypeEvent, "to")
 		}
+
 		return true
 	})
 	if err != nil {
@@ -126,7 +128,7 @@ func (t *knativeTrait) Configure(e *Environment) (bool, *TraitCondition, error) 
 				corev1.ConditionFalse,
 				v1.IntegrationConditionKnativeNotInstalledReason,
 				"integration cannot run. Knative is not installed in the cluster",
-			), fmt.Errorf("integration cannot run. Knative is not installed in the cluster")
+			), errors.New("integration cannot run. Knative is not installed in the cluster")
 		}
 
 		if t.SinkBinding == nil {
@@ -152,6 +154,7 @@ func filterMetaItems(meta metadata.IntegrationMetadata, cst knativeapi.CamelServ
 		return nil
 	}
 	sort.Strings(items)
+
 	return items
 }
 
@@ -205,7 +208,7 @@ func (t *knativeTrait) configureChannels(e *Environment, env *knativeapi.CamelEn
 			if err != nil {
 				return err
 			}
-			path := fmt.Sprintf("/channels/%s", ref.Name)
+			path := "/channels/" + ref.Name
 			meta := map[string]string{
 				knativeapi.CamelMetaEndpointKind:      string(knativeapi.CamelEndpointKindSource),
 				knativeapi.CamelMetaKnativeAPIVersion: ref.APIVersion,
@@ -246,6 +249,7 @@ func (t *knativeTrait) configureChannels(e *Environment, env *knativeapi.CamelEn
 				return err
 			}
 			env.Services = append(env.Services, svc)
+
 			return nil
 		})
 	if err != nil {
@@ -261,6 +265,7 @@ func (t *knativeTrait) createSubscription(e *Environment, ref *corev1.ObjectRefe
 	}
 	sub := knativeutil.CreateSubscription(*ref, e.Integration.Name, path)
 	e.Resources.Add(sub)
+
 	return nil
 }
 
@@ -303,6 +308,7 @@ func (t *knativeTrait) configureEndpoints(e *Environment, env *knativeapi.CamelE
 				return err
 			}
 			env.Services = append(env.Services, svc)
+
 			return nil
 		})
 	if err != nil {
@@ -323,7 +329,7 @@ func (t *knativeTrait) configureEvents(e *Environment, env *knativeapi.CamelEnvi
 				//nolint:goconst
 				serviceName = "default"
 			}
-			servicePath := fmt.Sprintf("/events/%s", eventType)
+			servicePath := "/events/" + eventType
 			if triggerErr := t.createTrigger(e, ref, eventType, servicePath); triggerErr != nil {
 				return triggerErr
 			}
@@ -363,6 +369,7 @@ func (t *knativeTrait) configureEvents(e *Environment, env *knativeapi.CamelEnvi
 				return err
 			}
 			env.Services = append(env.Services, svc)
+
 			return nil
 		})
 	if err != nil {
@@ -386,6 +393,7 @@ func (t *knativeTrait) isSinkBindingAllowed(e *Environment) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -465,6 +473,7 @@ func (t *knativeTrait) configureSinkBinding(e *Environment, env *knativeapi.Came
 				// all the information to perform injection.
 				e.Resources.AddFirst(knativeutil.CreateSinkBinding(source, target))
 			}
+
 			return nil
 		})
 
@@ -543,7 +552,6 @@ func (t *knativeTrait) withServiceDo(
 	serviceType knativeapi.CamelServiceType,
 	endpointKind knativeapi.CamelEndpointKind,
 	gen func(ref *corev1.ObjectReference, serviceURI string, urlProvider func() (*url.URL, error)) error) error {
-
 	for _, serviceURI := range t.extractServices(serviceURIs, serviceType) {
 		ref, err := knativeutil.ExtractObjectReference(serviceURI)
 		if err != nil {
@@ -571,6 +579,7 @@ func (t *knativeTrait) withServiceDo(
 				return nil, fmt.Errorf("cannot determine address of %s: %w", serviceType.ResourceDescription(ref.Name), err)
 			}
 			t.L.Infof("Found URL for %s: %s", serviceType.ResourceDescription(ref.Name), targetURL.String())
+
 			return targetURL, nil
 		}
 
@@ -579,6 +588,7 @@ func (t *knativeTrait) withServiceDo(
 			return fmt.Errorf("unexpected error while executing handler for %s: %w", serviceType.ResourceDescription(ref.Name), err)
 		}
 	}
+
 	return nil
 }
 
@@ -592,5 +602,6 @@ func (t *knativeTrait) extractServices(names []string, serviceType knativeapi.Ca
 		}
 	}
 	sort.Strings(answer)
+
 	return answer
 }

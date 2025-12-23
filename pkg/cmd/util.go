@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -55,6 +56,7 @@ func DeleteIntegration(ctx context.Context, c client.Client, name string, namesp
 			Name:      name,
 		},
 	}
+
 	return c.Delete(ctx, &integration)
 }
 
@@ -199,10 +201,10 @@ func isOfflineCommand(cmd *cobra.Command) bool {
 
 func clone(dst interface{}, src interface{}) error {
 	if dst == nil {
-		return fmt.Errorf("dst cannot be nil")
+		return errors.New("dst cannot be nil")
 	}
 	if src == nil {
-		return fmt.Errorf("src cannot be nil")
+		return errors.New("src cannot be nil")
 	}
 
 	data, err := json.Marshal(src)
@@ -214,6 +216,7 @@ func clone(dst interface{}, src interface{}) error {
 	if err != nil {
 		return fmt.Errorf("unable to unmarshal into dst: %w", err)
 	}
+
 	return nil
 }
 
@@ -264,5 +267,6 @@ func getIntegrations(ctx context.Context, c client.Client, names []string, names
 		}
 		ints = append(ints, it)
 	}
+
 	return ints, nil
 }

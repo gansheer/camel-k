@@ -48,9 +48,6 @@ func newCmdLog(rootCmdOptions *RootCmdOptions) (*cobra.Command, *logCmdOptions) 
 
 	cmd.Flags().Int64("tail", -1, "The number of lines from the end of the logs to show. Defaults to -1 to show all the lines.")
 
-	// completion support
-	configureKnownCompletions(&cmd)
-
 	return &cmd, &options
 }
 
@@ -122,6 +119,7 @@ func (o *logCmdOptions) run(cmd *cobra.Command, args []string) error {
 			// Don't have an integration yet so log and wait
 			//
 			newLogMsg = fmt.Sprintf("Integration '%s' not yet available. Will keep checking ...", integrationID)
+
 			return false, nil
 		}
 

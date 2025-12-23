@@ -19,7 +19,7 @@ package trait
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -219,10 +219,14 @@ type Environment struct {
 	// The IntegrationKits to be created for the Integration
 	IntegrationKits []v1.IntegrationKit
 	// The resources owned by the Integration that are applied to the API server
-	Resources             *kubernetes.Collection
-	PostActions           []func(*Environment) error
-	PostStepProcessors    []func(*Environment) error
-	PostProcessors        []func(*Environment) error
+	Resources *kubernetes.Collection
+	// Actions to be executed after each trait is completed for the given phase.
+	PostStepProcessors []func(*Environment) error
+	// Actions to be executed after all traits have completed for the given phase.
+	PostProcessors []func(*Environment) error
+	// Actions to be executed after all traits have completed for the given phase and Integration status set.
+	PostActions []func(*Environment) error
+	// Tasks pipeline to execute.
 	Pipeline              []v1.Task
 	ConfiguredTraits      []Trait
 	ExecutedTraits        []Trait
@@ -346,11 +350,13 @@ func (e *Environment) determineDefaultContainerPortName() string {
 	controller, err := e.DetermineControllerStrategy()
 	if err != nil {
 		log.WithValues("Function", "trait.determineDefaultContainerPortName").Errorf(err, "could not determine controller strategy, using default deployment container name")
+
 		return defaultContainerPortName
 	}
 	if controller == ControllerStrategyKnativeService {
 		return defaultKnativeContainerPortName
 	}
+
 	return defaultContainerPortName
 }
 
@@ -364,6 +370,7 @@ func (e *Environment) getControllerStrategyChoosers() []ControllerStrategySelect
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].ControllerStrategySelectorOrder() < res[j].ControllerStrategySelectorOrder()
 	})
+
 	return res
 }
 
@@ -413,6 +420,7 @@ func (e *Environment) DetermineCatalogNamespace() string {
 	if e.Integration != nil && e.Integration.Namespace != "" {
 		return e.Integration.Namespace
 	}
+
 	return ""
 }
 
@@ -483,6 +491,7 @@ func getMountPoint(resourceName string, mountPoint string, storagetype, resource
 		if storagetype == secretStorageType {
 			defaultResourceMountPoint = camel.ResourcesSecretsMountPath
 		}
+
 		return filepath.Join(defaultResourceMountPoint, resourceName)
 	}
 	defaultMountPoint := camel.ConfigConfigmapsMountPath
@@ -509,6 +518,7 @@ func (e *Environment) GetIntegrationContainerName() string {
 			containerName = ct.getContainerName()
 		}
 	}
+
 	return containerName
 }
 
@@ -519,11 +529,13 @@ func (e *Environment) isEmbedded(source v1.SourceSpec) bool {
 			return qt.isEmbedded(e, source)
 		}
 	}
+
 	return false
 }
 
 func (e *Environment) GetIntegrationContainer() *corev1.Container {
 	containerName := e.GetIntegrationContainerName()
+
 	return e.Resources.GetContainerByName(containerName)
 }
 
@@ -587,8 +599,10 @@ func CapabilityPropertyKey(camelPropertyKey string, vars map[string]string) stri
 			// Should not happen, but fallback to the key not expanded instead of panic if it comes to happen
 			return camelPropertyKey
 		}
+
 		return strings.ReplaceAll(camelPropertyKey, match[1], vars[match[2]])
 	}
+
 	return camelPropertyKey
 }
 
@@ -620,7 +634,7 @@ func (e *Environment) consumeSourcesMeta(
 		consumeSources(sources)
 	}
 	if e.CamelCatalog == nil {
-		return false, fmt.Errorf("cannot extract metadata from sources. Camel Catalog is null")
+		return false, errors.New("cannot extract metadata from sources. Camel Catalog is null")
 	}
 	meta, err := metadata.ExtractAll(e.CamelCatalog, sources)
 	if err != nil {

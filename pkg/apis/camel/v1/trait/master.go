@@ -25,23 +25,33 @@ package trait
 // NOTE: this trait adds special permissions to the integration service account in order to read/write configmaps and read pods.
 // It's recommended to use a different service account than "default" when running the integration.
 //
+// WARNING: The Master trait is **deprecated** and will be removed in future release versions.
+// This trait requires the operator to manage RBAC explicitly, which should be avoided for security
+// and simplicity reasons. Users should manually create the required Role and RoleBinding, then configure
+// Quarkus properties directly:
+//
+//	-p quarkus.camel.cluster.kubernetes.resource-name=<integration>-lock
+//	-p quarkus.camel.cluster.kubernetes.resource-type=Lease
+//	-p quarkus.camel.cluster.kubernetes.labels."camel.apache.org/integration"=<integration-name>
+//
 // +camel-k:trait=master.
+// +camel-k:deprecated=2.9.0.
 type MasterTrait struct {
-	Trait `property:",squash" json:",inline"`
+	Trait `json:",inline" property:",squash"`
 
 	// Enables automatic configuration of the trait.
-	Auto *bool `property:"auto" json:"auto,omitempty"`
+	Auto *bool `json:"auto,omitempty" property:"auto"`
 	// When this flag is active, the operator analyzes the source code to add dependencies required by delegate endpoints.
 	// E.g. when using `master:lockname:timer`, then `camel:timer` is automatically added to the set of dependencies.
 	// It's enabled by default.
-	IncludeDelegateDependencies *bool `property:"include-delegate-dependencies" json:"includeDelegateDependencies,omitempty"`
+	IncludeDelegateDependencies *bool `json:"includeDelegateDependencies,omitempty" property:"include-delegate-dependencies"`
 	// Name of the configmap that will be used to store the lock. Defaults to "<integration-name>-lock".
 	// Name of the configmap/lease resource that will be used to store the lock. Defaults to "<integration-name>-lock".
-	ResourceName *string `property:"resource-name" json:"resourceName,omitempty"`
+	ResourceName *string `json:"resourceName,omitempty" property:"resource-name"`
 	// Type of Kubernetes resource to use for locking ("ConfigMap" or "Lease"). Defaults to "Lease".
-	ResourceType *string `property:"resource-type" json:"resourceType,omitempty"`
+	ResourceType *string `json:"resourceType,omitempty" property:"resource-type"`
 	// Label that will be used to identify all pods contending the lock. Defaults to "camel.apache.org/integration".
-	LabelKey *string `property:"label-key" json:"labelKey,omitempty"`
+	LabelKey *string `json:"labelKey,omitempty" property:"label-key"`
 	// Label value that will be used to identify all pods contending the lock. Defaults to the integration name.
-	LabelValue *string `property:"label-value" json:"labelValue,omitempty"`
+	LabelValue *string `json:"labelValue,omitempty" property:"label-value"`
 }

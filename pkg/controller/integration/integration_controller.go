@@ -62,6 +62,7 @@ func Add(ctx context.Context, mgr manager.Manager, c client.Client) error {
 	err := mgr.GetFieldIndexer().IndexField(ctx, &corev1.Pod{}, "status.phase",
 		func(obj ctrl.Object) []string {
 			pod, _ := obj.(*corev1.Pod)
+
 			return []string{string(pod.Status.Phase)}
 		})
 
@@ -92,7 +93,12 @@ func integrationUpdateFunc(c client.Client, old *v1.Integration, it *v1.Integrat
 	previous := old.Status.GetCondition(v1.IntegrationConditionReady)
 	next := it.Status.GetCondition(v1.IntegrationConditionReady)
 	if isIntegrationUpdated(it, previous, next) {
-		duration := next.FirstTruthyTime.Sub(it.Status.InitializationTimestamp.Time)
+		// Use DeploymentTimestamp if available (for dry-build), else use InitializationTimestamp
+		startTime := it.Status.InitializationTimestamp.Time
+		if it.Status.DeploymentTimestamp != nil && !it.Status.DeploymentTimestamp.IsZero() {
+			startTime = it.Status.DeploymentTimestamp.Time
+		}
+		duration := next.FirstTruthyTime.Sub(startTime)
 		Log.WithValues("request-namespace", it.Namespace, "request-name", it.Name, "ready-after", duration.Seconds()).
 			ForIntegration(it).Infof("First readiness after %s", duration)
 		timeToFirstReadiness.Observe(duration.Seconds())
@@ -142,6 +148,7 @@ func integrationKitEnqueueRequestsFromMapFunc(ctx context.Context, c client.Clie
 	}
 	if err := c.List(ctx, list, opts...); err != nil {
 		log.Error(err, "Failed to retrieve integration list")
+
 		return requests
 	}
 
@@ -157,6 +164,7 @@ func integrationKitEnqueueRequestsFromMapFunc(ctx context.Context, c client.Clie
 		match, err := sameOrMatch(ctx, c, kit, integration)
 		if err != nil {
 			Log.ForIntegration(integration).Errorf(err, "Error matching integration %q with kit %q", integration.Name, kit.Name)
+
 			continue
 		}
 		if !match {
@@ -199,6 +207,7 @@ func enqueueRequestsFromConfigFunc(ctx context.Context, c client.Client, res ctr
 
 	if err := c.List(ctx, list, opts...); err != nil {
 		log.Error(err, "Failed to list integrations")
+
 		return requests
 	}
 
@@ -211,6 +220,7 @@ func enqueueRequestsFromConfigFunc(ctx context.Context, c client.Client, res ctr
 			if conf, parseErr := utilResource.ParseConfig(c); parseErr == nil {
 				if conf.StorageType() == storageType && conf.Name() == res.GetName() {
 					found = true
+
 					break
 				}
 			}
@@ -219,6 +229,7 @@ func enqueueRequestsFromConfigFunc(ctx context.Context, c client.Client, res ctr
 			if conf, parseErr := utilResource.ParseConfig(r); parseErr == nil {
 				if conf.StorageType() == storageType && conf.Name() == res.GetName() {
 					found = true
+
 					break
 				}
 			}
@@ -252,6 +263,7 @@ func integrationPlatformEnqueueRequestsFromMapFunc(ctx context.Context, c client
 
 		if err := c.List(ctx, list, opts...); err != nil {
 			log.Error(err, "Failed to list integrations")
+
 			return requests
 		}
 
@@ -322,8 +334,10 @@ func watchIntegrationResources(c client.Client, b *builder.Builder) {
 			kit, ok := a.(*v1.IntegrationKit)
 			if !ok {
 				log.Error(fmt.Errorf("type assertion failed: %v", a), "Failed to retrieve IntegrationKit")
+
 				return []reconcile.Request{}
 			}
+
 			return integrationKitEnqueueRequestsFromMapFunc(ctx, c, kit)
 		})).
 		// Watch for IntegrationPlatform phase transitioning to ready and enqueue
@@ -333,8 +347,10 @@ func watchIntegrationResources(c client.Client, b *builder.Builder) {
 				p, ok := a.(*v1.IntegrationPlatform)
 				if !ok {
 					log.Error(fmt.Errorf("type assertion failed: %v", a), "Failed to retrieve IntegrationPlatform")
+
 					return []reconcile.Request{}
 				}
+
 				return integrationPlatformEnqueueRequestsFromMapFunc(ctx, c, p)
 			})).
 		// Watch for Configmaps or Secret used in the Integrations for updates
@@ -343,8 +359,10 @@ func watchIntegrationResources(c client.Client, b *builder.Builder) {
 				cm, ok := a.(*corev1.ConfigMap)
 				if !ok {
 					log.Error(fmt.Errorf("type assertion failed: %v", a), "Failed to retrieve to retrieve Configmap")
+
 					return []reconcile.Request{}
 				}
+
 				return enqueueRequestsFromConfigFunc(ctx, c, cm)
 			}),
 			builder.WithPredicates(predicate.NewPredicateFuncs(func(object ctrl.Object) bool {
@@ -356,8 +374,10 @@ func watchIntegrationResources(c client.Client, b *builder.Builder) {
 				secret, ok := a.(*corev1.Secret)
 				if !ok {
 					log.Error(fmt.Errorf("type assertion failed: %v", a), "Failed to retrieve to retrieve Secret")
+
 					return []reconcile.Request{}
 				}
+
 				return enqueueRequestsFromConfigFunc(ctx, c, secret)
 			}),
 			builder.WithPredicates(predicate.NewPredicateFuncs(func(object ctrl.Object) bool {
@@ -370,11 +390,13 @@ func watchIntegrationResources(c client.Client, b *builder.Builder) {
 				pod, ok := a.(*corev1.Pod)
 				if !ok {
 					log.Error(fmt.Errorf("type assertion failed: %v", a), "Failed to retrieve to retrieve Pod")
+
 					return []reconcile.Request{}
 				}
 				if pod.Labels[v1.IntegrationLabel] == "" {
 					return []reconcile.Request{}
 				}
+
 				return []reconcile.Request{
 					{
 						NamespacedName: types.NamespacedName{
@@ -412,7 +434,7 @@ func watchKnativeResources(ctx context.Context, c client.Client, b *builder.Buil
 	// Check for permission to watch the Knative Service resource
 	checkCtx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
-	if ok, err = kubernetes.CheckPermission(checkCtx, c, serving.GroupName, "services", platform.GetOperatorWatchNamespace(), "", "watch"); err != nil {
+	if ok, err = kubernetes.CheckSelfPermission(checkCtx, c, serving.GroupName, "services", platform.GetOperatorWatchNamespace(), "", "watch"); err != nil {
 		return err
 	} else if ok {
 		log.Info("KnativeService resources installed in the cluster. RBAC privileges assigned correctly, you can use Knative features.")
@@ -450,6 +472,7 @@ func (r *reconcileIntegration) Reconcile(ctx context.Context, request reconcile.
 		return reconcile.Result{}, err
 	} else if !ok {
 		rlog.Info("Ignoring request because namespace is locked")
+
 		return reconcile.Result{}, nil
 	}
 
@@ -470,6 +493,7 @@ func (r *reconcileIntegration) Reconcile(ctx context.Context, request reconcile.
 	// Only process resources assigned to the operator
 	if !platform.IsOperatorHandlerConsideringLock(ctx, r.client, request.Namespace, &instance) {
 		rlog.Info("Ignoring request because resource is not assigned to current operator")
+
 		return reconcile.Result{}, nil
 	}
 
@@ -506,12 +530,14 @@ func (r *reconcileIntegration) Reconcile(ctx context.Context, request reconcile.
 			if newTarget != nil {
 				_ = r.update(ctx, &instance, newTarget, &targetLog)
 			}
+
 			return reconcile.Result{}, err
 		}
 
 		if newTarget != nil {
 			if err := r.update(ctx, &instance, newTarget, &targetLog); err != nil {
 				camelevent.NotifyIntegrationError(ctx, r.client, r.recorder, &instance, newTarget, err)
+
 				return reconcile.Result{}, err
 			}
 

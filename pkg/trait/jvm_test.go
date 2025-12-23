@@ -719,3 +719,86 @@ func TestApplyJvmTraitAgentFail(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "could not parse JVM agent")
 }
+
+func TestApplyJvmTraitWithCACert(t *testing.T) {
+	trait, environment := createNominalJvmTest(v1.IntegrationKitTypePlatform)
+	trait.CACert = "/etc/camel/conf.d/_secrets/my-ca/ca.crt"
+	trait.CACertPassword = "/etc/camel/conf.d/_secrets/truststore-pass/password"
+
+	d := appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: defaultContainerName,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	environment.Resources.Add(&d)
+	configure, condition, err := trait.Configure(environment)
+	require.NoError(t, err)
+	assert.True(t, configure)
+	assert.Nil(t, condition)
+
+	err = trait.Apply(environment)
+	require.NoError(t, err)
+
+	assert.Contains(t, d.Spec.Template.Spec.Containers[0].Args, "-Djavax.net.ssl.trustStore=/etc/camel/conf.d/_truststore/truststore.jks")
+	assert.Contains(t, d.Spec.Template.Spec.Containers[0].Args, "-Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD)")
+}
+
+func TestValidateCACertConfig(t *testing.T) {
+	trait, _ := createNominalJvmTest(v1.IntegrationKitTypePlatform)
+
+	trait.CACert = ""
+	err := trait.validateCACertConfig()
+	require.NoError(t, err)
+
+	trait.CACert = "/etc/camel/conf.d/_secrets/my-ca/ca.crt"
+	trait.CACertPassword = ""
+	err = trait.validateCACertConfig()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "ca-cert-password is required")
+
+	trait.CACertPassword = "/etc/camel/conf.d/_secrets/truststore-pass/password"
+	err = trait.validateCACertConfig()
+	require.NoError(t, err)
+}
+
+func TestApplyJvmTraitWithCustomCACertMountPath(t *testing.T) {
+	trait, environment := createNominalJvmTest(v1.IntegrationKitTypePlatform)
+	trait.CACert = "/etc/camel/conf.d/_secrets/my-ca/ca.crt"
+	trait.CACertPassword = "/etc/camel/conf.d/_secrets/truststore-pass/password"
+	trait.CACertMountPath = "/custom/truststore/path"
+
+	d := appsv1.Deployment{
+		Spec: appsv1.DeploymentSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: defaultContainerName,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	environment.Resources.Add(&d)
+	configure, condition, err := trait.Configure(environment)
+	require.NoError(t, err)
+	assert.True(t, configure)
+	assert.Nil(t, condition)
+
+	err = trait.Apply(environment)
+	require.NoError(t, err)
+
+	assert.Contains(t, d.Spec.Template.Spec.Containers[0].Args, "-Djavax.net.ssl.trustStore=/custom/truststore/path/truststore.jks")
+	assert.Contains(t, d.Spec.Template.Spec.Containers[0].Args, "-Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD)")
+}

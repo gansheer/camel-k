@@ -39,13 +39,15 @@ func newCmdDelete(rootCmdOptions *RootCmdOptions) (*cobra.Command, *deleteCmdOpt
 		RootCmdOptions: rootCmdOptions,
 	}
 	cmd := cobra.Command{
-		Use:     "delete [integration1] [integration2] ...",
-		Short:   "Delete integrations deployed on Kubernetes",
-		PreRunE: decode(&options, options.Flags),
+		Use:        "delete [integration1] [integration2] ...",
+		Short:      "Delete integrations deployed on Kubernetes",
+		Deprecated: "Warning: this command is deprecated and will be removed in the future. Use kubectl instead.",
+		PreRunE:    decode(&options, options.Flags),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := options.validate(args); err != nil {
 				return err
 			}
+
 			return options.run(cmd, args)
 		},
 	}
@@ -132,6 +134,7 @@ func deletePipeOrIntegration(ctx context.Context, cmd *cobra.Command, c client.C
 	if deletedPipes {
 		// Deleting Pipe will automatically clean up the integration
 		fmt.Fprintln(cmd.OutOrStdout(), "Pipe "+pipe+" deleted")
+
 		return nil
 	}
 
@@ -159,6 +162,7 @@ func deletePipeIfExists(ctx context.Context, c client.Client, integration *v1.In
 		// Simply skip if binding doesn't exist (could be deleted already)
 		return false, name, nil
 	}
+
 	return err == nil, name, err
 }
 
@@ -173,5 +177,6 @@ func findCreator(integration *v1.Integration) (string, string) {
 			}
 		}
 	}
+
 	return kind, name
 }

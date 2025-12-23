@@ -18,7 +18,6 @@ limitations under the License.
 package v1
 
 import (
-	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -101,6 +100,7 @@ func (in *IntegrationKit) HasHigherPriorityThan(kit *IntegrationKit) bool {
 			p2 = p
 		}
 	}
+
 	return p1 > p2
 }
 
@@ -134,6 +134,7 @@ func (in *IntegrationKitStatus) GetCondition(condType IntegrationKitConditionTyp
 			return &c
 		}
 	}
+
 	return nil
 }
 
@@ -206,6 +207,7 @@ func (in *IntegrationKitStatus) GetConditions() []ResourceCondition {
 	for _, c := range in.Conditions {
 		res = append(res, &c)
 	}
+
 	return res
 }
 
@@ -214,7 +216,7 @@ func (in *IntegrationKitStatus) GetDependenciesPaths() *sets.Set {
 	s := sets.NewSet()
 	for _, dep := range in.Artifacts {
 		path := filepath.Dir(dep.Target)
-		s.Add(fmt.Sprintf("%s/*", path))
+		s.Add(path + "/*")
 	}
 
 	return s

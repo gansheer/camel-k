@@ -46,6 +46,7 @@ func NewCatalog(c client.Client) *Catalog {
 		if traitList[i].Order() != traitList[j].Order() {
 			return traitList[i].Order() < traitList[j].Order()
 		}
+
 		return string(traitList[i].ID()) < string(traitList[j].ID())
 	})
 
@@ -59,6 +60,7 @@ func NewCatalog(c client.Client) *Catalog {
 			t.InjectClient(c)
 		}
 	}
+
 	return &catalog
 }
 
@@ -70,6 +72,7 @@ func (c *Catalog) AllTraits() []Trait {
 // so care must be taken while changing the lists order.
 func (c *Catalog) traitsFor(environment *Environment) []Trait {
 	profile := environment.DetermineProfile()
+
 	return c.TraitsForProfile(profile)
 }
 
@@ -84,6 +87,7 @@ func (c *Catalog) TraitsForProfile(profile v1.TraitProfile) []Trait {
 			res = append(res, t)
 		}
 	}
+
 	return res
 }
 
@@ -173,7 +177,7 @@ func (c *Catalog) executedTraitCondition(executedTrait []Trait) (*TraitCondition
 		return nil, traits, err
 	}
 
-	message := fmt.Sprintf("Applied traits: %s", strings.Join(traitIds, ","))
+	message := "Applied traits: " + strings.Join(traitIds, ",")
 	c.L.Debug(message)
 
 	return NewIntegrationCondition("", v1.IntegrationConditionTraitInfo, corev1.ConditionTrue, TraitConfigurationReason, message), traits, nil
@@ -186,6 +190,7 @@ func (c *Catalog) GetTrait(id string) Trait {
 			return t
 		}
 	}
+
 	return nil
 }
 

@@ -18,8 +18,6 @@ limitations under the License.
 package trait
 
 import (
-	"fmt"
-
 	"github.com/Masterminds/semver"
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
 	traitv1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
@@ -75,7 +73,15 @@ func (t *telemetryTrait) Configure(e *Environment) (bool, *TraitCondition, error
 		return false, nil, nil
 	}
 
-	var condition *TraitCondition
+	// Deprecation warning
+	condition := NewIntegrationCondition(
+		"Telemetry",
+		v1.IntegrationConditionTraitInfo,
+		corev1.ConditionTrue,
+		TraitConfigurationReason,
+		"Telemetry trait is deprecated and may be removed in future versions. "+
+			"Use properties and dependencies configuration instead.",
+	)
 
 	if !ptr.Deref(t.Auto, true) {
 		return true, condition, nil
@@ -101,6 +107,7 @@ func (t *telemetryTrait) Configure(e *Environment) (bool, *TraitCondition, error
 					endpoint,
 				)
 				t.Endpoint = endpoint
+
 				break
 			}
 		}
@@ -132,6 +139,7 @@ func (t *telemetryTrait) Apply(e *Environment) error {
 		}
 		if qv.Compare(ck315) >= 0 {
 			t.setRuntimeProviderQuarkus315Properties(e)
+
 			return nil
 		}
 	}
@@ -153,7 +161,7 @@ func (t *telemetryTrait) setCatalogConfiguration(e *Environment) {
 		e.ApplicationProperties["camel.k.telemetry.endpoint"] = t.Endpoint
 	}
 	if t.ServiceName != "" {
-		e.ApplicationProperties["camel.k.telemetry.serviceName"] = fmt.Sprintf("service.name=%s", t.ServiceName)
+		e.ApplicationProperties["camel.k.telemetry.serviceName"] = "service.name=" + t.ServiceName
 	}
 	if t.Sampler != "" {
 		e.ApplicationProperties["camel.k.telemetry.sampler"] = t.Sampler
@@ -216,8 +224,8 @@ func (t *telemetryTrait) setRuntimeProviderQuarkus315Properties(e *Environment) 
 		e.ApplicationProperties[propEndpoint] = t.Endpoint
 	}
 	if t.ServiceName != "" {
-		e.ApplicationProperties["camel.k.telemetry.serviceName"] = fmt.Sprintf("service.name=%s", t.ServiceName)
-		e.ApplicationProperties[propServiceName] = fmt.Sprintf("service.name=%s", t.ServiceName)
+		e.ApplicationProperties["camel.k.telemetry.serviceName"] = "service.name=" + t.ServiceName
+		e.ApplicationProperties[propServiceName] = "service.name=" + t.ServiceName
 	}
 	if t.Sampler != "" {
 		e.ApplicationProperties["camel.k.telemetry.sampler"] = t.Sampler

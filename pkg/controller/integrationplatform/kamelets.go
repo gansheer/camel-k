@@ -29,8 +29,6 @@ import (
 	"strings"
 
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
-	"github.com/apache/camel-k/v2/pkg/install"
-	"github.com/apache/camel-k/v2/pkg/platform"
 	"knative.dev/pkg/ptr"
 
 	"github.com/apache/camel-k/v2/pkg/client"
@@ -53,10 +51,6 @@ const (
 // installKameletCatalog installs the version Apache Kamelet Catalog into the specified namespace.
 // It returns the number of Kamelets installed and errored if successful.
 func installKameletCatalog(ctx context.Context, c client.Client, platform *v1.IntegrationPlatform, version string) (int, int, error) {
-	// Prepare proper privileges for Kamelets installed globally
-	if err := prepareKameletsPermissions(ctx, c, platform.Namespace); err != nil {
-		return -1, -1, err
-	}
 	// Prepare directory to contains kamelets
 	kameletDir, err := prepareKameletDirectory()
 	if err != nil {
@@ -72,20 +66,6 @@ func installKameletCatalog(ctx context.Context, c client.Client, platform *v1.In
 	}
 	// Store Kamelets as Kubernetes resources
 	return applyKamelets(ctx, c, platform, kameletDir)
-}
-
-func prepareKameletsPermissions(ctx context.Context, c client.Client, installingNamespace string) error {
-	watchOperatorNamespace := platform.GetOperatorWatchNamespace()
-	operatorNamespace := platform.GetOperatorNamespace()
-	if watchOperatorNamespace == "" && operatorNamespace == installingNamespace {
-		// Kamelets installed into the global operator namespace
-		// They need to be visible publicly
-		if err := kameletViewerRole(ctx, c, installingNamespace); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func prepareKameletDirectory() (string, error) {
@@ -116,7 +96,7 @@ func downloadKameletDependency(ctx context.Context, c client.Client, platform *v
 	// TODO: this one should be already managed during the command execution
 	// This workaround is fixing temporarily the problem
 	mc.AddArgument("-Dmaven.repo.local=" + mc.LocalRepository)
-	mc.AddArgument(fmt.Sprintf("-DoutputDirectory=%s", kameletsDir))
+	mc.AddArgument("-DoutputDirectory=" + kameletsDir)
 
 	if settings, err := kubernetes.ResolveValueSource(ctx, c, platform.Namespace, &platform.Status.Build.Maven.Settings); err != nil {
 		return err
@@ -165,6 +145,7 @@ func downloadKameletDependency(ctx context.Context, c client.Client, platform *v
 	if err := p.Command(mc).DoPom(ctx); err != nil {
 		return err
 	}
+
 	return p.Command(mc).Do(timeoutCtx)
 }
 
@@ -173,6 +154,7 @@ func extractKameletsFromDependency(ctx context.Context, version, kameletsDir str
 		fmt.Sprintf("-xf camel-kamelets-%s.jar kamelets/", version), " ")
 	cmd := exec.CommandContext(ctx, "jar", args...)
 	cmd.Dir = kameletsDir
+
 	return util.RunAndLog(ctx, cmd, maven.LogHandler, maven.LogHandler)
 }
 
@@ -195,12 +177,14 @@ func applyKamelets(ctx context.Context, c client.Client, platform *v1.Integratio
 		if err != nil {
 			erroredKam++
 			log.Errorf(err, "Error occurred whilst loading a bundled kamelet named %s", f.Name())
+
 			return nil
 		}
 		err = applier.Apply(ctx, kamelet)
 		if err != nil {
 			erroredKam++
 			log.Errorf(err, "Error occurred whilst applying a bundled kamelet named %s", kamelet.GetName())
+
 			return nil
 		}
 		appliedKam++
@@ -257,14 +241,4 @@ func loadKamelet(path string, platform *v1.IntegrationPlatform) (*v1.Kamelet, er
 	kamelet.SetOwnerReferences(references)
 
 	return kamelet, nil
-}
-
-// kameletViewerRole installs the role that allows any user ro access kamelets in the global namespace.
-func kameletViewerRole(ctx context.Context, c client.Client, namespace string) error {
-	if err := install.Resource(ctx, c, namespace, true, install.IdentityResourceCustomizer,
-		"/resources/viewer/user-global-kamelet-viewer-role.yaml"); err != nil {
-		return err
-	}
-	return install.Resource(ctx, c, namespace, true, install.IdentityResourceCustomizer,
-		"/resources/viewer/user-global-kamelet-viewer-role-binding.yaml")
 }

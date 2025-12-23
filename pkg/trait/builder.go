@@ -18,6 +18,7 @@ limitations under the License.
 package trait
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -85,6 +86,7 @@ func (t *builderTrait) Matches(trait Trait) bool {
 	copy(srtOtheTasks, otherTrait.Tasks)
 	slices.Sort(srtThisTasks)
 	slices.Sort(srtOtheTasks)
+
 	return slices.Equal(srtThisTasks, srtOtheTasks)
 }
 
@@ -156,6 +158,7 @@ func existsTaskRequest(tasks []string, taskName string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -165,19 +168,19 @@ func (t *builderTrait) adaptDeprecatedFields() *TraitCondition {
 		m := "The request-cpu parameter is deprecated and may be removed in future releases. Make sure to use tasks-request-cpu parameter instead."
 		t.L.Info(m)
 		condition = newOrAppend(condition, m)
-		t.TasksRequestCPU = append(t.TasksRequestCPU, fmt.Sprintf("builder:%s", t.RequestCPU))
+		t.TasksRequestCPU = append(t.TasksRequestCPU, "builder:"+t.RequestCPU)
 	}
 	if t.LimitCPU != "" {
 		m := "The limit-cpu parameter is deprecated and may be removed in future releases. Make sure to use tasks-limit-cpu parameter instead."
 		t.L.Info(m)
 		condition = newOrAppend(condition, m)
-		t.TasksLimitCPU = append(t.TasksLimitCPU, fmt.Sprintf("builder:%s", t.LimitCPU))
+		t.TasksLimitCPU = append(t.TasksLimitCPU, "builder:"+t.LimitCPU)
 	}
 	if t.RequestMemory != "" {
 		m := "The request-memory parameter is deprecated and may be removed in future releases. Make sure to use tasks-request-memory parameter instead."
 		t.L.Info(m)
 		condition = newOrAppend(condition, m)
-		t.TasksRequestMemory = append(t.TasksRequestMemory, fmt.Sprintf("builder:%s", t.RequestMemory))
+		t.TasksRequestMemory = append(t.TasksRequestMemory, "builder:"+t.RequestMemory)
 	}
 	if t.LimitMemory != "" {
 		m := "The limit-memory parameter is deprecated and may be removed in future releases. Make sure to use tasks-limit-memory parameter instead."
@@ -186,7 +189,7 @@ func (t *builderTrait) adaptDeprecatedFields() *TraitCondition {
 			condition = NewIntegrationCondition("Builder", v1.IntegrationConditionTraitInfo, corev1.ConditionTrue, TraitConfigurationReason, "")
 		}
 		condition = newOrAppend(condition, m)
-		t.TasksLimitMemory = append(t.TasksLimitMemory, fmt.Sprintf("builder:%s", t.LimitMemory))
+		t.TasksLimitMemory = append(t.TasksLimitMemory, "builder:"+t.LimitMemory)
 	}
 
 	return condition
@@ -225,10 +228,11 @@ func (t *builderTrait) Apply(e *Environment) error {
 			"IntegrationKitPropertiesFormatValid",
 			corev1.ConditionFalse,
 			"IntegrationKitPropertiesFormatValid",
-			fmt.Sprintf("One or more properties where not formatted as expected: %s", err.Error()),
+			"One or more properties where not formatted as expected: "+err.Error(),
 		); err != nil {
 			return err
 		}
+
 		return nil
 	}
 	builderTask.Configuration.NodeSelector = t.NodeSelector
@@ -259,7 +263,6 @@ func (t *builderTrait) Apply(e *Environment) error {
 	// Publishing task
 	tag := getTag(e)
 	switch e.Platform.Status.Build.PublishStrategy {
-
 	case v1.IntegrationPlatformBuildPublishStrategyJib:
 		jibTask := v1.Task{Jib: &v1.JibTask{
 			BaseTask: v1.BaseTask{
@@ -304,11 +307,13 @@ func (t *builderTrait) Apply(e *Environment) error {
 			); err != nil {
 				return err
 			}
+
 			return err
 		}
 	}
 	// add local pipeline tasks to env pipeline
 	e.Pipeline = append(e.Pipeline, pipelineTasks...)
+
 	return nil
 }
 
@@ -359,6 +364,7 @@ func (t *builderTrait) builderTask(e *Environment, taskConf *v1.BuildConfigurati
 			if string(s) == t.Strategy {
 				found = true
 				taskConf.Strategy = s
+
 				break
 			}
 		}
@@ -367,6 +373,7 @@ func (t *builderTrait) builderTask(e *Environment, taskConf *v1.BuildConfigurati
 			for _, s := range v1.BuildStrategies {
 				strategies = append(strategies, string(s))
 			}
+
 			return nil, fmt.Errorf("unknown build strategy: %s. One of [%s] is expected", t.Strategy, strings.Join(strategies, ", "))
 		}
 	}
@@ -377,6 +384,7 @@ func (t *builderTrait) builderTask(e *Environment, taskConf *v1.BuildConfigurati
 			if string(s) == t.OrderStrategy {
 				found = true
 				taskConf.OrderStrategy = s
+
 				break
 			}
 		}
@@ -385,6 +393,7 @@ func (t *builderTrait) builderTask(e *Environment, taskConf *v1.BuildConfigurati
 			for _, s := range v1.BuildOrderStrategies {
 				strategies = append(strategies, string(s))
 			}
+
 			return nil, fmt.Errorf("unknown build order strategy: %s. One of [%s] is expected", t.OrderStrategy, strings.Join(strategies, ", "))
 		}
 	}
@@ -477,6 +486,7 @@ func getImageName(e *Environment) string {
 	if organization == "" {
 		organization = e.Platform.Namespace
 	}
+
 	return e.Platform.Status.Build.Registry.Address + "/" + organization + "/camel-k-" + imageName
 }
 
@@ -485,6 +495,7 @@ func (t *builderTrait) getBaseImage(e *Environment) string {
 	if baseImage == "" {
 		baseImage = e.Platform.Status.Build.BaseImage
 	}
+
 	return baseImage
 }
 
@@ -545,6 +556,7 @@ func (t *builderTrait) customTasks(tasksConf map[string]*v1.BuildConfiguration, 
 			customTasks[i].Custom.ContainerUserID = &uid
 		}
 	}
+
 	return customTasks, nil
 }
 
@@ -663,8 +675,9 @@ func filter(tasks []v1.Task, filterTasks []string) ([]v1.Task, error) {
 	}
 	// make sure the last task is either a publishing task or a custom task
 	if len(filteredTasks) == 0 || !publishingOrUserTask(filteredTasks[len(filteredTasks)-1]) {
-		return nil, fmt.Errorf("last pipeline task is not a publishing or a user task")
+		return nil, errors.New("last pipeline task is not a publishing or a user task")
 	}
+
 	return filteredTasks, nil
 }
 

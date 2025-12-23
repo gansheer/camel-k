@@ -22,8 +22,8 @@ import (
 	"net/url"
 
 	v1 "github.com/apache/camel-k/v2/pkg/apis/camel/v1"
-	knativeapis "github.com/apache/camel-k/v2/pkg/apis/camel/v1/knative"
 	"github.com/apache/camel-k/v2/pkg/apis/camel/v1/trait"
+	knativeapis "github.com/apache/camel-k/v2/pkg/internal/knative"
 	"github.com/apache/camel-k/v2/pkg/util/property"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -93,7 +93,7 @@ func (k KnativeRefBindingProvider) Translate(ctx BindingContext, endpointCtx End
 			for key, value := range props {
 				if key == "cloudEventsType" {
 					// cloudEventsType is a synonym for type filter attribute
-					filterExpressions = append(filterExpressions, fmt.Sprintf("type=%s", value))
+					filterExpressions = append(filterExpressions, "type="+value)
 				} else if key != "name" {
 					filterExpressions = append(filterExpressions, fmt.Sprintf("%s=%s", key, value))
 				}

@@ -62,7 +62,6 @@ func newCmdBind(rootCmdOptions *RootCmdOptions) (*cobra.Command, *bindCmdOptions
 	cmd.Flags().StringArrayP("trait", "t", nil, `Add a trait to the corresponding Integration.`)
 	cmd.Flags().StringP("operator-id", "x", "camel-k", "Operator id selected to manage this Pipe.")
 	cmd.Flags().StringArray("annotation", nil, "Add an annotation to the Pipe. E.g. \"--annotation my.company=hello\"")
-	cmd.Flags().Bool("force", false, "Force creation of Pipe regardless of potential misconfiguration.")
 	cmd.Flags().String("service-account", "", "The SA to use to run this binding")
 	cmd.Flags().StringArrayP("dependency", "d", nil, `A dependency that should be included, e.g., "camel:mail" for a Camel component, "mvn:org.my:app:1.0" for a Maven dependency`)
 
@@ -79,18 +78,17 @@ const (
 type bindCmdOptions struct {
 	*RootCmdOptions
 
-	ErrorHandler   string   `mapstructure:"error-handler" yaml:",omitempty"`
-	Name           string   `mapstructure:"name" yaml:",omitempty"`
-	OutputFormat   string   `mapstructure:"output" yaml:",omitempty"`
-	Properties     []string `mapstructure:"properties" yaml:",omitempty"`
-	SkipChecks     bool     `mapstructure:"skip-checks" yaml:",omitempty"`
-	Steps          []string `mapstructure:"steps" yaml:",omitempty"`
-	Traits         []string `mapstructure:"traits" yaml:",omitempty"`
-	OperatorID     string   `mapstructure:"operator-id" yaml:",omitempty"`
-	Annotations    []string `mapstructure:"annotations" yaml:",omitempty"`
-	Force          bool     `mapstructure:"force" yaml:",omitempty"`
+	ErrorHandler   string   `mapstructure:"error-handler"   yaml:",omitempty"`
+	Name           string   `mapstructure:"name"            yaml:",omitempty"`
+	OutputFormat   string   `mapstructure:"output"          yaml:",omitempty"`
+	Properties     []string `mapstructure:"properties"      yaml:",omitempty"`
+	SkipChecks     bool     `mapstructure:"skip-checks"     yaml:",omitempty"`
+	Steps          []string `mapstructure:"steps"           yaml:",omitempty"`
+	Traits         []string `mapstructure:"traits"          yaml:",omitempty"`
+	OperatorID     string   `mapstructure:"operator-id"     yaml:",omitempty"`
+	Annotations    []string `mapstructure:"annotations"     yaml:",omitempty"`
 	ServiceAccount string   `mapstructure:"service-account" yaml:",omitempty"`
-	Dependencies   []string `mapstructure:"dependencies" yaml:",omitempty"`
+	Dependencies   []string `mapstructure:"dependencies"    yaml:",omitempty"`
 }
 
 func (o *bindCmdOptions) preRunE(cmd *cobra.Command, args []string) error {
@@ -98,6 +96,7 @@ func (o *bindCmdOptions) preRunE(cmd *cobra.Command, args []string) error {
 		// let the command work in offline mode
 		cmd.Annotations[offlineCommandLabel] = "true"
 	}
+
 	return o.preRun(cmd, args)
 }
 
@@ -120,7 +119,7 @@ func (o *bindCmdOptions) validate(cmd *cobra.Command, args []string) error {
 	}
 
 	if o.OperatorID == "" {
-		return fmt.Errorf("cannot use empty operator id")
+		return errors.New("cannot use empty operator id")
 	}
 
 	for _, annotation := range o.Annotations {
@@ -233,17 +232,9 @@ func (o *bindCmdOptions) run(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(o.Traits) > 0 {
-		if pipe.Annotations == nil {
-			pipe.Annotations = make(map[string]string)
-		}
-
-		for _, t := range o.Traits {
-			kv := strings.SplitN(t, "=", 2)
-			if len(kv) != 2 {
-				return fmt.Errorf("could not parse trait configuration %s, expected format 'trait.property=value'", t)
-			}
-			value := maybeBuildArrayNotation(pipe.Annotations[v1.TraitAnnotationPrefix+kv[0]], kv[1])
-			pipe.Annotations[v1.TraitAnnotationPrefix+kv[0]] = value
+		catalog := trait.NewCatalog(client)
+		if err := trait.ConfigureTraits(o.Traits, &pipe.Spec.Traits, catalog); err != nil {
+			return err
 		}
 	}
 
@@ -275,23 +266,8 @@ func (o *bindCmdOptions) run(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Fprintln(cmd.OutOrStdout(), `binding "`+name+`" updated`)
 	}
-	return nil
-}
 
-// buildArrayNotation is used to build an array annotation to support traits array configuration
-// for example, `-t camel.properties=a=1 -t camel.properties=b=2` would convert into annotation
-// `camel.properties=[a=1,b=2]“.
-func maybeBuildArrayNotation(array, value string) string {
-	if array == "" {
-		return value
-	}
-	// append
-	if strings.HasPrefix(array, "[") && strings.HasSuffix(array, "]") {
-		content := array[1:len(array)-1] + "," + value
-		return "[" + content + "]"
-	}
-	// init the array notation
-	return "[" + array + "," + value + "]"
+	return nil
 }
 
 func showPipeOutput(cmd *cobra.Command, binding *v1.Pipe, outputFormat string, scheme runtime.ObjectTyper) error {
@@ -299,6 +275,7 @@ func showPipeOutput(cmd *cobra.Command, binding *v1.Pipe, outputFormat string, s
 	printer.Delegate = &kubernetes.CLIPrinter{
 		Format: outputFormat,
 	}
+
 	return printer.PrintObj(binding, cmd.OutOrStdout())
 }
 
@@ -328,6 +305,7 @@ func (o *bindCmdOptions) parseErrorHandler() (*v1.ErrorHandlerSpec, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &v1.ErrorHandlerSpec{RawMessage: errHandlMarshalled}, nil
 }
 
@@ -340,6 +318,7 @@ func parseErrorHandlerByType(value string) (string, string, error) {
 	if len(errHandlSplit) > 1 {
 		return errHandlSplit[0], errHandlSplit[1], nil
 	}
+
 	return errHandlSplit[0], "", nil
 }
 
@@ -357,8 +336,10 @@ func (o *bindCmdOptions) decode(res string, key string) (v1.Endpoint, error) {
 	if err != nil {
 		if uri.HasCamelURIFormat(res) {
 			endpoint.URI = &res
+
 			return endpoint, nil
 		}
+
 		return endpoint, err
 	}
 	endpoint.Ref = &ref
@@ -395,6 +376,7 @@ func (o *bindCmdOptions) nameFor(source, sink v1.Endpoint) string {
 	sourcePart := o.nameForEndpoint(source)
 	sinkPart := o.nameForEndpoint(sink)
 	name := fmt.Sprintf("%s-to-%s", sourcePart, sinkPart)
+
 	return kubernetes.SanitizeName(name)
 }
 
@@ -405,6 +387,7 @@ func (o *bindCmdOptions) nameForEndpoint(endpoint v1.Endpoint) string {
 	if endpoint.Ref != nil {
 		return endpoint.Ref.Name
 	}
+
 	return ""
 }
 
@@ -416,6 +399,7 @@ func (o *bindCmdOptions) asEndpointProperties(props map[string]string) (*v1.Endp
 	if err != nil {
 		return nil, err
 	}
+
 	return &v1.EndpointProperties{
 		RawMessage: v1.RawMessage(data),
 	}, nil
@@ -432,6 +416,7 @@ func (o *bindCmdOptions) getProperties(refType string) map[string]string {
 			props[k] = v
 		}
 	}
+
 	return props
 }
 
@@ -451,6 +436,7 @@ func (o *bindCmdOptions) parseProperty(prop string) (string, string, string, err
 	if !isSource && !isSink && !isStep && !isErrorHandler {
 		return "", "", "", fmt.Errorf(`property key %q does not start with "source.", "sink.", "error-handler." or "step-<n>."`, parts[0])
 	}
+
 	return keyParts[0], keyParts[1], parts[1], nil
 }
 
@@ -469,10 +455,13 @@ func (o *bindCmdOptions) checkCompliance(cmd *cobra.Command, endpoint v1.Endpoin
 			if k8serrors.IsNotFound(err) {
 				// Kamelet may be in the operator namespace, but we currently don't have a way to determine it: we just warn
 				fmt.Fprintf(cmd.ErrOrStderr(), "Warning: Kamelet %q not found in namespace %q\n", key.Name, key.Namespace)
+
 				return nil
 			}
+
 			return err
 		}
 	}
+
 	return nil
 }

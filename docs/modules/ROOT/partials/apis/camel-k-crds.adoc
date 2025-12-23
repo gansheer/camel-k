@@ -3709,6 +3709,13 @@ features offered by the Integration
 
 the timestamp representing the last time when this integration was initialized.
 
+|`lastDeploymentTimestamp` +
+*https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta[Kubernetes meta/v1.Time]*
+|
+
+
+the timestamp representing the last time when this integration was deployed.
+
 
 |===
 
@@ -6006,6 +6013,13 @@ Deprecated: no longer in use.
 
 The configuration of GC trait
 
+|`gitops` +
+*xref:#_camel_apache_org_v1_trait_GitOpsTrait[GitOpsTrait]*
+|
+
+
+The configuration of GitOps trait
+
 |`health` +
 *xref:#_camel_apache_org_v1_trait_HealthTrait[HealthTrait]*
 |
@@ -7206,6 +7220,110 @@ Deprecated: no longer in use.
 
 |===
 
+[#_camel_apache_org_v1_trait_GitOpsTrait]
+=== GitOpsTrait
+
+*Appears on:*
+
+* <<#_camel_apache_org_v1_Traits, Traits>>
+
+The GitOps Trait is used to configure the repository where you want to push a GitOps Kustomize overlay configuration of the Integration built.
+If the trait is enabled but no pull configuration is provided, then, the operator will use the values stored in Integration `.spec.git` field used
+to pull the project.
+
+
+[cols="2,2a",options="header"]
+|===
+|Field
+|Description
+
+|`Trait` +
+*xref:#_camel_apache_org_v1_trait_Trait[Trait]*
+|(Members of `Trait` are embedded into this type.)
+
+
+
+
+|`url` +
+string
+|
+
+
+the URL of the repository where the project is stored.
+
+|`secret` +
+string
+|
+
+
+the Kubernetes secret where the Git token is stored. The operator will pick up the first secret key only, whichever the name it is.
+
+|`branch` +
+string
+|
+
+
+the git branch to check out.
+
+|`tag` +
+string
+|
+
+
+the git tag to check out.
+
+|`commit` +
+string
+|
+
+
+the git commit (full SHA) to check out.
+
+|`branchPush` +
+string
+|
+
+
+the git branch to push to. If omitted, the operator will push to a new branch named as `cicd/release-candidate-<datetime>`.
+
+|`overlays` +
+[]string
+|
+
+
+a list of overlays to provide (default \{"dev","stag","prod"}).
+
+|`overwriteOverlay` +
+bool
+|
+
+
+a flag (default, false) to overwrite any existing overlay.
+
+|`integrationDirectory` +
+string
+|
+
+
+The root path where to store Kustomize overlays (default `integrations`).
+
+|`committerName` +
+string
+|
+
+
+The name used to commit the GitOps changes (default `Camel K Operator`).
+
+|`committerEmail` +
+string
+|
+
+
+The email used to commit the GitOps changes (default `camel-k-operator@apache.org`).
+
+
+|===
+
 [#_camel_apache_org_v1_trait_HealthTrait]
 === HealthTrait
 
@@ -7678,6 +7796,30 @@ The Jar dependency which will run the application. Leave it empty for managed In
 
 A list of JVM agents to download and execute with format `<agent-name>;<agent-url>[;<jvm-agent-options>]`.
 
+|`caCert` +
+string
+|
+
+
+Path to a PEM-encoded CA certificate file.
+Example: "/etc/camel/conf.d/_secrets/my-ca/ca.crt"
+
+|`caCertMountPath` +
+string
+|
+
+
+The path where the generated truststore will be mounted.
+Default: "/etc/camel/conf.d/_truststore"
+
+|`caCertPassword` +
+string
+|
+
+
+Required when caCert is set. Path to a file containing the truststore password.
+Example: "/etc/camel/conf.d/_secrets/truststore-pass/password"
+
 
 |===
 
@@ -7940,6 +8082,21 @@ Maximum number of replicas.
 Definition of triggers according to the KEDA format. Each trigger must contain `type` field corresponding
 to the name of a KEDA autoscaler and a key/value map named `metadata` containing specific trigger options
 and optionally a mapping of secrets, used by Keda operator to poll resources according to the autoscaler type.
+
+|`auto` +
+bool
+|
+
+
+Automatically discover KEDA triggers from Camel component URIs.
+
+|`autoMetadata` +
+map[string]map[string]string
+|
+
+
+Additional metadata to merge into auto-discovered triggers. Keys are trigger types (e.g., "kafka"),
+values are maps of metadata key-value pairs to merge (e.g., {"lagThreshold": "10"}).
 
 
 |===
@@ -8252,6 +8409,14 @@ If this is true, the created Knative trigger uses the event type as a filter on 
 The Logging trait is used to configure Integration runtime logging options (such as color and format).
 The logging backend is provided by Quarkus, whose configuration is documented at https://quarkus.io/guides/logging.
 
+WARNING: The Logging trait is **deprecated** and will be removed in future release versions:
+use Quarkus logging properties directly instead.
+
+Migration example:
+
+	Before: traits.logging.level=DEBUG
+	After:  -p quarkus.log.level=DEBUG
+
 
 [cols="2,2a",options="header"]
 |===
@@ -8317,6 +8482,15 @@ It's activated automatically when using the master endpoint in a route, e.g. `fr
 
 NOTE: this trait adds special permissions to the integration service account in order to read/write configmaps and read pods.
 It's recommended to use a different service account than "default" when running the integration.
+
+WARNING: The Master trait is **deprecated** and will be removed in future release versions.
+This trait requires the operator to manage RBAC explicitly, which should be avoided for security
+and simplicity reasons. Users should manually create the required Role and RoleBinding, then configure
+Quarkus properties directly:
+
+	-p quarkus.camel.cluster.kubernetes.resource-name=<integration>-lock
+	-p quarkus.camel.cluster.kubernetes.resource-type=Lease
+	-p quarkus.camel.cluster.kubernetes.labels."camel.apache.org/integration"=<integration-name>
 
 
 [cols="2,2a",options="header"]
@@ -9260,6 +9434,14 @@ The trait is able to automatically discover the telemetry OTLP endpoint availabl
 
 The Telemetry trait is disabled by default.
 
+WARNING: The Telemetry trait is **deprecated** and will be removed in future release versions.
+The same behavior can be achieved via properties and dependencies configuration.
+
+Migration example:
+
+	Before: --trait telemetry.endpoint=http://jaeger:4317
+	After:  -p quarkus.otel.exporter.otlp.traces.endpoint=http://jaeger:4317
+
 WARNING: The Telemetry trait can't be enabled at the same time as the Tracing trait.
 
 
@@ -9371,6 +9553,7 @@ The list of taints to tolerate, in the form `Key[=Value]:Effect[:Seconds]`
 * <<#_camel_apache_org_v1_trait_AffinityTrait, AffinityTrait>>
 * <<#_camel_apache_org_v1_trait_CronTrait, CronTrait>>
 * <<#_camel_apache_org_v1_trait_GCTrait, GCTrait>>
+* <<#_camel_apache_org_v1_trait_GitOpsTrait, GitOpsTrait>>
 * <<#_camel_apache_org_v1_trait_HealthTrait, HealthTrait>>
 * <<#_camel_apache_org_v1_trait_IngressTrait, IngressTrait>>
 * <<#_camel_apache_org_v1_trait_InitContainersTrait, InitContainersTrait>>
