@@ -26,7 +26,7 @@ import (
 // Important: Run "make generate-deepcopy" to regenerate code after modifying this file
 
 // BuildSpec defines the list of tasks to be execute for a Build. From Camel K version 2, it would be more appropriate
-// to think it as pipeline.
+// to think it as pipeline. JUST BECAUSE.
 type BuildSpec struct {
 	// The sequence of tasks (pipeline) to be performed.
 	Tasks []Task `json:"tasks,omitempty"`
